@@ -8,8 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { doc, setDoc } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 function AppleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -33,12 +35,14 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function SignUpPage() {
     const auth = useAuth();
+    const firestore = useFirestore();
     const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (!isUserLoading && user) {
@@ -46,20 +50,35 @@ export default function SignUpPage() {
         }
     }, [user, isUserLoading, router]);
 
-    const handleSignUp = (e: React.FormEvent) => {
+    const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
-            initiateEmailSignUp(auth, email, password);
-            toast({
-                title: "Cadastro em andamento...",
-                description: "Sua conta está sendo criada.",
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const newUser = userCredential.user;
+
+            await updateProfile(newUser, { displayName: name });
+            
+            // Create user document in Firestore
+            const userDocRef = doc(firestore, 'users', newUser.uid);
+            await setDoc(userDocRef, {
+                id: newUser.uid,
+                email: newUser.email,
+                name: name,
             });
+
+            toast({
+                title: "Cadastro realizado com sucesso!",
+                description: "Sua conta foi criada. Redirecionando...",
+            });
+            // O useEffect cuidará do redirecionamento
         } catch (error: any) {
              toast({
                 title: "Erro no Cadastro",
                 description: error.message || "Não foi possível criar sua conta.",
                 variant: 'destructive'
             });
+            setIsLoading(false);
         }
     };
     
@@ -84,11 +103,11 @@ export default function SignUpPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline">
+                        <Button variant="outline" disabled>
                             <GoogleIcon className="mr-2 h-5 w-5" />
                             Google
                         </Button>
-                        <Button variant="outline">
+                        <Button variant="outline" disabled>
                             <AppleIcon className="mr-2 h-5 w-5" />
                             Apple
                         </Button>
@@ -115,7 +134,9 @@ export default function SignUpPage() {
                             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
                         <div className="pt-2">
-                            <Button type="submit" className="w-full font-bold">Cadastrar</Button>
+                            <Button type="submit" className="w-full font-bold" disabled={isLoading}>
+                                {isLoading ? 'Cadastrando...' : 'Cadastrar'}
+                            </Button>
                         </div>
                     </form>
                     <div className="text-center text-sm">

@@ -9,10 +9,20 @@ import { Label } from "@/components/ui/label";
 import { useUser } from "@/firebase";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Upload } from "lucide-react";
+import { useEffect, useState } from "react";
 
 export default function ProfilePage() {
     const { user } = useUser();
     const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
+    const [displayName, setDisplayName] = useState('');
+    const [email, setEmail] = useState('');
+
+    useEffect(() => {
+        if(user) {
+            setDisplayName(user.displayName || '');
+            setEmail(user.email || '');
+        }
+    }, [user]);
 
     return (
         <div className="space-y-6">
@@ -31,8 +41,8 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-6">
                         <div className="relative">
                             {avatar && <Avatar className="size-20">
-                                <AvatarImage src={avatar.imageUrl} alt={avatar.description} />
-                                <AvatarFallback>JD</AvatarFallback>
+                                <AvatarImage src={user?.photoURL || avatar.imageUrl} alt={avatar.description} />
+                                <AvatarFallback>{displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                             </Avatar>}
                             <Button variant="outline" size="icon" className="absolute -bottom-2 -right-2 rounded-full">
                                 <Upload className="size-4" />
@@ -40,18 +50,18 @@ export default function ProfilePage() {
                             </Button>
                         </div>
                         <div className="grid gap-1.5">
-                            <h2 className="text-xl font-semibold">Jane Doe</h2>
-                            <p className="text-sm text-muted-foreground">{user?.email || 'carregando...'}</p>
+                            <h2 className="text-xl font-semibold">{displayName || 'Carregando...'}</h2>
+                            <p className="text-sm text-muted-foreground">{email || 'carregando...'}</p>
                         </div>
                     </div>
                     <div className="grid gap-4 md:grid-cols-2">
                         <div className="space-y-2">
                             <Label htmlFor="name">Nome</Label>
-                            <Input id="name" defaultValue="Jane Doe" />
+                            <Input id="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="email">E-mail</Label>
-                            <Input id="email" type="email" defaultValue={user?.email || ''} disabled />
+                            <Input id="email" type="email" value={email} disabled />
                         </div>
                     </div>
                 </CardContent>

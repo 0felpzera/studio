@@ -8,8 +8,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser } from '@/firebase';
-import { initiateAnonymousSignIn, initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 function AppleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -38,6 +39,7 @@ export default function LoginPage() {
     const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (!isUserLoading && user) {
@@ -45,20 +47,23 @@ export default function LoginPage() {
         }
     }, [user, isUserLoading, router]);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsLoading(true);
         try {
-            initiateEmailSignIn(auth, email, password);
+            await signInWithEmailAndPassword(auth, email, password);
             toast({
-                title: "Login...",
-                description: "Entrando com seu usuário.",
+                title: "Login bem-sucedido!",
+                description: "Redirecionando para o seu painel.",
             });
-        } catch (error) {
+            // O useEffect cuidará do redirecionamento
+        } catch (error: any) {
              toast({
                 title: "Erro no Login",
-                description: "Não foi possível fazer o login.",
+                description: "E-mail ou senha incorretos. Por favor, tente novamente.",
                 variant: 'destructive'
             });
+            setIsLoading(false);
         }
     };
     
@@ -83,11 +88,11 @@ export default function LoginPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline">
+                        <Button variant="outline" disabled>
                             <GoogleIcon className="mr-2 h-5 w-5" />
                             Google
                         </Button>
-                        <Button variant="outline">
+                        <Button variant="outline" disabled>
                             <AppleIcon className="mr-2 h-5 w-5" />
                             Apple
                         </Button>
@@ -115,7 +120,9 @@ export default function LoginPage() {
                             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
                         <div className="pt-2">
-                            <Button type="submit" className="w-full font-bold">Entrar</Button>
+                            <Button type="submit" className="w-full font-bold" disabled={isLoading}>
+                                {isLoading ? 'Entrando...' : 'Entrar'}
+                            </Button>
                         </div>
                     </form>
                     <div className="text-center text-sm">
