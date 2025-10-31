@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { motion } from 'framer-motion';
 import {
   DollarSign,
   Flame,
@@ -15,18 +13,21 @@ import {
   Star,
   Presentation,
   LogOut,
+  User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import {
-  Sidebar,
-  SidebarBody,
-  SidebarLink
-} from '@/components/ui/sidebar';
+  TopNav,
+  TopNavLink,
+  TopNavBrand,
+  TopNavLinks,
+} from '@/components/ui/top-nav';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendifyLogo } from '@/components/icons';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
 import { useAuth, useUser } from '@/firebase';
+import { Button } from '@/components/ui/button';
 
 export const Logo = () => {
   return (
@@ -35,24 +36,9 @@ export const Logo = () => {
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
       <TrendifyLogo className="h-7 w-7 text-primary" />
-      <motion.span
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="font-semibold text-foreground dark:text-white whitespace-pre"
-      >
+      <span className="font-semibold text-foreground dark:text-white whitespace-pre">
         Trendify
-      </motion.span>
-    </Link>
-  );
-};
-
-export const LogoIcon = () => {
-  return (
-    <Link
-      href="/dashboard"
-      className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
-    >
-      <TrendifyLogo className="h-7 w-7 text-primary" />
+      </span>
     </Link>
   );
 };
@@ -72,9 +58,7 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
   const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
-  const [open, setOpen] = useState(false);
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
   const router = useRouter();
@@ -86,23 +70,23 @@ export default function DashboardLayout({
   };
 
   return (
-    <div
-      className={cn(
-        "rounded-md flex flex-col md:flex-row bg-gray-100 dark:bg-neutral-800 w-full flex-1 h-screen mx-auto border border-neutral-200 dark:border-neutral-700 overflow-hidden"
-      )}
-    >
-      <Sidebar open={open} setOpen={setOpen}>
-        <SidebarBody className="justify-between gap-10">
-          <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-            {open ? <Logo /> : <LogoIcon />}
-            <div className="mt-8 flex flex-col gap-2">
-              {navItems.map((item, idx) => (
-                <SidebarLink key={idx} link={item} />
-              ))}
-            </div>
-          </div>
-          <div className='flex flex-col gap-2'>
-            <SidebarLink
+    <div className="flex flex-col h-screen bg-background">
+      <TopNav>
+        {/* Brand section */}
+        <TopNavBrand>
+          <Logo />
+        </TopNavBrand>
+
+        {/* Main links */}
+        <TopNavLinks>
+          {navItems.map((item, idx) => (
+            <TopNavLink key={idx} link={item} />
+          ))}
+        </TopNavLinks>
+        
+        {/* Right side Actions/Profile */}
+        <TopNavLinks className="max-md:mt-auto">
+           <TopNavLink
               link={{
                 label: "Configurações",
                 href: "/dashboard/settings",
@@ -111,8 +95,8 @@ export default function DashboardLayout({
                 ),
               }}
             />
-             <div onClick={handleLogout} className="cursor-pointer">
-              <SidebarLink
+             <div onClick={handleLogout} className="w-full">
+              <TopNavLink
                 link={{
                   label: "Sair",
                   href: "#",
@@ -122,28 +106,21 @@ export default function DashboardLayout({
                 }}
               />
             </div>
-            <SidebarLink
-              link={{
-                label: isUserLoading ? "Carregando..." : user?.displayName || "Usuário",
-                href: "/dashboard/profile",
-                icon: (
-                   avatar && <Avatar className="size-5">
+            <Link href="/dashboard/profile" className="flex items-center gap-2 group/topnav p-2 rounded-md hover:bg-muted transition-colors w-full">
+                 {avatar && <Avatar className="size-6">
                     <AvatarImage src={user?.photoURL || avatar.imageUrl} alt={avatar.description} />
                     <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
-                ),
-              }}
-            />
-          </div>
-        </SidebarBody>
-      </Sidebar>
-      <main className="flex flex-col flex-1 h-full w-full">
-         <header className="flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 sticky top-0 z-30 md:hidden">
-            <Logo/>
-         </header>
-         <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
-            {children}
-         </div>
+                }
+                <span className='text-foreground text-sm whitespace-pre overflow-hidden'>
+                    {isUserLoading ? "Carregando..." : user?.displayName || "Usuário"}
+                </span>
+            </Link>
+        </TopNavLinks>
+
+      </TopNav>
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+        {children}
       </main>
     </div>
   );
