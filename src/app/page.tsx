@@ -70,9 +70,11 @@ export default function LoginPage() {
                             </div>
                             <Input id="password" type="password" required />
                         </div>
-                        <Link href="/dashboard" className="w-full">
-                            <Button className="w-full font-bold">Sign In</Button>
-                        </Link>
+                        <div className="pt-2">
+                            <Link href="/dashboard" className="w-full">
+                                <Button className="w-full font-bold">Sign In</Button>
+                            </Link>
+                        </div>
                     </div>
                     <div className="text-center text-sm">
                         Don&apos;t have an account?{' '}
