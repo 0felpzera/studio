@@ -56,7 +56,7 @@ export default function DashboardLayout({
 }) {
   const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
   const auth = useAuth();
-  const { user, isUserLoading } = useUser();
+  const { user } = useUser();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -73,11 +73,9 @@ export default function DashboardLayout({
         <div className="flex-1 flex justify-center">
             <Dock className="items-end pb-2 bg-transparent dark:bg-transparent">
               {navItems.map((item) => (
-                <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50">
-                  <Link href={item.href}>
+                 <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={() => router.push(item.href)}>
                     <DockLabel>{item.label}</DockLabel>
                     <DockIcon>{item.icon}</DockIcon>
-                  </Link>
                 </DockItem>
               ))}
             </Dock>
@@ -86,11 +84,9 @@ export default function DashboardLayout({
         <div className="flex items-center gap-2">
             <Dock className="items-end pb-2 bg-transparent dark:bg-transparent">
                 {rightNavItems.map((item) => (
-                    <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50">
-                        <Link href={item.href}>
-                            <DockLabel>{item.label}</DockLabel>
-                            <DockIcon>{item.icon}</DockIcon>
-                        </Link>
+                    <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={() => router.push(item.href)}>
+                        <DockLabel>{item.label}</DockLabel>
+                        <DockIcon>{item.icon}</DockIcon>
                     </DockItem>
                 ))}
                  <DockItem className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={handleLogout}>
