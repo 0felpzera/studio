@@ -42,11 +42,17 @@ export default function SponsoredContentIdeator() {
         title: "Ideias Geradas!",
         description: "Aqui estão alguns conceitos criativos para seu post patrocinado.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao gerar ideias de conteúdo patrocinado:", error);
+      
+      let description = "Não foi possível gerar ideias. Por favor, tente novamente.";
+      if (typeof error.message === 'string' && error.message.includes('503')) {
+        description = "O serviço de IA está sobrecarregado. Por favor, tente novamente em alguns minutos.";
+      }
+
       toast({
         title: "Oh não! Algo deu errado.",
-        description: "Não foi possível gerar ideias. Por favor, tente novamente.",
+        description: description,
         variant: "destructive",
       });
     } finally {
