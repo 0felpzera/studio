@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, doc, writeBatch, serverTimestamp, updateDoc } from "firebase/firestore";
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
@@ -21,33 +24,46 @@ const formSchema = z.object({
   postingFrequency: z.string({ required_error: "A frequência de postagem é obrigatória." }),
 });
 
-type DayPlan = {
-  day: string;
+type ContentTask = {
+  id: string;
+  userId: string;
+  date: any; 
   platform: string;
-  idea: string;
-  completed: boolean;
+  description: string;
+  isCompleted: boolean;
 };
 
-const parseCalendarString = (calendarString: string): DayPlan[] => {
+const parseCalendarString = (calendarString: string, userId: string): Omit<ContentTask, 'id'>[] => {
   const lines = calendarString.trim().split('\n').filter(line => line.trim() !== '');
   return lines.map(line => {
     const [dayPart, ...rest] = line.split(':');
-    const day = dayPart.replace(/\*/g, '').trim();
-    const restString = rest.join(':').trim();
-    
-    const platformMatch = restString.match(/\((.*?)\)/);
-    const platform = platformMatch ? platformMatch[1] : 'Desconhecido';
-    
-    const idea = restString.replace(/\(.*?\)\s*-\s*/, '').trim();
+    const idea = rest.join(':').trim();
+    const platformMatch = idea.match(/\((.*?)\)/);
+    const platform = platformMatch ? platformMatch[1] : 'Reels';
+    const description = idea.replace(/\(.*?\)\s*-\s*/, '').trim();
 
-    return { day, platform, idea, completed: false };
+    return {
+      userId,
+      date: serverTimestamp(),
+      platform,
+      description,
+      isCompleted: false
+    };
   });
 };
 
 export default function ContentCalendar() {
   const [isLoading, setIsLoading] = useState(false);
-  const [calendar, setCalendar] = useState<DayPlan[]>([]);
   const { toast } = useToast();
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+
+  const contentTasksQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'users', user.uid, 'contentTasks');
+  }, [firestore, user]);
+
+  const { data: calendar, isLoading: isLoadingTasks } = useCollection<ContentTask>(contentTasksQuery);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,15 +75,27 @@ export default function ContentCalendar() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!user || !firestore) {
+      toast({ title: "Erro", description: "Você precisa estar logado para gerar um plano.", variant: "destructive" });
+      return;
+    }
+
     setIsLoading(true);
-    setCalendar([]);
+    
     try {
       const result: GenerateWeeklyContentCalendarOutput = await generateWeeklyContentCalendar(values);
-      const parsedCalendar = parseCalendarString(result.calendar);
-      setCalendar(parsedCalendar);
+      const newTasks = parseCalendarString(result.calendar, user.uid);
+      
+      const batch = writeBatch(firestore);
+      newTasks.forEach(task => {
+        const docRef = doc(collection(firestore, 'users', user.uid, 'contentTasks'));
+        batch.set(docRef, task);
+      });
+      await batch.commit();
+
       toast({
         title: "Sucesso!",
-        description: "Seu novo plano de conteúdo está pronto.",
+        description: "Seu novo plano de conteúdo está pronto e salvo.",
         variant: "default"
       });
     } catch (error: any) {
@@ -86,16 +114,14 @@ export default function ContentCalendar() {
     }
   }
 
-  const toggleTaskCompletion = (index: number) => {
-    setCalendar(prev => 
-      prev.map((task, i) => 
-        i === index ? { ...task, completed: !task.completed } : task
-      )
-    );
+  const toggleTaskCompletion = (taskId: string, currentStatus: boolean) => {
+    if (!user || !firestore) return;
+    const taskRef = doc(firestore, 'users', user.uid, 'contentTasks', taskId);
+    updateDocumentNonBlocking(taskRef, { isCompleted: !currentStatus });
   };
-
-  const completedTasks = calendar.filter(task => task.completed).length;
-  const totalTasks = calendar.length;
+  
+  const completedTasks = calendar?.filter(task => task.isCompleted).length || 0;
+  const totalTasks = calendar?.length || 0;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
 
   return (
@@ -133,14 +159,10 @@ export default function ContentCalendar() {
                           placeholder="Ex: Atingir 10k seguidores em 3 meses" 
                           className="resize-none"
                           {...field} 
-                          onChange={(e) => {
-                            field.onChange(e);
-                            e.target.style.height = 'auto';
-                            e.target.style.height = `${e.target.scrollHeight}px`;
-                          }}
-                          onFocus={(e) => {
-                            e.target.style.height = 'auto';
-                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          onInput={(e) => {
+                            const target = e.target as HTMLTextAreaElement;
+                            target.style.height = 'auto';
+                            target.style.height = `${target.scrollHeight}px`;
                           }}
                           />
                       </FormControl>
@@ -172,7 +194,7 @@ export default function ContentCalendar() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isLoading} className="w-full font-bold">
+                <Button type="submit" disabled={isLoading || isUserLoading} className="w-full font-bold">
                   {isLoading ? <Loader2 className="animate-spin" /> : "Gerar Meu Plano"}
                 </Button>
               </form>
@@ -181,7 +203,7 @@ export default function ContentCalendar() {
         </Card>
       </div>
       <div className="md:col-span-2">
-        {calendar.length > 0 && (
+        {totalTasks > 0 && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="font-headline">Progresso Semanal</CardTitle>
@@ -189,36 +211,35 @@ export default function ContentCalendar() {
             </CardHeader>
             <CardContent>
               <div className="w-full bg-muted rounded-full h-2.5">
-                <div className="bg-accent h-2.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                <div className="bg-primary h-2.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
               </div>
             </CardContent>
           </Card>
         )}
         <div className="space-y-4">
-          {isLoading && (
+          {(isLoading || isLoadingTasks) && (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="size-12 animate-spin text-primary" />
             </div>
           )}
-          {!isLoading && calendar.length === 0 && (
+          {!isLoading && !isLoadingTasks && totalTasks === 0 && (
             <div className="flex flex-col items-center justify-center h-64 text-center rounded-lg border-2 border-dashed">
                 <h3 className="text-xl font-semibold">Seu plano aparecerá aqui</h3>
                 <p className="text-muted-foreground">Preencha o formulário para começar!</p>
             </div>
           )}
-          {calendar.map((plan, index) => (
-            <Card key={index} className={`transition-all ${plan.completed ? 'bg-muted' : ''}`}>
-              <CardHeader className="flex flex-row items-center justify-between">
+          {calendar?.map((plan) => (
+            <Card key={plan.id} className={`transition-all ${plan.isCompleted ? 'bg-muted/50' : ''}`}>
+               <CardHeader className="flex flex-row items-center justify-between">
                 <div className="space-y-1.5">
                   <CardTitle className="font-headline flex items-center gap-2">
-                    {plan.day}
                     <span className="text-sm font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">{plan.platform}</span>
                   </CardTitle>
-                  <CardDescription className={plan.completed ? 'line-through' : ''}>{plan.idea}</CardDescription>
+                  <CardDescription className={plan.isCompleted ? 'line-through text-muted-foreground/80' : ''}>{plan.description}</CardDescription>
                 </div>
-                 <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer" onClick={() => toggleTaskCompletion(index)}>
-                    <Checkbox id={`task-${index}`} checked={plan.completed} onCheckedChange={() => toggleTaskDetection(index)} />
-                    <label htmlFor={`task-${index}`} className="text-sm font-medium leading-none cursor-pointer">
+                 <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer" onClick={() => toggleTaskCompletion(plan.id, plan.isCompleted)}>
+                    <Checkbox id={`task-${plan.id}`} checked={plan.isCompleted} />
+                    <label htmlFor={`task-${plan.id}`} className="text-sm font-medium leading-none cursor-pointer">
                       Feito
                     </label>
                   </div>

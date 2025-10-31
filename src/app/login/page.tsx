@@ -1,9 +1,15 @@
+'use client';
+import { useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ViralBoostLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAuth, useUser } from '@/firebase';
+import { initiateAnonymousSignIn } from '@/firebase/non-blocking-login';
+import { useToast } from '@/hooks/use-toast';
 
 function AppleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -26,6 +32,42 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 }
 
 export default function LoginPage() {
+    const auth = useAuth();
+    const { user, isUserLoading } = useUser();
+    const router = useRouter();
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (!isUserLoading && user) {
+            router.push('/dashboard');
+        }
+    }, [user, isUserLoading, router]);
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            initiateAnonymousSignIn(auth);
+            toast({
+                title: "Login...",
+                description: "Entrando como usuário anônimo.",
+            });
+        } catch (error) {
+             toast({
+                title: "Erro no Login",
+                description: "Não foi possível fazer login anonimamente.",
+                variant: 'destructive'
+            });
+        }
+    };
+    
+    if (isUserLoading || user) {
+        return (
+            <div className="flex min-h-screen w-full items-center justify-center bg-background">
+                <p>Carregando...</p>
+            </div>
+        );
+    }
+
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
             <Card className="w-full max-w-md mx-auto">
@@ -56,7 +98,7 @@ export default function LoginPage() {
                             <span className="bg-card px-2 text-muted-foreground">Ou continue com</span>
                         </div>
                     </div>
-                    <div className="space-y-4">
+                    <form onSubmit={handleLogin} className="space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="email">E-mail</Label>
                             <Input id="email" type="email" placeholder="criador@exemplo.com" required />
@@ -71,11 +113,9 @@ export default function LoginPage() {
                             <Input id="password" type="password" required />
                         </div>
                         <div className="pt-2">
-                            <Link href="/dashboard" className="w-full">
-                                <Button className="w-full font-bold">Entrar</Button>
-                            </Link>
+                            <Button type="submit" className="w-full font-bold">Entrar</Button>
                         </div>
-                    </div>
+                    </form>
                     <div className="text-center text-sm">
                         Não tem uma conta?{' '}
                         <Link href="#" className="underline" prefetch={false}>
