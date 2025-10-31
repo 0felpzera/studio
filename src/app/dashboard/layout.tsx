@@ -14,8 +14,9 @@ import {
   CalendarCheck,
   Star,
   Presentation,
+  LogOut,
 } from 'lucide-react';
-
+import { useRouter } from 'next/navigation';
 import {
   Sidebar,
   SidebarBody,
@@ -23,9 +24,9 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendifyLogo } from '@/components/icons';
-import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/firebase';
 
 export const Logo = () => {
   return (
@@ -74,6 +75,14 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
   const [open, setOpen] = useState(false);
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    auth.signOut().then(() => {
+      router.push('/login');
+    });
+  };
 
   return (
     <div
@@ -95,16 +104,27 @@ export default function DashboardLayout({
             <SidebarLink
               link={{
                 label: "Configurações",
-                href: "#",
+                href: "/dashboard/settings",
                 icon: (
                   <Settings className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
                 ),
               }}
             />
+             <div onClick={handleLogout} className="cursor-pointer">
+              <SidebarLink
+                link={{
+                  label: "Sair",
+                  href: "#",
+                  icon: (
+                    <LogOut className="text-neutral-700 dark:text-neutral-200 h-5 w-5 flex-shrink-0" />
+                  ),
+                }}
+              />
+            </div>
             <SidebarLink
               link={{
                 label: "Jane Doe",
-                href: "#",
+                href: "/dashboard/profile",
                 icon: (
                    avatar && <Avatar className="size-5">
                     <AvatarImage src={avatar.imageUrl} alt={avatar.description} />
