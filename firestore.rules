@@ -38,11 +38,7 @@ service cloud.firestore {
      * @principle Protects the root of the database, preventing unintended access and modifications.
      */
     match /{document=**} {
-      allow get: if false;
-      allow list: if false;
-      allow create: if false;
-      allow update: if false;
-      allow delete: if false;
+      allow read, write: if false;
     }
 
     /**
@@ -75,8 +71,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/instagramAccounts/{instagramAccountId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
+      allow read: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
@@ -93,8 +88,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/tiktokAccounts/{tiktokAccountId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
+      allow read: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
@@ -111,8 +105,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/goals/{goalId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
+      allow read: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
@@ -129,8 +122,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/contentTasks/{contentTaskId} {
-      allow get: if isSignedIn() && isOwner(userId);
-      allow list: if isSignedIn() && isOwner(userId);
+      allow read: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
