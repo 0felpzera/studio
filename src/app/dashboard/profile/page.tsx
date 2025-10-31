@@ -10,7 +10,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Upload, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { updateProfile } from "firebase/auth";
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, setDoc } from "firebase/firestore";
 import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
@@ -53,9 +53,10 @@ export default function ProfilePage() {
             // Update Firebase Auth profile
             await updateProfile(auth.currentUser, { displayName });
 
-            // Update Firestore document
+            // Update/Create Firestore document
             const userDocRef = doc(firestore, 'users', user.uid);
-            await updateDoc(userDocRef, { name: displayName });
+            // Use setDoc with merge:true to create or update the document
+            await setDoc(userDocRef, { name: displayName }, { merge: true });
 
             toast({
                 title: "Sucesso!",
