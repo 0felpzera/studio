@@ -118,7 +118,7 @@ export default function DashboardLayout({
       </Sidebar>
       <main className="flex flex-col flex-1 h-full w-full">
          <header className="flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 sticky top-0 z-30 md:hidden">
-            <Link href="/dashboard"><Logo/></Link>
+            <Logo/>
          </header>
          <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
             {children}
