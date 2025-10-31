@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -45,6 +45,8 @@ import {
   writeBatch,
   serverTimestamp,
   Timestamp,
+  query,
+  orderBy
 } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Progress } from '@/components/ui/progress';
@@ -98,7 +100,9 @@ export default function ContentCalendar() {
 
   const contentTasksQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return collection(firestore, 'users', user.uid, 'contentTasks');
+    // Allow reading of empty collections by applying rules to the path, not the resource
+    const contentTasksCollection = collection(firestore, 'users', user.uid, 'contentTasks');
+    return query(contentTasksCollection);
   }, [firestore, user]);
 
   const { data: calendar, isLoading: isLoadingTasks } =
