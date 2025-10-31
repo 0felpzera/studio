@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React from 'react';
 import Link from 'next/link';
 import {
   DollarSign,
@@ -46,7 +45,7 @@ export const Logo = () => {
 
 const navItems = [
   { name: 'Dashboard', link: '/dashboard', icon: <LayoutDashboard className="size-4" /> },
-  { name: 'Meu Plano', link: '/dashboard/plan', icon: <CalendarCheck className="size-4" /> },
+  { name: 'Plano', link: '/dashboard/plan', icon: <CalendarCheck className="size-4" /> },
   { name: 'Ideias', link: '/dashboard/ideas', icon: <Lightbulb className="size-4" /> },
   { name: 'Tendências', link: '/dashboard/trends', icon: <Flame className="size-4" /> },
   { name: 'Análise', link: '/dashboard/analysis', icon: <Presentation className="size-4" /> },
@@ -71,7 +70,7 @@ export default function DashboardLayout({
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <header className="flex h-20 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <header className="flex h-20 items-center justify-between gap-4 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <Logo />
 
         <div className="absolute left-1/2 -translate-x-1/2">
