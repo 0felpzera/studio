@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,16 +5,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useUser } from "@/firebase";
+import { useAuth, useUser, useFirestore } from "@/firebase";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Upload } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { updateProfile } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
     const { user } = useUser();
+    const auth = useAuth();
+    const firestore = useFirestore();
+    const { toast } = useToast();
     const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
     const [displayName, setDisplayName] = useState('');
     const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if(user) {
@@ -23,6 +29,50 @@ export default function ProfilePage() {
             setEmail(user.email || '');
         }
     }, [user]);
+
+    const handleSaveChanges = async () => {
+        if (!user || !auth.currentUser) {
+            toast({
+                title: "Erro",
+                description: "Você não está autenticado.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        if (displayName === user.displayName) {
+             toast({
+                title: "Nenhuma alteração",
+                description: "Seu nome não foi modificado.",
+            });
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            // Update Firebase Auth profile
+            await updateProfile(auth.currentUser, { displayName });
+
+            // Update Firestore document
+            const userDocRef = doc(firestore, 'users', user.uid);
+            await updateDoc(userDocRef, { name: displayName });
+
+            toast({
+                title: "Sucesso!",
+                description: "Seu perfil foi atualizado.",
+            });
+        } catch (error) {
+            console.error("Erro ao atualizar perfil:", error);
+            toast({
+                title: "Oh não! Algo deu errado.",
+                description: "Não foi possível atualizar seu perfil. Por favor, tente novamente.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
 
     return (
         <div className="space-y-6">
@@ -66,7 +116,10 @@ export default function ProfilePage() {
                     </div>
                 </CardContent>
                 <CardContent>
-                     <Button>Salvar Alterações</Button>
+                     <Button onClick={handleSaveChanges} disabled={isLoading}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : null}
+                        {isLoading ? 'Salvando...' : 'Salvar Alterações'}
+                    </Button>
                 </CardContent>
             </Card>
         </div>
