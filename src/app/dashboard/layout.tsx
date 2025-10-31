@@ -71,7 +71,7 @@ export default function DashboardLayout({
         <Logo />
 
         <div className="flex-1 flex justify-center">
-            <Dock className="items-end pb-2 bg-transparent dark:bg-transparent">
+            <Dock magnification={60} distance={60} className="items-end pb-2 bg-transparent dark:bg-transparent">
               {navItems.map((item) => (
                  <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={() => router.push(item.href)}>
                     <DockLabel>{item.label}</DockLabel>
@@ -82,7 +82,7 @@ export default function DashboardLayout({
         </div>
 
         <div className="flex items-center gap-2">
-            <Dock className="items-end pb-2 bg-transparent dark:bg-transparent">
+            <Dock magnification={60} distance={60} className="items-end pb-2 bg-transparent dark:bg-transparent">
                 {rightNavItems.map((item) => (
                     <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={() => router.push(item.href)}>
                         <DockLabel>{item.label}</DockLabel>
