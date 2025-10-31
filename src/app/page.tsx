@@ -16,13 +16,12 @@ function AppleIcon(props: React.SVGProps<SVGSVGElement>) {
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
-        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10Z" />
-            <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" />
-            <path d="M12 2v1.4a6.6 6.6 0 0 1 0 17.2V22" />
-            <path d="M22 12h-1.4a6.6 6.6-0 0 1-17.2 0H2" />
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 48 48">
+            <path fill="#FFC107" d="M43.611 20.083H42V20H24v8h11.303c-1.649 4.657-6.08 8-11.303 8c-6.627 0-12-5.373-12-12s5.373-12 12-12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C12.955 4 4 12.955 4 24s8.955 20 20 20s20-8.955 20-20c0-1.341-.138-2.65-.389-3.917z" />
+            <path fill="#FF3D00" d="M6.306 14.691l6.571 4.819C14.655 15.108 18.961 12 24 12c3.059 0 5.842 1.154 7.961 3.039l5.657-5.657C34.046 6.053 29.268 4 24 4C16.318 4 9.656 8.337 6.306 14.691z" />
+            <path fill="#4CAF50" d="M24 44c5.166 0 9.86-1.977 13.409-5.192l-6.19-5.238A11.91 11.91 0 0 1 24 36c-5.223 0-9.655-3.449-11.303-8H6.306C9.656 39.663 16.318 44 24 44z" />
+            <path fill="#1976D2" d="M43.611 20.083H42V20H24v8h11.303c-.792 2.237-2.231 4.166-4.087 5.571l6.19 5.238C44.598 33.355 48 27.435 48 20c0-1.341-.138-2.65-.389-3.917z" />
         </svg>
-
     )
 }
 
@@ -30,26 +29,26 @@ export default function LoginPage() {
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
             <Card className="w-full max-w-md mx-auto">
-                <CardHeader className="text-center space-y-4">
-                    <div className="inline-flex justify-center items-center gap-2">
+                <CardHeader className="text-center space-y-4 pt-8">
+                    <div className="inline-flex justify-center items-center gap-3">
                         <ViralBoostLogo className="h-8 w-8 text-primary" />
                         <h1 className="text-3xl font-headline font-bold text-foreground">ViralBoost AI</h1>
                     </div>
-                    <CardTitle className="text-2xl font-headline">Welcome Back, Creator!</CardTitle>
+                    <CardTitle className="text-2xl font-headline !mt-2">Welcome Back, Creator!</CardTitle>
                     <CardDescription>Sign in to transform your content strategy.</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
                         <Button variant="outline">
-                            <GoogleIcon className="mr-2 h-4 w-4" />
+                            <GoogleIcon className="mr-2 h-5 w-5" />
                             Google
                         </Button>
                         <Button variant="outline">
-                            <AppleIcon className="mr-2 h-4 w-4" />
+                            <AppleIcon className="mr-2 h-5 w-5" />
                             Apple
                         </Button>
                     </div>
-                    <div className="relative my-6">
+                    <div className="relative">
                         <div className="absolute inset-0 flex items-center">
                             <span className="w-full border-t" />
                         </div>
@@ -75,7 +74,7 @@ export default function LoginPage() {
                             <Button className="w-full font-bold">Sign In</Button>
                         </Link>
                     </div>
-                    <div className="mt-6 text-center text-sm">
+                    <div className="text-center text-sm">
                         Don&apos;t have an account?{' '}
                         <Link href="#" className="underline" prefetch={false}>
                             Sign up
