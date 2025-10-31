@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
@@ -124,7 +125,20 @@ export default function ContentCalendar() {
                     <FormItem>
                       <FormLabel>Seus Objetivos</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Atingir 10k seguidores em 3 meses" {...field} />
+                        <Textarea 
+                          placeholder="Ex: Atingir 10k seguidores em 3 meses" 
+                          className="resize-none"
+                          {...field} 
+                          onChange={(e) => {
+                            field.onChange(e);
+                            e.target.style.height = 'auto';
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          }}
+                          onFocus={(e) => {
+                            e.target.style.height = 'auto';
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          }}
+                          />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
