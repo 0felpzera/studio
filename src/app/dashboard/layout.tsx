@@ -26,7 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendifyLogo } from '@/components/icons';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 
 export const Logo = () => {
   return (
@@ -76,6 +76,7 @@ export default function DashboardLayout({
   const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
   const [open, setOpen] = useState(false);
   const auth = useAuth();
+  const { user, isUserLoading } = useUser();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -123,12 +124,12 @@ export default function DashboardLayout({
             </div>
             <SidebarLink
               link={{
-                label: "Jane Doe",
+                label: isUserLoading ? "Carregando..." : user?.displayName || "Usuário",
                 href: "/dashboard/profile",
                 icon: (
                    avatar && <Avatar className="size-5">
-                    <AvatarImage src={avatar.imageUrl} alt={avatar.description} />
-                    <AvatarFallback>U</AvatarFallback>
+                    <AvatarImage src={user?.photoURL || avatar.imageUrl} alt={avatar.description} />
+                    <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                 ),
               }}
