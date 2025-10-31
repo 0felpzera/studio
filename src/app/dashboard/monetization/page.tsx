@@ -4,9 +4,9 @@ export default function MonetizationPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1.5">
-        <h1 className="text-3xl font-headline font-bold tracking-tight">Assistente de Monetização</h1>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Assistente de Monetização</h1>
         <p className="text-muted-foreground">
-          Gere um media kit profissional e obtenha sugestões de preços inteligentes.
+          Gere um mídia kit profissional e obtenha sugestões de preços.
         </p>
       </header>
       <MonetizationAssistant />

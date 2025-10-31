@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ViralBoostLogo } from '@/components/icons';
+import { TrendifyLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -73,8 +73,8 @@ export default function LoginPage() {
             <Card className="w-full max-w-md mx-auto">
                 <CardHeader className="text-center space-y-4 pt-8">
                     <div className="inline-flex justify-center items-center gap-3">
-                        <ViralBoostLogo className="h-8 w-8 text-primary" />
-                        <h1 className="text-3xl font-headline font-bold text-foreground">ViralBoost AI</h1>
+                        <TrendifyLogo className="h-8 w-8 text-primary" />
+                        <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
                     </div>
                     <CardTitle className="text-2xl font-headline !mt-2">Boas-vindas de volta, Criador!</CardTitle>
                     <CardDescription>Faça login para transformar sua estratégia de conteúdo.</CardDescription>

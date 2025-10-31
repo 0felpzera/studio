@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, doc, writeBatch, serverTimestamp, updateDoc } from "firebase/firestore";
 import { addDocumentNonBlocking, updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { Progress } from "@/components/ui/progress";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
@@ -34,7 +35,7 @@ type ContentTask = {
 };
 
 const parseCalendarString = (calendarString: string, userId: string): Omit<ContentTask, 'id'>[] => {
-  const lines = calendarString.trim().split('\n').filter(line => line.trim() !== '');
+  const lines = calendarString.trim().split('\n').filter(line => line.trim() !== '' && line.includes(':'));
   return lines.map(line => {
     const [dayPart, ...rest] = line.split(':');
     const idea = rest.join(':').trim();
@@ -129,7 +130,7 @@ export default function ContentCalendar() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Defina Sua Estratégia</CardTitle>
+            <CardTitle className="font-bold">Defina Sua Estratégia</CardTitle>
             <CardDescription>Diga à IA o que você quer alcançar.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -206,13 +207,11 @@ export default function ContentCalendar() {
         {totalTasks > 0 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="font-headline">Progresso Semanal</CardTitle>
+              <CardTitle className="font-bold">Progresso Semanal</CardTitle>
               <CardDescription>Você completou {completedTasks} de {totalTasks} tarefas esta semana.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="w-full bg-muted rounded-full h-2.5">
-                <div className="bg-primary h-2.5 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
-              </div>
+              <Progress value={progress} />
             </CardContent>
           </Card>
         )}
@@ -232,7 +231,7 @@ export default function ContentCalendar() {
             <Card key={plan.id} className={`transition-all ${plan.isCompleted ? 'bg-muted/50' : ''}`}>
                <CardHeader className="flex flex-row items-center justify-between">
                 <div className="space-y-1.5">
-                  <CardTitle className="font-headline flex items-center gap-2">
+                  <CardTitle className="font-bold flex items-center gap-2">
                     <span className="text-sm font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">{plan.platform}</span>
                   </CardTitle>
                   <CardDescription className={plan.isCompleted ? 'line-through text-muted-foreground/80' : ''}>{plan.description}</CardDescription>

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-export function ViralBoostLogo({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+export function TrendifyLogo({ className, ...props }: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -13,8 +13,9 @@ export function ViralBoostLogo({ className, ...props }: React.SVGProps<SVGSVGEle
       className={cn("size-6", className)}
       {...props}
     >
-      <path d="M3 3v18h18" />
-      <path d="m19 9-5 5-4-4-3 3" />
+        <circle cx="12" cy="12" r="10" />
+        <polyline points="8 12 12 8 16 12" />
+        <line x1="12" y1="16" x2="12" y2="8" />
     </svg>
   );
 }

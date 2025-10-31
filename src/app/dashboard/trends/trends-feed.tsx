@@ -28,12 +28,14 @@ export default function TrendsFeed() {
     : allTrends.filter(trend => trend.category === selectedNiche);
 
   return (
-    <Tabs defaultValue="Todos" onValueChange={setSelectedNiche} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
-        {niches.map(niche => (
-          <TabsTrigger key={niche} value={niche}>{niche}</TabsTrigger>
-        ))}
-      </TabsList>
+    <div className="w-full">
+      <Tabs defaultValue="Todos" onValueChange={setSelectedNiche}>
+        <TabsList className="grid w-full grid-cols-2 sm:flex sm:flex-wrap sm:w-auto">
+          {niches.map(niche => (
+            <TabsTrigger key={niche} value={niche}>{niche}</TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <div className="mt-6">
         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredTrends.map(trend => {
@@ -51,7 +53,7 @@ export default function TrendsFeed() {
                       className="object-cover aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-105"
                     />
                   )}
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                    <div className="absolute bottom-0 left-0 p-4">
                         <h3 className="font-semibold text-white">{trend.title}</h3>
                         <p className="text-sm text-white/80">{trend.views} visualizações</p>
@@ -65,6 +67,6 @@ export default function TrendsFeed() {
           })}
         </div>
       </div>
-    </Tabs>
+    </div>
   );
 }

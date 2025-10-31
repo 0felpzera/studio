@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/componentsui/badge";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
@@ -60,7 +60,7 @@ export default function VideoIdeasGenerator() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Inspire-se</CardTitle>
+            <CardTitle className="font-bold">Inspire-se</CardTitle>
             <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -127,7 +127,7 @@ export default function VideoIdeasGenerator() {
                     <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-lg">{idea.title}</h3>
-                            <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className={idea.type === 'Trending' ? 'bg-accent text-accent-foreground' : ''}>
+                            <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className={idea.type === 'Trending' ? 'bg-primary/10 text-primary' : ''}>
                                 {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
                             </Badge>
                         </div>
@@ -135,7 +135,7 @@ export default function VideoIdeasGenerator() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
-                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-background/50 p-4 rounded-md">
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted p-4 rounded-md">
                         <h4 className="font-semibold">Esboço do Roteiro:</h4>
                         <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
                     </div>

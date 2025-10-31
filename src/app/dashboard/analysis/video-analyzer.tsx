@@ -88,12 +88,12 @@ export default function VideoAnalyzer() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Envie Seu Vídeo</CardTitle>
-            <CardDescription>Selecione um arquivo de vídeo do seu dispositivo para iniciar a análise.</CardDescription>
+            <CardTitle className="font-bold">Envie Seu Vídeo</CardTitle>
+            <CardDescription>Selecione um arquivo de vídeo para iniciar a análise.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div 
-              className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50"
+              className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted"
               onClick={() => fileInputRef.current?.click()}
             >
               {videoPreview ? (
@@ -149,7 +149,7 @@ export default function VideoAnalyzer() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Análise do Gancho (Primeiros 3s)</CardTitle>
+                <CardTitle className="font-bold">Análise do Gancho (Primeiros 3s)</CardTitle>
                 <CardDescription>{analysisResult.hookAnalysis.effectiveness}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -162,7 +162,7 @@ export default function VideoAnalyzer() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Qualidade Técnica</CardTitle>
+                <CardTitle className="font-bold">Qualidade Técnica</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -179,7 +179,7 @@ export default function VideoAnalyzer() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Ritmo & Fluxo</CardTitle>
+                <CardTitle className="font-bold">Ritmo & Fluxo</CardTitle>
                 <CardDescription>{analysisResult.pacing.assessment}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -192,13 +192,13 @@ export default function VideoAnalyzer() {
             
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Legenda & Hashtags</CardTitle>
+                <CardTitle className="font-bold">Legenda & Hashtags</CardTitle>
                 <CardDescription>Otimizado para engajamento.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <h4 className="font-semibold text-sm mb-2">Legenda Sugerida:</h4>
-                  <p className="text-sm p-3 bg-muted/50 rounded-md">{analysisResult.captionSuggestions}</p>
+                  <p className="text-sm p-3 bg-muted rounded-md">{analysisResult.captionSuggestions}</p>
                 </div>
                 <div>
                   <h4 className="font-semibold text-sm mb-2">Hashtags Sugeridas:</h4>

@@ -3,14 +3,13 @@
 import Link from 'next/link';
 import {
   Users,
-  BarChart2,
-  ListVideo,
   ThumbsUp,
   Flame,
   CalendarDays,
   Film,
   ChevronRight,
   Sparkles,
+  ListVideo,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -55,14 +54,14 @@ const upcomingPosts = [
     title: 'Trend do Momento',
     time: 'Hoje, 14:00',
     icon: CalendarDays,
-    color: 'text-sky-400',
+    color: 'text-sky-500',
   },
   {
     platform: 'Reels',
     title: 'Tutorial de Make',
     time: 'Amanhã, 10:00',
     icon: Film,
-    color: 'text-rose-400',
+    color: 'text-rose-500',
   },
 ];
 
@@ -76,25 +75,13 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1.5">
-        <h1 className="text-3xl font-headline font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           Olá, Criador! 👋
         </h1>
         <p className="text-muted-foreground">
-          Seu painel de comando para dominar as redes sociais
+          Seu painel de comando para dominar as redes sociais.
         </p>
       </header>
-
-      <Card className="bg-gradient-to-r from-violet-600/20 to-indigo-600/20">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="space-y-1.5">
-            <CardTitle>Conecte suas redes sociais</CardTitle>
-            <CardDescription>
-              Sincronize Instagram e TikTok para análises personalizadas.
-            </CardDescription>
-          </div>
-          <Button>Conectar Agora</Button>
-        </CardHeader>
-      </Card>
 
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -116,7 +103,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Próximos Posts</CardTitle>
+            <CardTitle className="font-bold">Próximos Posts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {upcomingPosts.map((post) => (
@@ -134,7 +121,7 @@ export default function DashboardPage() {
             ))}
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/dashboard/plan">Ver Calendário Completo</Link>
             </Button>
           </CardFooter>
@@ -142,25 +129,26 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline flex items-center gap-2">
+            <CardTitle className="font-bold flex items-center gap-2">
               Tendências em Alta <Flame className="h-5 w-5 text-orange-400" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
               {trendingTopics.map((trend) => (
-                <div
-                  key={trend.title}
-                  className="flex items-center justify-between rounded-md p-3 hover:bg-muted"
-                >
-                  <p className="font-medium">{trend.title}</p>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                </div>
+                <Link key={trend.title} href="/dashboard/trends">
+                  <div
+                    className="flex items-center justify-between rounded-md p-3 hover:bg-muted cursor-pointer"
+                  >
+                    <p className="font-medium">{trend.title}</p>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                </Link>
               ))}
             </div>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
+            <Button asChild variant="outline" className="w-full">
               <Link href="/dashboard/trends">Ver Todas as Tendências</Link>
             </Button>
           </CardFooter>

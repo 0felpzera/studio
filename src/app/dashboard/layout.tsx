@@ -35,14 +35,14 @@ import {
   SidebarGroupLabel
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { ViralBoostLogo } from '@/components/icons';
+import { TrendifyLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const navItems = [
   { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { href: '/dashboard/plan', icon: CalendarCheck, label: 'Meu Plano' },
-  { href: '/dashboard/ideas', icon: Lightbulb, label: 'Ideias de Vídeo' },
+  { href: '/dashboard/ideas', icon: Lightbulb, label: 'Ideias' },
   { href: '/dashboard/trends', icon: Flame, label: 'Tendências' },
   { href: '/dashboard/analysis', icon: Presentation, label: 'Análise' },
   { href: '/dashboard/monetization', icon: DollarSign, label: 'Monetização' },
@@ -63,9 +63,9 @@ export default function DashboardLayout({
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <ViralBoostLogo className="size-7 text-primary" />
-            <h2 className="text-xl font-headline font-semibold text-primary">
-              ViralBoost
+            <TrendifyLogo className="size-7 text-primary" />
+            <h2 className="text-lg font-headline font-semibold">
+              Trendify
             </h2>
           </div>
         </SidebarHeader>
@@ -109,12 +109,12 @@ export default function DashboardLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 items-center justify-between gap-4 border-b bg-card/50 px-4 lg:h-[60px] lg:px-6">
+        <header className="flex h-14 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 lg:h-[60px] lg:px-6 sticky top-0 z-30">
             <SidebarTrigger className="flex md:hidden" />
             <div className="flex-1">
                 {/* Header content can go here */}
             </div>
-            <Button>Melhorar Plano</Button>
+            <Button variant="outline">Melhorar Plano</Button>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>

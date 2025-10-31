@@ -50,14 +50,14 @@ export default function MonetizationAssistant() {
       const response: GenerateMediaKitOutput = await generateMediaKit(formattedInput);
       setResult(response);
       toast({
-        title: "Media Kit Pronto!",
-        description: "Seu media kit profissional e preços foram gerados.",
+        title: "Mídia Kit Pronto!",
+        description: "Seu mídia kit profissional e preços foram gerados.",
       });
     } catch (error) {
-      console.error("Erro ao gerar media kit:", error);
+      console.error("Erro ao gerar mídia kit:", error);
       toast({
         title: "Oh não! Algo deu errado.",
-        description: "Não foi possível gerar seu media kit. Por favor, tente novamente.",
+        description: "Não foi possível gerar seu mídia kit. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -70,8 +70,8 @@ export default function MonetizationAssistant() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Suas Métricas</CardTitle>
-            <CardDescription>Forneça suas estatísticas mais recentes para um media kit preciso.</CardDescription>
+            <CardTitle className="font-bold">Suas Métricas</CardTitle>
+            <CardDescription>Forneça suas estatísticas mais recentes para um mídia kit preciso.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -119,7 +119,7 @@ export default function MonetizationAssistant() {
                   </FormItem>
                 )} />
                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <> <DollarSign className="mr-2" />Gerar Media Kit</>}
+                  {isLoading ? <Loader2 className="animate-spin" /> : <> <DollarSign className="mr-2" />Gerar Mídia Kit</>}
                 </Button>
               </form>
             </Form>
@@ -142,7 +142,7 @@ export default function MonetizationAssistant() {
           {!isLoading && !result && (
             <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
                 <DollarSign className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Seu media kit aparecerá aqui</h3>
+                <h3 className="text-xl font-semibold mt-4">Seu mídia kit aparecerá aqui</h3>
                 <p className="text-muted-foreground">Preencha suas métricas para gerar seu kit.</p>
             </div>
           )}
@@ -150,7 +150,7 @@ export default function MonetizationAssistant() {
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Preços Sugeridos</CardTitle>
+                  <CardTitle className="font-bold">Preços Sugeridos</CardTitle>
                   <CardDescription>Com base em suas métricas e nicho, aqui estão alguns pontos de partida.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -161,11 +161,11 @@ export default function MonetizationAssistant() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Conteúdo do Media Kit</CardTitle>
-                  <CardDescription>Copie este conteúdo para o seu media kit profissional.</CardDescription>
+                  <CardTitle className="font-bold">Conteúdo do Mídia Kit</CardTitle>
+                  <CardDescription>Copie este conteúdo para o seu mídia kit profissional.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans bg-background/50 p-4 rounded-md">
+                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans bg-muted p-4 rounded-md">
                      {result.mediaKitContent}
                    </div>
                 </CardContent>

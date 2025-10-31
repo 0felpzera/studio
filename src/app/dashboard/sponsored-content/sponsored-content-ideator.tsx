@@ -65,7 +65,7 @@ export default function SponsoredContentIdeator() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Detalhes da Parceria</CardTitle>
+            <CardTitle className="font-bold">Detalhes da Parceria</CardTitle>
             <CardDescription>Descreva o produto que você está promovendo.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -129,7 +129,7 @@ export default function SponsoredContentIdeator() {
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Ideias de Conteúdo Criativas</CardTitle>
+                  <CardTitle className="font-bold">Ideias de Conteúdo Criativas</CardTitle>
                   <CardDescription>Aqui estão 3 maneiras autênticas de apresentar o produto.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -142,7 +142,7 @@ export default function SponsoredContentIdeator() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Formatos Sugeridos</CardTitle>
+                  <CardTitle className="font-bold">Formatos Sugeridos</CardTitle>
                   <CardDescription>Esses formatos têm bom desempenho para o seu nicho.</CardDescription>
                 </CardHeader>
                 <CardContent>
