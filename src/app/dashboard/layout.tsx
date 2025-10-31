@@ -17,6 +17,7 @@ import {
   BarChart2,
   ListVideo,
   ThumbsUp,
+  Presentation,
 } from 'lucide-react';
 
 import {
@@ -43,6 +44,7 @@ const navItems = [
   { href: '/dashboard/plan', icon: CalendarCheck, label: 'Meu Plano' },
   { href: '/dashboard/ideas', icon: Lightbulb, label: 'Ideias de Vídeo' },
   { href: '/dashboard/trends', icon: Flame, label: 'Tendências' },
+  { href: '/dashboard/analysis', icon: Presentation, label: 'Análise' },
   { href: '/dashboard/monetization', icon: DollarSign, label: 'Monetização' },
   { href: '/dashboard/sponsored-content', icon: Star, label: 'Publis' },
 ];
