@@ -54,7 +54,7 @@ export default function ContentCalendar() {
     defaultValues: {
       niche: "Moda Sustentável",
       goals: "Alcançar 10.000 seguidores e aumentar o engajamento em 5%",
-      postingFrequency: "3-5 vezes por semana",
+      postingFrequency: "3-5 times per week",
     },
   });
 
@@ -159,7 +159,9 @@ export default function ContentCalendar() {
                         <SelectContent>
                           <SelectItem value="1-2 times per week">1-2 vezes por semana</SelectItem>
                           <SelectItem value="3-5 times per week">3-5 vezes por semana</SelectItem>
+                          <SelectItem value="6-7 times per week">6-7 vezes por semana</SelectItem>
                           <SelectItem value="Daily">Diariamente</SelectItem>
+                          <SelectItem value="Twice a day">2 vezes ao dia</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
