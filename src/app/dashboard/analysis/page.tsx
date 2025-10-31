@@ -4,9 +4,9 @@ export default function AnalysisPage() {
   return (
     <div className="space-y-6">
       <header className="space-y-1.5">
-        <h1 className="text-3xl font-headline font-bold tracking-tight">Pre-Publication Video Analysis</h1>
+        <h1 className="text-3xl font-headline font-bold tracking-tight">Análise de Vídeo Pré-Publicação</h1>
         <p className="text-muted-foreground">
-          Upload your video to get AI feedback before you post. Maximize your retention!
+          Envie seu vídeo para receber feedback da IA antes de postar. Maximize sua retenção!
         </p>
       </header>
       <VideoAnalyzer />

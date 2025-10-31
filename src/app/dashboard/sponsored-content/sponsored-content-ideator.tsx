@@ -15,8 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
-  productDescription: z.string().min(10, "Please describe the product in more detail."),
-  userNiche: z.string().min(2, "Your niche is required."),
+  productDescription: z.string().min(10, "Por favor, descreva o produto com mais detalhes."),
+  userNiche: z.string().min(2, "Seu nicho é obrigatório."),
 });
 
 export default function SponsoredContentIdeator() {
@@ -27,8 +27,8 @@ export default function SponsoredContentIdeator() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      productDescription: "A new chocolate-flavored protein supplement from Brand X.",
-      userNiche: "Fitness and Healthy Recipes",
+      productDescription: "Um novo suplemento de proteína sabor chocolate da Marca X.",
+      userNiche: "Fitness e Receitas Saudáveis",
     },
   });
 
@@ -39,14 +39,14 @@ export default function SponsoredContentIdeator() {
       const response = await generateSponsoredContentIdeas(values);
       setResult(response);
       toast({
-        title: "Ideas Generated!",
-        description: "Here are some creative concepts for your sponsored post.",
+        title: "Ideias Geradas!",
+        description: "Aqui estão alguns conceitos criativos para seu post patrocinado.",
       });
     } catch (error) {
-      console.error("Error generating sponsored content ideas:", error);
+      console.error("Erro ao gerar ideias de conteúdo patrocinado:", error);
       toast({
-        title: "Oh no! Something went wrong.",
-        description: "We couldn't generate ideas. Please try again.",
+        title: "Oh não! Algo deu errado.",
+        description: "Não foi possível gerar ideias. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -59,8 +59,8 @@ export default function SponsoredContentIdeator() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Partnership Details</CardTitle>
-            <CardDescription>Describe the product you're promoting.</CardDescription>
+            <CardTitle className="font-headline">Detalhes da Parceria</CardTitle>
+            <CardDescription>Descreva o produto que você está promovendo.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -70,9 +70,9 @@ export default function SponsoredContentIdeator() {
                   name="productDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Product Description</FormLabel>
+                      <FormLabel>Descrição do Produto</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="e.g., A new vegan moisturizer from..." {...field} />
+                        <Textarea placeholder="Ex: Um novo hidratante vegano da..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -83,16 +83,16 @@ export default function SponsoredContentIdeator() {
                   name="userNiche"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your Niche</FormLabel>
+                      <FormLabel>Seu Nicho</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Fitness, Gaming, Beauty" {...field} />
+                        <Input placeholder="Ex: Fitness, Games, Beleza" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2" />Generate Ideas</>}
+                  {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2" />Gerar Ideias</>}
                 </Button>
               </form>
             </Form>
@@ -115,16 +115,16 @@ export default function SponsoredContentIdeator() {
           {!isLoading && !result && (
             <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
                 <Sparkles className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Your sponsored content ideas will appear here</h3>
-                <p className="text-muted-foreground">Fill out the form to get started.</p>
+                <h3 className="text-xl font-semibold mt-4">Suas ideias de conteúdo patrocinado aparecerão aqui</h3>
+                <p className="text-muted-foreground">Preencha o formulário para começar.</p>
             </div>
           )}
           {result && (
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Creative Content Ideas</CardTitle>
-                  <CardDescription>Here are 3 authentic ways to feature the product.</CardDescription>
+                  <CardTitle className="font-headline">Ideias de Conteúdo Criativas</CardTitle>
+                  <CardDescription>Aqui estão 3 maneiras autênticas de apresentar o produto.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <ul className="space-y-4 list-decimal list-inside">
@@ -136,8 +136,8 @@ export default function SponsoredContentIdeator() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Suggested Formats</CardTitle>
-                  <CardDescription>These formats perform well for your niche.</CardDescription>
+                  <CardTitle className="font-headline">Formatos Sugeridos</CardTitle>
+                  <CardDescription>Esses formatos têm bom desempenho para o seu nicho.</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-wrap gap-2">

@@ -33,15 +33,15 @@ import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'My Plan' },
-  { href: '/dashboard/ideas', icon: Lightbulb, label: 'Video Ideas' },
-  { href: '/dashboard/analysis', icon: Film, label: 'Video Analysis' },
-  { href: '/dashboard/trends', icon: Flame, label: 'Trend Feed' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Meu Plano' },
+  { href: '/dashboard/ideas', icon: Lightbulb, label: 'Ideias de Vídeo' },
+  { href: '/dashboard/analysis', icon: Film, label: 'Análise de Vídeo' },
+  { href: '/dashboard/trends', icon: Flame, label: 'Feed de Tendências' },
 ];
 
 const monetizationNavItems = [
-    { href: '/dashboard/monetization', icon: DollarSign, label: 'Monetization' },
-    { href: '/dashboard/sponsored-content', icon: Sparkles, label: 'Sponsored Content' },
+    { href: '/dashboard/monetization', icon: DollarSign, label: 'Monetização' },
+    { href: '/dashboard/sponsored-content', icon: Sparkles, label: 'Conteúdo Patrocinado' },
 ]
 
 export default function DashboardLayout({
@@ -80,7 +80,7 @@ export default function DashboardLayout({
             ))}
           </SidebarMenu>
           <SidebarGroup>
-            <SidebarGroupLabel>Monetization</SidebarGroupLabel>
+            <SidebarGroupLabel>Monetização</SidebarGroupLabel>
             <SidebarMenu>
                 {monetizationNavItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
@@ -102,14 +102,14 @@ export default function DashboardLayout({
             <SidebarMenu>
                 <SidebarMenuItem>
                     <Link href="#">
-                        <SidebarMenuButton tooltip={{children: 'Settings', side: 'right'}}>
+                        <SidebarMenuButton tooltip={{children: 'Configurações', side: 'right'}}>
                             <Settings />
-                            <span>Settings</span>
+                            <span>Configurações</span>
                         </SidebarMenuButton>
                     </Link>
                 </SidebarMenuItem>
                  <SidebarMenuItem>
-                    <SidebarMenuButton tooltip={{children: 'User Profile', side: 'right'}}>
+                    <SidebarMenuButton tooltip={{children: 'Perfil do Usuário', side: 'right'}}>
                         {avatar && <Avatar className="size-7">
                             <AvatarImage src={avatar.imageUrl} alt={avatar.description} />
                             <AvatarFallback>U</AvatarFallback>
@@ -126,7 +126,7 @@ export default function DashboardLayout({
             <div className="flex-1">
                 {/* Header content can go here */}
             </div>
-            <Button>Upgrade Plan</Button>
+            <Button>Melhorar Plano</Button>
         </header>
         <main className="flex-1 p-4 sm:p-6">{children}</main>
       </SidebarInset>

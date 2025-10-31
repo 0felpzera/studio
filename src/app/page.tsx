@@ -34,8 +34,8 @@ export default function LoginPage() {
                         <ViralBoostLogo className="h-8 w-8 text-primary" />
                         <h1 className="text-3xl font-headline font-bold text-foreground">ViralBoost AI</h1>
                     </div>
-                    <CardTitle className="text-2xl font-headline !mt-2">Welcome Back, Creator!</CardTitle>
-                    <CardDescription>Sign in to transform your content strategy.</CardDescription>
+                    <CardTitle className="text-2xl font-headline !mt-2">Boas-vindas de volta, Criador!</CardTitle>
+                    <CardDescription>Faça login para transformar sua estratégia de conteúdo.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -53,33 +53,33 @@ export default function LoginPage() {
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-card px-2 text-muted-foreground">Or continue with</span>
+                            <span className="bg-card px-2 text-muted-foreground">Ou continue com</span>
                         </div>
                     </div>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
-                            <Input id="email" type="email" placeholder="creator@example.com" required />
+                            <Label htmlFor="email">E-mail</Label>
+                            <Input id="email" type="email" placeholder="criador@exemplo.com" required />
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password">Senha</Label>
                                 <Link href="#" className="ml-auto inline-block text-sm underline" prefetch={false}>
-                                    Forgot your password?
+                                    Esqueceu sua senha?
                                 </Link>
                             </div>
                             <Input id="password" type="password" required />
                         </div>
                         <div className="pt-2">
                             <Link href="/dashboard" className="w-full">
-                                <Button className="w-full font-bold">Sign In</Button>
+                                <Button className="w-full font-bold">Entrar</Button>
                             </Link>
                         </div>
                     </div>
                     <div className="text-center text-sm">
-                        Don&apos;t have an account?{' '}
+                        Não tem uma conta?{' '}
                         <Link href="#" className="underline" prefetch={false}>
-                            Sign up
+                            Cadastre-se
                         </Link>
                     </div>
                 </CardContent>

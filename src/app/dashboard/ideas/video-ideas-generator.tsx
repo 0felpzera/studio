@@ -16,8 +16,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
-  niche: z.string().min(2, "Niche is required."),
-  currentTrends: z.string().min(10, "Please describe some current trends."),
+  niche: z.string().min(2, "O nicho é obrigatório."),
+  currentTrends: z.string().min(10, "Por favor, descreva algumas tendências atuais."),
 });
 
 export default function VideoIdeasGenerator() {
@@ -28,8 +28,8 @@ export default function VideoIdeasGenerator() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      niche: "Lifestyle and Productivity",
-      currentTrends: "ASMR unboxing, 'get ready with me' morning routines, trending audio with quick cuts.",
+      niche: "Estilo de Vida e Produtividade",
+      currentTrends: "Unboxing ASMR, rotinas matinais 'arrume-se comigo', áudios em alta com cortes rápidos.",
     },
   });
 
@@ -40,14 +40,14 @@ export default function VideoIdeasGenerator() {
       const result: VideoIdeasOutput = await suggestRelevantVideoIdeas(values);
       setVideoIdeas(result.videoIdeas);
       toast({
-        title: "Ideas are flowing!",
-        description: "Here are some fresh video concepts for you.",
+        title: "As ideias estão fluindo!",
+        description: "Aqui estão alguns conceitos de vídeo fresquinhos para você.",
       });
     } catch (error) {
-      console.error("Error generating video ideas:", error);
+      console.error("Erro ao gerar ideias de vídeo:", error);
       toast({
-        title: "Oh no! Something went wrong.",
-        description: "We couldn't generate video ideas. Please try again.",
+        title: "Oh não! Algo deu errado.",
+        description: "Não foi possível gerar ideias de vídeo. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -60,8 +60,8 @@ export default function VideoIdeasGenerator() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Get Inspired</CardTitle>
-            <CardDescription>Tell the AI what you're about.</CardDescription>
+            <CardTitle className="font-headline">Inspire-se</CardTitle>
+            <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -71,9 +71,9 @@ export default function VideoIdeasGenerator() {
                   name="niche"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your Niche</FormLabel>
+                      <FormLabel>Seu Nicho</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Fitness, Gaming, Beauty" {...field} />
+                        <Input placeholder="Ex: Fitness, Games, Beleza" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -84,16 +84,16 @@ export default function VideoIdeasGenerator() {
                   name="currentTrends"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Current Trends You've Noticed</FormLabel>
+                      <FormLabel>Tendências Atuais que Você Notou</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="e.g., Specific audios, challenges, video formats" {...field} />
+                        <Textarea placeholder="Ex: Áudios específicos, desafios, formatos de vídeo" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" />Suggest Ideas</>}
+                  {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" />Sugerir Ideias</>}
                 </Button>
               </form>
             </Form>
@@ -115,8 +115,8 @@ export default function VideoIdeasGenerator() {
           {!isLoading && videoIdeas.length === 0 && (
             <div className="flex flex-col items-center justify-center h-64 text-center rounded-lg border-2 border-dashed">
                 <Wand2 className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Your video ideas will appear here</h3>
-                <p className="text-muted-foreground">Fill out the form to brainstorm with AI!</p>
+                <h3 className="text-xl font-semibold mt-4">Suas ideias de vídeo aparecerão aqui</h3>
+                <p className="text-muted-foreground">Preencha o formulário para ter um brainstorm com a IA!</p>
             </div>
           )}
           {videoIdeas.length > 0 && (
@@ -128,7 +128,7 @@ export default function VideoIdeasGenerator() {
                         <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-lg">{idea.title}</h3>
                             <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className={idea.type === 'Trending' ? 'bg-accent text-accent-foreground' : ''}>
-                                {idea.type}
+                                {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
                             </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">{idea.description}</p>
@@ -136,7 +136,7 @@ export default function VideoIdeasGenerator() {
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
                     <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-background/50 p-4 rounded-md">
-                        <h4 className="font-semibold">Script Outline:</h4>
+                        <h4 className="font-semibold">Esboço do Roteiro:</h4>
                         <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
                     </div>
                   </AccordionContent>

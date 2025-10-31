@@ -14,12 +14,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
-  followerCount: z.coerce.number().min(1, "Follower count is required."),
-  engagementRate: z.coerce.number().min(0.01, "Engagement rate must be at least 0.01."),
-  niche: z.string().min(2, "Niche is required."),
-  averageViews: z.coerce.number().min(1, "Average views are required."),
-  demographics: z.string().min(10, "Demographics description is required."),
-  topPosts: z.string().min(10, "Please provide links to your top posts, separated by commas.")
+  followerCount: z.coerce.number().min(1, "O número de seguidores é obrigatório."),
+  engagementRate: z.coerce.number().min(0.01, "A taxa de engajamento deve ser de pelo menos 0.01."),
+  niche: z.string().min(2, "O nicho é obrigatório."),
+  averageViews: z.coerce.number().min(1, "A média de visualizações é obrigatória."),
+  demographics: z.string().min(10, "A descrição da demografia é obrigatória."),
+  topPosts: z.string().min(10, "Forneça links para seus posts principais, separados por vírgulas.")
 });
 
 export default function MonetizationAssistant() {
@@ -32,9 +32,9 @@ export default function MonetizationAssistant() {
     defaultValues: {
       followerCount: 25000,
       engagementRate: 0.05,
-      niche: "Beauty and Skincare",
+      niche: "Beleza e Skincare",
       averageViews: 50000,
-      demographics: "Female, 18-24, located in the US, interested in cruelty-free products.",
+      demographics: "Mulheres, 18-24 anos, localizadas no Brasil, interessadas em produtos cruelty-free.",
       topPosts: "https://tiktok.com/post1, https://instagram.com/post2",
     },
   });
@@ -50,14 +50,14 @@ export default function MonetizationAssistant() {
       const response: GenerateMediaKitOutput = await generateMediaKit(formattedInput);
       setResult(response);
       toast({
-        title: "Media Kit Ready!",
-        description: "Your professional media kit and pricing are generated.",
+        title: "Media Kit Pronto!",
+        description: "Seu media kit profissional e preços foram gerados.",
       });
     } catch (error) {
-      console.error("Error generating media kit:", error);
+      console.error("Erro ao gerar media kit:", error);
       toast({
-        title: "Oh no! Something went wrong.",
-        description: "We couldn't generate your media kit. Please try again.",
+        title: "Oh não! Algo deu errado.",
+        description: "Não foi possível gerar seu media kit. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -70,56 +70,56 @@ export default function MonetizationAssistant() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Your Metrics</CardTitle>
-            <CardDescription>Provide your latest stats for an accurate media kit.</CardDescription>
+            <CardTitle className="font-headline">Suas Métricas</CardTitle>
+            <CardDescription>Forneça suas estatísticas mais recentes para um media kit preciso.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField control={form.control} name="followerCount" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Follower Count</FormLabel>
+                    <FormLabel>Número de Seguidores</FormLabel>
                     <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="engagementRate" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Engagement Rate (e.g., 0.05 for 5%)</FormLabel>
+                    <FormLabel>Taxa de Engajamento (ex: 0.05 para 5%)</FormLabel>
                     <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="niche" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Niche</FormLabel>
+                    <FormLabel>Nicho</FormLabel>
                     <FormControl><Input {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="averageViews" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Average Views per Post</FormLabel>
+                    <FormLabel>Média de Visualizações por Post</FormLabel>
                     <FormControl><Input type="number" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="demographics" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Audience Demographics</FormLabel>
+                    <FormLabel>Demografia do Público</FormLabel>
                     <FormControl><Textarea {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="topPosts" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Top Posts (URLs, comma separated)</FormLabel>
+                    <FormLabel>Posts Principais (URLs, separadas por vírgula)</FormLabel>
                     <FormControl><Textarea {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <> <DollarSign className="mr-2" />Generate Media Kit</>}
+                  {isLoading ? <Loader2 className="animate-spin" /> : <> <DollarSign className="mr-2" />Gerar Media Kit</>}
                 </Button>
               </form>
             </Form>
@@ -142,16 +142,16 @@ export default function MonetizationAssistant() {
           {!isLoading && !result && (
             <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
                 <DollarSign className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Your media kit will appear here</h3>
-                <p className="text-muted-foreground">Fill out your metrics to generate your kit.</p>
+                <h3 className="text-xl font-semibold mt-4">Seu media kit aparecerá aqui</h3>
+                <p className="text-muted-foreground">Preencha suas métricas para gerar seu kit.</p>
             </div>
           )}
           {result && (
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Suggested Pricing</CardTitle>
-                  <CardDescription>Based on your metrics and niche, here are some starting points.</CardDescription>
+                  <CardTitle className="font-headline">Preços Sugeridos</CardTitle>
+                  <CardDescription>Com base em suas métricas e nicho, aqui estão alguns pontos de partida.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans">
@@ -161,8 +161,8 @@ export default function MonetizationAssistant() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-headline">Media Kit Content</CardTitle>
-                  <CardDescription>Copy this content for your professional media kit.</CardDescription>
+                  <CardTitle className="font-headline">Conteúdo do Media Kit</CardTitle>
+                  <CardDescription>Copie este conteúdo para o seu media kit profissional.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans bg-background/50 p-4 rounded-md">

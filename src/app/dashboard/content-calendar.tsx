@@ -15,9 +15,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const formSchema = z.object({
-  niche: z.string().min(2, "Niche is required."),
-  goals: z.string().min(10, "Please describe your goals in more detail."),
-  postingFrequency: z.string({ required_error: "Posting frequency is required." }),
+  niche: z.string().min(2, "O nicho é obrigatório."),
+  goals: z.string().min(10, "Por favor, descreva seus objetivos com mais detalhes."),
+  postingFrequency: z.string({ required_error: "A frequência de postagem é obrigatória." }),
 });
 
 type DayPlan = {
@@ -35,7 +35,7 @@ const parseCalendarString = (calendarString: string): DayPlan[] => {
     const restString = rest.join(':').trim();
     
     const platformMatch = restString.match(/\((.*?)\)/);
-    const platform = platformMatch ? platformMatch[1] : 'Unknown';
+    const platform = platformMatch ? platformMatch[1] : 'Desconhecido';
     
     const idea = restString.replace(/\(.*?\)\s*-\s*/, '').trim();
 
@@ -51,9 +51,9 @@ export default function ContentCalendar() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      niche: "Sustainable Fashion",
-      goals: "Reach 10,000 followers and increase engagement by 5%",
-      postingFrequency: "3-5 times per week",
+      niche: "Moda Sustentável",
+      goals: "Alcançar 10.000 seguidores e aumentar o engajamento em 5%",
+      postingFrequency: "3-5 vezes por semana",
     },
   });
 
@@ -65,15 +65,15 @@ export default function ContentCalendar() {
       const parsedCalendar = parseCalendarString(result.calendar);
       setCalendar(parsedCalendar);
       toast({
-        title: "Success!",
-        description: "Your new content plan is ready.",
+        title: "Sucesso!",
+        description: "Seu novo plano de conteúdo está pronto.",
         variant: "default"
       });
     } catch (error) {
-      console.error("Error generating content calendar:", error);
+      console.error("Erro ao gerar o calendário de conteúdo:", error);
       toast({
-        title: "Oh no! Something went wrong.",
-        description: "We couldn't generate your content plan. Please try again.",
+        title: "Oh não! Algo deu errado.",
+        description: "Não foi possível gerar seu plano de conteúdo. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -98,8 +98,8 @@ export default function ContentCalendar() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Define Your Strategy</CardTitle>
-            <CardDescription>Tell the AI what you want to achieve.</CardDescription>
+            <CardTitle className="font-headline">Defina Sua Estratégia</CardTitle>
+            <CardDescription>Diga à IA o que você quer alcançar.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -109,9 +109,9 @@ export default function ContentCalendar() {
                   name="niche"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Main Niche</FormLabel>
+                      <FormLabel>Nicho Principal</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Skincare routines, Comedy skits" {...field} />
+                        <Input placeholder="Ex: Rotinas de skincare, esquetes de comédia" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -122,9 +122,9 @@ export default function ContentCalendar() {
                   name="goals"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Your Goals</FormLabel>
+                      <FormLabel>Seus Objetivos</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Hit 10k followers in 3 months" {...field} />
+                        <Input placeholder="Ex: Atingir 10k seguidores em 3 meses" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -135,17 +135,17 @@ export default function ContentCalendar() {
                   name="postingFrequency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Posting Frequency</FormLabel>
+                      <FormLabel>Frequência de Postagem</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select how often you'll post" />
+                            <SelectValue placeholder="Selecione a frequência de postagem" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="1-2 times per week">1-2 times per week</SelectItem>
-                          <SelectItem value="3-5 times per week">3-5 times per week</SelectItem>
-                          <SelectItem value="Daily">Daily</SelectItem>
+                          <SelectItem value="1-2 times per week">1-2 vezes por semana</SelectItem>
+                          <SelectItem value="3-5 times per week">3-5 vezes por semana</SelectItem>
+                          <SelectItem value="Daily">Diariamente</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -153,7 +153,7 @@ export default function ContentCalendar() {
                   )}
                 />
                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : "Generate My Plan"}
+                  {isLoading ? <Loader2 className="animate-spin" /> : "Gerar Meu Plano"}
                 </Button>
               </form>
             </Form>
@@ -164,8 +164,8 @@ export default function ContentCalendar() {
         {calendar.length > 0 && (
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="font-headline">Weekly Progress</CardTitle>
-              <CardDescription>You've completed {completedTasks} of {totalTasks} tasks this week.</CardDescription>
+              <CardTitle className="font-headline">Progresso Semanal</CardTitle>
+              <CardDescription>Você completou {completedTasks} de {totalTasks} tarefas esta semana.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="w-full bg-muted rounded-full h-2.5">
@@ -182,8 +182,8 @@ export default function ContentCalendar() {
           )}
           {!isLoading && calendar.length === 0 && (
             <div className="flex flex-col items-center justify-center h-64 text-center rounded-lg border-2 border-dashed">
-                <h3 className="text-xl font-semibold">Your plan will appear here</h3>
-                <p className="text-muted-foreground">Fill out the form to get started!</p>
+                <h3 className="text-xl font-semibold">Seu plano aparecerá aqui</h3>
+                <p className="text-muted-foreground">Preencha o formulário para começar!</p>
             </div>
           )}
           {calendar.map((plan, index) => (
@@ -199,7 +199,7 @@ export default function ContentCalendar() {
                  <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer" onClick={() => toggleTaskCompletion(index)}>
                     <Checkbox id={`task-${index}`} checked={plan.completed} onCheckedChange={() => toggleTaskCompletion(index)} />
                     <label htmlFor={`task-${index}`} className="text-sm font-medium leading-none cursor-pointer">
-                      Done
+                      Feito
                     </label>
                   </div>
               </CardHeader>

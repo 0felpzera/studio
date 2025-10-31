@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Loader2, Upload, Sparkles, Video, CheckCircle } from "lucide-react";
 import { analyzeVideoForImprovement, AnalyzeVideoOutput } from "@/ai/flows/analyze-video-for-improvement";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/componentsüi/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -19,10 +19,10 @@ export default function VideoAnalyzer() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) { // 4MB limit
+      if (file.size > 4 * 1024 * 1024) { // Limite de 4MB
         toast({
-          title: "File too large",
-          description: "Please upload a video smaller than 4MB for analysis.",
+          title: "Arquivo muito grande",
+          description: "Por favor, envie um vídeo menor que 4MB para análise.",
           variant: "destructive",
         });
         return;
@@ -40,8 +40,8 @@ export default function VideoAnalyzer() {
   const handleAnalyzeClick = async () => {
     if (!selectedFile) {
       toast({
-        title: "No video selected",
-        description: "Please select a video file to analyze.",
+        title: "Nenhum vídeo selecionado",
+        description: "Por favor, selecione um arquivo de vídeo para analisar.",
         variant: "destructive",
       });
       return;
@@ -58,14 +58,14 @@ export default function VideoAnalyzer() {
         const result = await analyzeVideoForImprovement({ videoDataUri: base64Data });
         setAnalysisResult(result);
         toast({
-          title: "Analysis Complete!",
-          description: "Your video has been analyzed. Check out the suggestions!",
+          title: "Análise Concluída!",
+          description: "Seu vídeo foi analisado. Confira as sugestões!",
         });
       } catch (error) {
-        console.error("Error analyzing video:", error);
+        console.error("Erro ao analisar vídeo:", error);
         toast({
-          title: "Oh no! Something went wrong.",
-          description: "We couldn't analyze your video. Please try again.",
+          title: "Oh não! Algo deu errado.",
+          description: "Não conseguimos analisar seu vídeo. Por favor, tente novamente.",
           variant: "destructive",
         });
       } finally {
@@ -73,10 +73,10 @@ export default function VideoAnalyzer() {
       }
     };
     reader.onerror = (error) => {
-        console.error("File reading error:", error);
+        console.error("Erro ao ler o arquivo:", error);
         toast({
-            title: "File Error",
-            description: "Could not read the selected file. Please try again.",
+            title: "Erro no Arquivo",
+            description: "Não foi possível ler o arquivo selecionado. Por favor, tente novamente.",
             variant: "destructive",
         });
         setIsLoading(false);
@@ -88,8 +88,8 @@ export default function VideoAnalyzer() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="font-headline">Upload Your Video</CardTitle>
-            <CardDescription>Select a video file from your device to start the analysis.</CardDescription>
+            <CardTitle className="font-headline">Envie Seu Vídeo</CardTitle>
+            <CardDescription>Selecione um arquivo de vídeo do seu dispositivo para iniciar a análise.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div 
@@ -102,9 +102,9 @@ export default function VideoAnalyzer() {
                 <div className="text-center">
                   <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                   <p className="mt-2 text-sm text-muted-foreground">
-                    <span className="font-semibold">Click to upload</span> or drag and drop
+                    <span className="font-semibold">Clique para enviar</span> ou arraste e solte
                   </p>
-                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Max 4MB)</p>
+                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx 4MB)</p>
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
@@ -118,7 +118,7 @@ export default function VideoAnalyzer() {
           </CardContent>
           <CardContent>
             <Button onClick={handleAnalyzeClick} disabled={isLoading || !selectedFile} className="w-full font-bold">
-              {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2" />Analyze Video</>}
+              {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2" />Analisar Vídeo</>}
             </Button>
           </CardContent>
         </Card>
@@ -141,19 +141,19 @@ export default function VideoAnalyzer() {
         {!isLoading && !analysisResult && (
             <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
                 <Sparkles className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Your analysis will appear here</h3>
-                <p className="text-muted-foreground">Upload a video and click "Analyze" to see the magic.</p>
+                <h3 className="text-xl font-semibold mt-4">Sua análise aparecerá aqui</h3>
+                <p className="text-muted-foreground">Envie um vídeo e clique em "Analisar" para ver a mágica.</p>
             </div>
         )}
         {analysisResult && (
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Hook Analysis (First 3s)</CardTitle>
+                <CardTitle className="font-headline">Análise do Gancho (Primeiros 3s)</CardTitle>
                 <CardDescription>{analysisResult.hookAnalysis.effectiveness}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <h4 className="font-semibold text-sm">Suggestions:</h4>
+                <h4 className="font-semibold text-sm">Sugestões:</h4>
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
                   {analysisResult.hookAnalysis.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
@@ -162,15 +162,15 @@ export default function VideoAnalyzer() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Technical Quality</CardTitle>
+                <CardTitle className="font-headline">Qualidade Técnica</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold">Lighting: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.lighting}</span></h4>
-                  <h4 className="font-semibold">Audio: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.audio}</span></h4>
-                  <h4 className="font-semibold">Framing: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.framing}</span></h4>
+                  <h4 className="font-semibold">Iluminação: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.lighting}</span></h4>
+                  <h4 className="font-semibold">Áudio: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.audio}</span></h4>
+                  <h4 className="font-semibold">Enquadramento: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.framing}</span></h4>
                 </div>
-                 <h4 className="font-semibold text-sm">Suggestions:</h4>
+                 <h4 className="font-semibold text-sm">Sugestões:</h4>
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
                   {analysisResult.technicalQuality.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
@@ -179,29 +179,29 @@ export default function VideoAnalyzer() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Pacing & Flow</CardTitle>
+                <CardTitle className="font-headline">Ritmo & Fluxo</CardTitle>
                 <CardDescription>{analysisResult.pacing.assessment}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <h4 className="font-semibold text-sm">Suggestions:</h4>
+                <h4 className="font-semibold text-sm">Sugestões:</h4>
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  {analysisResult.pacing.suggestions.map((s, i) => <li key-={i}>{s}</li>)}
+                  {analysisResult.pacing.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
               </CardContent>
             </Card>
             
             <Card>
               <CardHeader>
-                <CardTitle className="font-headline">Caption & Hashtags</CardTitle>
-                <CardDescription>Optimized for engagement.</CardDescription>
+                <CardTitle className="font-headline">Legenda & Hashtags</CardTitle>
+                <CardDescription>Otimizado para engajamento.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-sm mb-2">Suggested Caption:</h4>
+                  <h4 className="font-semibold text-sm mb-2">Legenda Sugerida:</h4>
                   <p className="text-sm p-3 bg-muted/50 rounded-md">{analysisResult.captionSuggestions}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm mb-2">Suggested Hashtags:</h4>
+                  <h4 className="font-semibold text-sm mb-2">Hashtags Sugeridas:</h4>
                   <div className="flex flex-wrap gap-2">
                     {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
                   </div>
