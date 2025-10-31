@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -13,13 +13,22 @@ import {
   Star,
   Presentation,
   LogOut,
+  User,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendifyLogo } from '@/components/icons';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useAuth, useUser } from '@/firebase';
-import { Dock, DockIcon, DockItem, DockLabel } from '@/components/ui/dock';
+import { FloatingNav } from '@/components/ui/floating-nav';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
 
 export const Logo = () => {
   return (
@@ -36,17 +45,13 @@ export const Logo = () => {
 };
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: <LayoutDashboard className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-  { href: '/dashboard/plan', label: 'Meu Plano', icon: <CalendarCheck className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-  { href: '/dashboard/ideas', label: 'Ideias', icon: <Lightbulb className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-  { href: '/dashboard/trends', label: 'Tendências', icon: <Flame className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-  { href: '/dashboard/analysis', label: 'Análise', icon: <Presentation className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-  { href: '/dashboard/monetization', label: 'Monetização', icon: <DollarSign className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-  { href: '/dashboard/sponsored-content', label: 'Publis', icon: <Star className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
-];
-
-const rightNavItems = [
-  { href: '/dashboard/settings', label: 'Configurações', icon: <Settings className="h-full w-full text-neutral-600 dark:text-neutral-300" /> },
+  { name: 'Dashboard', link: '/dashboard', icon: <LayoutDashboard className="size-4" /> },
+  { name: 'Meu Plano', link: '/dashboard/plan', icon: <CalendarCheck className="size-4" /> },
+  { name: 'Ideias', link: '/dashboard/ideas', icon: <Lightbulb className="size-4" /> },
+  { name: 'Tendências', link: '/dashboard/trends', icon: <Flame className="size-4" /> },
+  { name: 'Análise', link: '/dashboard/analysis', icon: <Presentation className="size-4" /> },
+  { name: 'Monetização', link: '/dashboard/monetization', icon: <DollarSign className="size-4" /> },
+  { name: 'Publis', link: '/dashboard/sponsored-content', icon: <Star className="size-4" /> },
 ];
 
 export default function DashboardLayout({
@@ -54,7 +59,6 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const avatar = PlaceHolderImages.find(img => img.id === 'avatar-1');
   const auth = useAuth();
   const { user } = useUser();
   const router = useRouter();
@@ -67,40 +71,48 @@ export default function DashboardLayout({
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <header className="flex h-16 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-40">
+      <header className="flex h-20 items-center justify-between gap-4 border-b bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
         <Logo />
 
-        <div className="flex-1 flex justify-center">
-            <Dock magnification={60} distance={60} className="items-end pb-2 bg-transparent dark:bg-transparent">
-              {navItems.map((item) => (
-                 <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={() => router.push(item.href)}>
-                    <DockLabel>{item.label}</DockLabel>
-                    <DockIcon>{item.icon}</DockIcon>
-                </DockItem>
-              ))}
-            </Dock>
+        <div className="absolute left-1/2 -translate-x-1/2">
+            <FloatingNav navItems={navItems} />
         </div>
 
-        <div className="flex items-center gap-2">
-            <Dock magnification={60} distance={60} className="items-end pb-2 bg-transparent dark:bg-transparent">
-                {rightNavItems.map((item) => (
-                    <DockItem key={item.href} className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={() => router.push(item.href)}>
-                        <DockLabel>{item.label}</DockLabel>
-                        <DockIcon>{item.icon}</DockIcon>
-                    </DockItem>
-                ))}
-                 <DockItem className="aspect-square rounded-full bg-gray-200/50 dark:bg-neutral-800/50" onClick={handleLogout}>
-                    <DockLabel>Sair</DockLabel>
-                    <DockIcon><LogOut className="h-full w-full text-neutral-600 dark:text-neutral-300" /></DockIcon>
-                </DockItem>
-            </Dock>
-            <Link href="/dashboard/profile">
-                 {avatar && <Avatar className="size-8">
-                    <AvatarImage src={user?.photoURL || avatar.imageUrl} alt={avatar.description} />
-                    <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
-                  </Avatar>
-                }
-            </Link>
+        <div className="flex items-center gap-4">
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                        <Avatar className="size-8">
+                            <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
+                            <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
+                        </Avatar>
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{user?.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                        {user?.email}
+                        </p>
+                    </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                     <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Perfil</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Configurações</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Sair</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </header>
       <main className="flex-1 overflow-y-auto p-4 sm:p-6">
