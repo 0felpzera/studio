@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/componentsui/badge";
+import { Badge } from "@/components/ui/badge";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
