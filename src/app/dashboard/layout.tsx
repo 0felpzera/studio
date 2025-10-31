@@ -11,6 +11,12 @@ import {
   Lightbulb,
   Settings,
   Sparkles,
+  CalendarCheck,
+  Star,
+  Users,
+  BarChart2,
+  ListVideo,
+  ThumbsUp,
 } from 'lucide-react';
 
 import {
@@ -33,16 +39,14 @@ import { Button } from '@/components/ui/button';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const navItems = [
-  { href: '/dashboard', icon: LayoutDashboard, label: 'Meu Plano' },
+  { href: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/dashboard/plan', icon: CalendarCheck, label: 'Meu Plano' },
   { href: '/dashboard/ideas', icon: Lightbulb, label: 'Ideias de Vídeo' },
-  { href: '/dashboard/analysis', icon: Film, label: 'Análise de Vídeo' },
-  { href: '/dashboard/trends', icon: Flame, label: 'Feed de Tendências' },
+  { href: '/dashboard/trends', icon: Flame, label: 'Tendências' },
+  { href: '/dashboard/monetization', icon: DollarSign, label: 'Monetização' },
+  { href: '/dashboard/sponsored-content', icon: Star, label: 'Publis' },
 ];
 
-const monetizationNavItems = [
-    { href: '/dashboard/monetization', icon: DollarSign, label: 'Monetização' },
-    { href: '/dashboard/sponsored-content', icon: Sparkles, label: 'Conteúdo Patrocinado' },
-]
 
 export default function DashboardLayout({
   children,
@@ -79,24 +83,6 @@ export default function DashboardLayout({
               </SidebarMenuItem>
             ))}
           </SidebarMenu>
-          <SidebarGroup>
-            <SidebarGroupLabel>Monetização</SidebarGroupLabel>
-            <SidebarMenu>
-                {monetizationNavItems.map((item) => (
-                <SidebarMenuItem key={item.href}>
-                    <Link href={item.href}>
-                    <SidebarMenuButton
-                        isActive={pathname === item.href}
-                        tooltip={{ children: item.label, side:'right' }}
-                    >
-                        <item.icon />
-                        <span>{item.label}</span>
-                    </SidebarMenuButton>
-                    </Link>
-                </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
-          </SidebarGroup>
         </SidebarContent>
         <SidebarFooter>
             <SidebarMenu>
