@@ -70,11 +70,15 @@ export default function ContentCalendar() {
         description: "Seu novo plano de conteúdo está pronto.",
         variant: "default"
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro ao gerar o calendário de conteúdo:", error);
+      let description = "Não foi possível gerar seu plano de conteúdo. Por favor, tente novamente.";
+      if (typeof error.message === 'string' && error.message.includes('503')) {
+        description = "O serviço de IA está sobrecarregado. Por favor, tente novamente em alguns minutos.";
+      }
       toast({
         title: "Oh não! Algo deu errado.",
-        description: "Não foi possível gerar seu plano de conteúdo. Por favor, tente novamente.",
+        description: description,
         variant: "destructive",
       });
     } finally {
@@ -213,7 +217,7 @@ export default function ContentCalendar() {
                   <CardDescription className={plan.completed ? 'line-through' : ''}>{plan.idea}</CardDescription>
                 </div>
                  <div className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer" onClick={() => toggleTaskCompletion(index)}>
-                    <Checkbox id={`task-${index}`} checked={plan.completed} onCheckedChange={() => toggleTaskCompletion(index)} />
+                    <Checkbox id={`task-${index}`} checked={plan.completed} onCheckedChange={() => toggleTaskDetection(index)} />
                     <label htmlFor={`task-${index}`} className="text-sm font-medium leading-none cursor-pointer">
                       Feito
                     </label>
