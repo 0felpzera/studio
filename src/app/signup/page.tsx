@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser } from '@/firebase';
-import { initiateAnonymousSignIn, initiateEmailSignIn } from '@/firebase/non-blocking-login';
+import { initiateEmailSignUp } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
 
 function AppleIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -31,11 +31,12 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
-export default function LoginPage() {
+export default function SignUpPage() {
     const auth = useAuth();
     const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
+    const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
@@ -45,18 +46,18 @@ export default function LoginPage() {
         }
     }, [user, isUserLoading, router]);
 
-    const handleLogin = (e: React.FormEvent) => {
+    const handleSignUp = (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            initiateEmailSignIn(auth, email, password);
+            initiateEmailSignUp(auth, email, password);
             toast({
-                title: "Login...",
-                description: "Entrando com seu usuário.",
+                title: "Cadastro em andamento...",
+                description: "Sua conta está sendo criada.",
             });
-        } catch (error) {
+        } catch (error: any) {
              toast({
-                title: "Erro no Login",
-                description: "Não foi possível fazer o login.",
+                title: "Erro no Cadastro",
+                description: error.message || "Não foi possível criar sua conta.",
                 variant: 'destructive'
             });
         }
@@ -78,8 +79,8 @@ export default function LoginPage() {
                         <TrendifyLogo className="h-8 w-8 text-primary" />
                         <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
                     </div>
-                    <CardTitle className="text-2xl font-headline !mt-2">Boas-vindas de volta, Criador!</CardTitle>
-                    <CardDescription>Faça login para transformar sua estratégia de conteúdo.</CardDescription>
+                    <CardTitle className="text-2xl font-headline !mt-2">Crie sua conta</CardTitle>
+                    <CardDescription>Comece a transformar sua estratégia de conteúdo hoje mesmo.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                     <div className="grid grid-cols-2 gap-4">
@@ -97,31 +98,30 @@ export default function LoginPage() {
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-card px-2 text-muted-foreground">Ou continue com</span>
+                            <span className="bg-card px-2 text-muted-foreground">Ou cadastre-se com</span>
                         </div>
                     </div>
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={handleSignUp} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="name">Nome</Label>
+                            <Input id="name" placeholder="Seu nome" required value={name} onChange={(e) => setName(e.target.value)} />
+                        </div>
                         <div className="space-y-2">
                             <Label htmlFor="email">E-mail</Label>
                             <Input id="email" type="email" placeholder="criador@exemplo.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                            <div className="flex items-center">
-                                <Label htmlFor="password">Senha</Label>
-                                <Link href="#" className="ml-auto inline-block text-sm underline" prefetch={false}>
-                                    Esqueceu sua senha?
-                                </Link>
-                            </div>
+                            <Label htmlFor="password">Senha</Label>
                             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
                         <div className="pt-2">
-                            <Button type="submit" className="w-full font-bold">Entrar</Button>
+                            <Button type="submit" className="w-full font-bold">Cadastrar</Button>
                         </div>
                     </form>
                     <div className="text-center text-sm">
-                        Não tem uma conta?{' '}
-                        <Link href="/signup" className="underline" prefetch={false}>
-                            Cadastre-se
+                        Já tem uma conta?{' '}
+                        <Link href="/login" className="underline" prefetch={false}>
+                            Faça login
                         </Link>
                     </div>
                 </CardContent>
