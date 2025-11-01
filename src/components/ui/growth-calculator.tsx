@@ -50,7 +50,7 @@ const steps = [
 export function GrowthCalculator() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
-  const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
+  const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({
     niche: 'Moda',
     country: 'Brasil',
@@ -111,25 +111,25 @@ export function GrowthCalculator() {
         }),
     };
     
-    const getCardStyle = (stepIndex: number) => {
-        const offset = stepIndex - currentStep;
-        if (offset === 0) { // Current step
-            return {
-                transform: 'none',
-                opacity: 1,
-                zIndex: 20,
-            };
-        }
-        // Previous or Next cards
-        const scale = 1 - Math.abs(offset) * 0.1;
-        const translateX = offset * 40; // Horizontal separation
-        const rotate = offset * -5; // Rotation effect
-        
-        return {
-            transform: `translateX(${translateX}px) scale(${scale}) rotate(${rotate}deg)`,
-            opacity: 1,
-            zIndex: 10 - Math.abs(offset),
-        };
+  const getCardStyle = (stepIndex: number) => {
+    const offset = stepIndex - currentStep;
+    if (offset === 0) {
+      return {
+        transform: 'none',
+        opacity: 1,
+        zIndex: 20,
+      };
+    }
+    
+    const scale = 1 - Math.abs(offset) * 0.1;
+    const translateX = offset * 40 + (offset > 0 ? 30 : -30);
+    const rotate = offset * -5;
+    
+    return {
+        transform: `translateX(${translateX}px) scale(${scale}) rotate(${rotate}deg)`,
+        opacity: 1,
+        zIndex: 10 - Math.abs(offset),
+    };
   };
 
   const renderStepContent = (stepIndex: number) => {
@@ -249,71 +249,89 @@ export function GrowthCalculator() {
         {!isCalculated ? (
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="relative h-[620px] flex items-center justify-center">
-              {steps.map((step, index) => {
-                const StepIcon = step.icon;
-                const isCurrent = index === currentStep;
+              <AnimatePresence initial={false} custom={direction}>
+                {steps.map((step, index) => {
+                  const StepIcon = step.icon;
+                  const isCurrent = index === currentStep;
 
-                return (
-                   <motion.div
-                        key={index}
+                  return isCurrent ? (
+                    <motion.div
+                      key={index}
+                      className="absolute w-full max-w-lg"
+                      style={{ zIndex: 20 }}
+                      initial="enter"
+                      animate="center"
+                      exit="exit"
+                      custom={direction}
+                      variants={variants}
+                      transition={{
+                        x: { type: 'spring', stiffness: 200, damping: 25 },
+                        opacity: { duration: 0.3 }
+                      }}
+                    >
+                      <Card className="shadow-xl w-full">
+                        <CardHeader>
+                          <div className="flex items-center gap-3 mb-2">
+                            <div className="bg-primary text-primary-foreground rounded-full p-2">
+                              <StepIcon className="size-5" />
+                            </div>
+                            <div>
+                              <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
+                              <CardDescription>{step.description}</CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="min-h-[350px] px-6 py-8 md:p-10">
+                            {renderStepContent(index)}
+                        </CardContent>
+                        <CardFooter className="flex justify-between bg-muted/50 px-6 py-4">
+                          <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
+                            <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                          </Button>
+                          {currentStep < steps.length - 1 ? (
+                            <Button type="button" onClick={nextStep}>
+                              Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                            </Button>
+                          ) : (
+                            <Button type="submit">
+                              <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
+                            </Button>
+                          )}
+                        </CardFooter>
+                      </Card>
+                    </motion.div>
+                  ) : null; // Do not render non-current steps
+                })}
+              </AnimatePresence>
+
+               {/* Render previous and next cards for context */}
+               {steps.map((step, index) => {
+                 if (index === currentStep) return null;
+                 const offset = index - currentStep;
+                 const isPrev = offset === -1;
+                 const isNext = offset === 1;
+
+                 if (!isPrev && !isNext) return null;
+
+                 return (
+                     <motion.div
+                        key={`context-${index}`}
                         className="absolute w-full max-w-lg"
                         style={getCardStyle(index)}
                         animate={getCardStyle(index)}
                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                     >
-                     <Card className={cn(
-                        "shadow-xl transition-all duration-300 w-full",
-                        !isCurrent && "opacity-50 grayscale"
-                     )}>
-                        <CardHeader>
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className={cn("rounded-full p-2 transition-colors", isCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                                    <StepIcon className="size-5" />
-                                </div>
-                                <div>
-                                    <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
-                                    <CardDescription>{step.description}</CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
-                        <AnimatePresence initial={false} custom={direction}>
-                             {isCurrent && (
-                                <motion.div
-                                    key={currentStep}
-                                    custom={direction}
-                                    variants={variants}
-                                    initial="enter"
-                                    animate="center"
-                                    exit="exit"
-                                    transition={{
-                                        x: { type: 'spring', stiffness: 300, damping: 30 },
-                                        opacity: { duration: 0.2 },
-                                    }}
-                                >
-                                    <CardContent className="min-h-[300px] px-6 py-8">
-                                        {renderStepContent(index)}
-                                    </CardContent>
-                                    <CardFooter className="flex justify-between bg-muted/50 px-6 py-4">
-                                        <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
-                                            <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                                        </Button>
-                                        {currentStep < steps.length - 1 ? (
-                                            <Button type="button" onClick={nextStep}>
-                                            Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                                            </Button>
-                                        ) : (
-                                            <Button type="submit">
-                                            <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                                            </Button>
-                                        )}
-                                    </CardFooter>
-                                </motion.div>
-                             )}
-                        </AnimatePresence>
+                     <Card className={cn("shadow-xl transition-all duration-300 w-full opacity-50 grayscale")}>
+                         <CardHeader>
+                             <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
+                             <CardDescription>{step.description}</CardDescription>
+                         </CardHeader>
+                         <CardContent className="min-h-[350px] px-6 py-8 md:p-10"></CardContent>
+                         <CardFooter className="bg-muted/50 px-6 py-4 h-[68px]"></CardFooter>
                      </Card>
                    </motion.div>
-                )
-              })}
+                 );
+               })}
             </div>
           </form>
         ) : (
@@ -424,3 +442,5 @@ export function GrowthCalculator() {
     </section>
   );
 }
+
+    
