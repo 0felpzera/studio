@@ -12,7 +12,7 @@ import {
   SiThreads,
   SiX,
 } from "react-icons/si";
-import { Home, LogIn, UserPlus, Lightbulb, Bot, Star, DollarSign, Presentation } from "lucide-react";
+import { Home, LogIn, UserPlus, Lightbulb, Bot, Star, DollarSign, Presentation, AppWindow } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
@@ -90,8 +90,8 @@ export default function LandingPage() {
 
   const navItems = [
     { name: 'Início', url: '/', icon: Home },
-    { name: 'Login', url: '/login', icon: LogIn },
-    { name: 'Cadastre-se', url: '/signup', icon: UserPlus }
+    { name: 'Recursos', url: '#features', icon: Star },
+    { name: 'Demo', url: '#demo', icon: AppWindow }
   ];
 
   const demoImage = PlaceHolderImages.find(img => img.id === "demo-1");
@@ -108,7 +108,7 @@ export default function LandingPage() {
         icons={demoIcons}
       />
 
-      <section className="py-16 sm:py-24">
+      <section id="features" className="py-16 sm:py-24">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
             {features.map((feature, index) => (
@@ -122,7 +122,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 sm:py-24 bg-muted/50">
+      <section id="demo" className="py-16 sm:py-24 bg-muted/50">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
             <div className="relative aspect-video rounded-xl shadow-2xl overflow-hidden">
                  {demoImage && (
