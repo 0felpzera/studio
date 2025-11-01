@@ -99,9 +99,9 @@ export function GrowthCalculator() {
     
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? 50 : -50,
+      x: direction > 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 0.9,
+      scale: 0.95,
     }),
     center: {
       zIndex: 1,
@@ -111,12 +111,12 @@ export function GrowthCalculator() {
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? 50 : -50,
+      x: direction < 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 0.9,
+      scale: 0.95,
     }),
   };
-
+  
   const renderStepContent = (stepIndex: number) => {
       switch (stepIndex) {
         case 0:
@@ -223,9 +223,9 @@ export function GrowthCalculator() {
 
   const getCardStyle = (stepIndex: number) => {
     const offset = stepIndex - currentStep;
-    const isVisible = Math.abs(offset) <= 2;
+    const isVisible = Math.abs(offset) < 2;
 
-    if (!isVisible) {
+    if (!isVisible && stepIndex !== currentStep) {
       return { display: 'none' };
     }
   
@@ -234,13 +234,12 @@ export function GrowthCalculator() {
     return {
         zIndex: steps.length - Math.abs(offset),
         transform: `
-            translateX(${offset * 40}px) 
-            scale(${1 - Math.abs(offset) * 0.1})
-            rotate(${offset * 3}deg)
+            translateX(${offset * 10}px) 
+            scale(${1 - Math.abs(offset) * 0.05})
         `,
-        opacity: offset === 0 ? 1 : (isBehind ? 0.3 : 0.6),
+        opacity: offset === 0 ? 1 : 0.5,
         filter: offset !== 0 ? 'blur(1px)' : 'none',
-        transition: 'all 0.4s ease-out'
+        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
     };
   };
 
@@ -256,17 +255,19 @@ export function GrowthCalculator() {
 
         {!isCalculated ? (
           <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-            <div className="relative h-[650px] flex items-center justify-center -skew-y-3">
+            <div className="relative h-[500px] flex items-start justify-center">
                 {steps.map((step, index) => {
                     const isActive = currentStep === index;
                     return (
-                        <div
+                        <motion.div
                             key={step.id}
-                            className="absolute w-full max-w-lg transition-all duration-500"
+                            className="absolute w-full max-w-lg"
                             style={getCardStyle(index)}
+                            animate={getCardStyle(index)}
+                            initial={false}
                         >
                         <Card className={cn(
-                            "shadow-2xl w-full h-[600px] flex flex-col transition-all duration-300 bg-card/80 backdrop-blur-sm",
+                            "shadow-2xl w-full h-[480px] flex flex-col transition-all duration-300 bg-card/80 backdrop-blur-sm",
                             isActive ? "border-2 border-primary/50 ring-4 ring-primary/10" : "border"
                         )}>
                             <CardHeader>
@@ -275,44 +276,49 @@ export function GrowthCalculator() {
                                         <step.icon className="size-6" />
                                     </div>
                                     <div>
-                                        <CardTitle className="text-2xl font-bold">{step.title}</CardTitle>
+                                        <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
                                         <CardDescription>{step.description}</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
-                            <AnimatePresence initial={false}>
-                                {isActive && (
-                                    <motion.div
-                                        key={`content-${currentStep}`}
-                                        initial={{ opacity: 0, y: 10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.3, delay: 0.2 }}
-                                        className='flex-grow flex flex-col'
-                                    >
-                                        <CardContent className="flex-grow p-8">
-                                            {renderStepContent(index)}
-                                        </CardContent>
-
-                                        <CardFooter className="flex justify-between bg-muted/30 p-6 mt-auto">
-                                            <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
-                                                <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                                            </Button>
-                                            {currentStep < steps.length - 1 ? (
-                                                <Button type="button" onClick={nextStep}>
-                                                Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                                                </Button>
-                                            ) : (
-                                                <Button type="submit">
-                                                <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                                                </Button>
-                                            )}
-                                        </CardFooter>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                           
+                            {isActive && (
+                                <AnimatePresence initial={false} custom={direction}>
+                                  <motion.div
+                                    key={currentStep}
+                                    custom={direction}
+                                    variants={variants}
+                                    initial="enter"
+                                    animate="center"
+                                    exit="exit"
+                                    transition={{
+                                      x: { type: "spring", stiffness: 350, damping: 40 },
+                                      opacity: { duration: 0.3 },
+                                    }}
+                                    className="flex-grow flex flex-col"
+                                  >
+                                    <CardContent className="flex-grow p-6">
+                                      {renderStepContent(currentStep)}
+                                    </CardContent>
+                                    <CardFooter className="flex justify-between bg-muted/30 p-4 mt-auto">
+                                      <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
+                                        <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                                      </Button>
+                                      {currentStep < steps.length - 1 ? (
+                                        <Button type="button" onClick={nextStep}>
+                                          Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                                        </Button>
+                                      ) : (
+                                        <Button type="submit">
+                                          <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
+                                        </Button>
+                                      )}
+                                    </CardFooter>
+                                  </motion.div>
+                                </AnimatePresence>
+                            )}
                         </Card>
-                    </div>
+                    </motion.div>
                     )
                 })}
             </div>
@@ -423,5 +429,5 @@ export function GrowthCalculator() {
         )}
       </div>
     </section>
-  );
+  )
 }
