@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -13,6 +14,7 @@ import {
   Presentation,
   LogOut,
   User,
+  Share2
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -51,6 +53,7 @@ const navItems = [
   { name: 'Análise', link: '/dashboard/analysis', icon: <Presentation className="size-4" /> },
   { name: 'Monetização', link: '/dashboard/monetization', icon: <DollarSign className="size-4" /> },
   { name: 'Publis', link: '/dashboard/sponsored-content', icon: <Star className="size-4" /> },
+  { name: 'Conexões', link: '/dashboard/connections', icon: <Share2 className="size-4" /> },
 ];
 
 export default function DashboardLayout({
