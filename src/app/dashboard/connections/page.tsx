@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function ConnectionsPage() {
     const { toast } = useToast();
+    const scope = 'user.info.basic'; // Solicita acesso às informações básicas do usuário
 
      useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -36,13 +38,12 @@ export default function ConnectionsPage() {
             // Limpa a URL dos parâmetros do TikTok
             window.history.replaceState({}, document.title, window.location.pathname);
         }
-    }, [toast]);
+    }, [toast, scope]);
 
 
     const handleConnectTikTok = () => {
         const clientKey = 'sbaw9edcigqvur1dsw';
         const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/dashboard/connections';
-        const scope = 'user.info.basic'; // Solicita acesso às informações básicas do usuário
         const state = '___UNIQUE_STATE_TOKEN___'; // Um token único para previnir ataques CSRF
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
