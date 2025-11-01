@@ -19,41 +19,83 @@ function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
     )
 }
 
+function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
+    return (
+        <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect width="20" height="20" x="2" y="2" rx="5" ry="5"/>
+            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+            <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/>
+        </svg>
+    )
+}
+
+
 export default function ConnectionsPage() {
     const { toast } = useToast();
-    const scope = 'user.info.basic'; // Solicita acesso às informações básicas do usuário
+    const tiktokScope = 'user.info.basic'; 
 
      useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
 
-        if (code) {
-            // Aqui você trocaria o código por um token de acesso
-            // Por enquanto, apenas exibimos uma notificação de sucesso
-            toast({
-                title: "Autorização do TikTok Concedida!",
-                description: "Conexão bem-sucedida. Em breve seus dados serão sincronizados.",
-            });
-            // Limpa a URL dos parâmetros do TikTok
+        if (code && state) {
+            // Checar o 'state' para determinar a origem (TikTok ou Meta)
+            if (state === '___UNIQUE_STATE_TOKEN_TIKTOK___') {
+                toast({
+                    title: "Autorização do TikTok Concedida!",
+                    description: "Conexão bem-sucedida. Em breve seus dados serão sincronizados.",
+                });
+            } else if (state === '___UNIQUE_STATE_TOKEN_META___') {
+                 toast({
+                    title: "Autorização do Instagram Concedida!",
+                    description: "Conexão com a Meta bem-sucedida.",
+                });
+            }
+            
             window.history.replaceState({}, document.title, window.location.pathname);
         }
-    }, [toast, scope]);
+    }, [toast]);
 
 
     const handleConnectTikTok = () => {
         const clientKey = 'sbaw9edcigqvur1dsw';
         const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/dashboard/connections';
-        const state = '___UNIQUE_STATE_TOKEN___'; // Um token único para previnir ataques CSRF
+        const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
         tiktokAuthUrl.searchParams.append('client_key', clientKey);
-        tiktokAuthUrl.searchParams.append('scope', scope);
+        tiktokAuthUrl.searchParams.append('scope', tiktokScope);
         tiktokAuthUrl.searchParams.append('response_type', 'code');
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
         tiktokAuthUrl.searchParams.append('state', state);
 
         window.open(tiktokAuthUrl.toString(), 'tiktokLogin', 'width=600,height=700');
+    };
+
+    const handleConnectInstagram = () => {
+        const appId = 'YOUR_META_APP_ID'; // SUBSTITUA PELO SEU APP ID DA META
+        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/dashboard/connections';
+        const scope = 'user_profile,user_media';
+        const state = '___UNIQUE_STATE_TOKEN_META___';
+
+        if (appId === 'YOUR_META_APP_ID') {
+            toast({
+                title: "Configuração Incompleta",
+                description: "Por favor, adicione sua App ID da Meta no código para continuar.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        const metaAuthUrl = new URL('https://api.instagram.com/oauth/authorize');
+        metaAuthUrl.searchParams.append('client_id', appId);
+        metaAuthUrl.searchParams.append('redirect_uri', redirectUri);
+        metaAuthUrl.searchParams.append('scope', scope);
+        metaAuthUrl.searchParams.append('response_type', 'code');
+        metaAuthUrl.searchParams.append('state', state);
+
+        window.open(metaAuthUrl.toString(), 'metaLogin', 'width=600,height=700');
     };
 
     return (
@@ -83,20 +125,20 @@ export default function ConnectionsPage() {
                         </Button>
                     </CardContent>
                 </Card>
-                {/* Futuros cards de conexão (Meta, etc.) podem ser adicionados aqui */}
-                 <Card className="border-dashed">
+                
+                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium text-muted-foreground">Instagram</CardTitle>
-                        <svg className="h-6 w-6 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                        <CardTitle className="text-sm font-medium">Instagram</CardTitle>
+                        <InstagramIcon className="h-6 w-6 text-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-lg font-bold text-muted-foreground">Em breve</div>
+                        <div className="text-lg font-bold">Não conectado</div>
                         <p className="text-xs text-muted-foreground">
-                           Aguarde a integração com a API da Meta.
+                           Conecte para importar dados via API da Meta.
                         </p>
                     </CardContent>
                     <CardContent>
-                        <Button className="w-full" variant="secondary" disabled>
+                        <Button className="w-full" onClick={handleConnectInstagram}>
                             <Share2 className="mr-2" /> Conectar Instagram
                         </Button>
                     </CardContent>
