@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Timeline } from "@/components/ui/timeline";
 import { GrowthCalculator } from "@/components/ui/growth-calculator";
 import { SocialProof } from "@/components/ui/social-proof";
+import { motion } from "framer-motion";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -168,6 +169,18 @@ export default function LandingPage() {
     { name: "Recursos", url: "#features", icon: Star },
   ];
 
+  const sectionVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: "easeOut",
+      },
+    },
+  };
+
   return (
     <div className="bg-background text-foreground">
       <NavBar items={navItems} />
@@ -175,23 +188,43 @@ export default function LandingPage() {
         title="Transforme Conteúdo em Tendência"
         description="Sua plataforma de IA para viralizar nas redes sociais. Analise, crie e monetize com o poder da inteligência artificial."
         ctaText="Comece a Crescer Agora"
-        onCtaClick={() => router.push("/login")}
+        onCtaClick={() => router.push("/signup")}
         icons={demoIcons}
       />
       <div id="features">
         <Timeline data={timelineData} />
       </div>
 
-       <GrowthCalculator />
-       <SocialProof />
+       <motion.div
+         initial="hidden"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.2 }}
+         variants={sectionVariants}
+       >
+         <GrowthCalculator />
+       </motion.div>
+       <motion.div
+         initial="hidden"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.2 }}
+         variants={sectionVariants}
+       >
+         <SocialProof />
+       </motion.div>
 
-       <section className="py-20 sm:py-32 bg-accent/30 text-accent-foreground">
+       <motion.section 
+         className="py-20 sm:py-32 bg-accent/30 text-accent-foreground"
+         initial="hidden"
+         whileInView="visible"
+         viewport={{ once: true, amount: 0.5 }}
+         variants={sectionVariants}
+       >
           <div className="container mx-auto px-4 text-center">
                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">
                 “Todo criador tem potencial pra ser tendência. A Trendify te mostra o caminho.”
               </h2>
           </div>
-      </section>
+      </motion.section>
     </div>
   );
 }
