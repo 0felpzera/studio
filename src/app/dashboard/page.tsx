@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -39,7 +40,6 @@ const revenueData = [
   { value: 6238 },
 ];
 
-// Business Case 2: New Customer Acquisition
 const customersData = [
   { value: 2000 },
   { value: 4500 },
@@ -58,7 +58,6 @@ const customersData = [
   { value: 4238 },
 ];
 
-// Business Case 3: Monthly Active Users
 const activeUsersData = [
   { value: 2000 },
   { value: 3500 },
