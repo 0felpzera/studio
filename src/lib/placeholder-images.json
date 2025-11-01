@@ -65,6 +65,18 @@
       "description": "Another happy female content creator",
       "imageUrl": "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=300",
       "imageHint": "smiling woman"
+    },
+    {
+      "id": "timeline-1",
+      "description": "Startup template image",
+      "imageUrl": "https://assets.aceternity.com/templates/startup-1.webp",
+      "imageHint": "website template"
+    },
+    {
+      "id": "timeline-2",
+      "description": "Another startup template image",
+      "imageUrl": "https://assets.aceternity.com/templates/startup-2.webp",
+      "imageHint": "website design"
     }
   ]
 }
