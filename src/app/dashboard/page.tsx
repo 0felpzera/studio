@@ -144,8 +144,8 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      <div className="@container w-full">
-        <div className="grid grid-cols-1 @2xl:grid-cols-3 gap-6">
+      <div className="w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {businessCards.map((card, i) => {
             const Icon = card.icon;
             return (
