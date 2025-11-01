@@ -5,7 +5,6 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,7 +16,6 @@ import { GrowthChart } from '@/components/ui/growth-chart';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-
 
 const step1Schema = z.object({
   niche: z.string().min(1, "O nicho é obrigatório"),
@@ -50,7 +48,6 @@ const steps = [
 export function GrowthCalculator() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
-  const [direction, setDirection] = useState(1);
   const [formData, setFormData] = useState<Partial<FormData>>({
     niche: 'Moda',
     country: 'Brasil',
@@ -70,7 +67,6 @@ export function GrowthCalculator() {
   const nextStep = async () => {
     const isValid = await form.trigger();
     if (isValid) {
-      setDirection(1);
       if (currentStep < steps.length - 1) {
         setFormData(prev => ({ ...prev, ...form.getValues() }));
         setCurrentStep(currentStep + 1);
@@ -80,7 +76,6 @@ export function GrowthCalculator() {
   };
 
   const prevStep = () => {
-    setDirection(-1);
     if (currentStep > 0) {
       setFormData(prev => ({ ...prev, ...form.getValues() }));
       setCurrentStep(currentStep - 1);
@@ -97,25 +92,6 @@ export function GrowthCalculator() {
     }, 100);
   };
     
-  const variants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
-      opacity: 0,
-      scale: 0.95,
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-      scale: 1,
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
-      opacity: 0,
-      scale: 0.95,
-    }),
-  };
   
   const renderStepContent = (stepIndex: number) => {
       switch (stepIndex) {
@@ -221,110 +197,53 @@ export function GrowthCalculator() {
       }
   };
 
-  const getCardStyle = (stepIndex: number) => {
-    const offset = stepIndex - currentStep;
-    const isVisible = Math.abs(offset) < 2;
-
-    if (!isVisible && stepIndex !== currentStep) {
-      return { display: 'none' };
-    }
-  
-    const isBehind = offset > 0;
-
-    return {
-        zIndex: steps.length - Math.abs(offset),
-        transform: `
-            translateX(${offset * 10}px) 
-            scale(${1 - Math.abs(offset) * 0.05})
-        `,
-        opacity: offset === 0 ? 1 : 0.5,
-        filter: offset !== 0 ? 'blur(1px)' : 'none',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-    };
-  };
 
   return (
     <section className="py-20 sm:py-32 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
         {!isCalculated ? (
-            <div className='text-center mb-16'>
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
-                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
-            </div>
-        ) : null}
-
-        {!isCalculated ? (
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-            <div className="relative h-[500px] flex items-start justify-center">
-                {steps.map((step, index) => {
-                    const isActive = currentStep === index;
-                    return (
-                        <motion.div
-                            key={step.id}
-                            className="absolute w-full max-w-lg"
-                            style={getCardStyle(index)}
-                            animate={getCardStyle(index)}
-                            initial={false}
-                        >
-                        <Card className={cn(
-                            "shadow-2xl w-full h-[480px] flex flex-col transition-all duration-300 bg-card/80 backdrop-blur-sm",
-                            isActive ? "border-2 border-primary/50 ring-4 ring-primary/10" : "border"
-                        )}>
+            <>
+                <div className='text-center mb-16'>
+                    <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
+                    <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
+                </div>
+                <div className="max-w-lg mx-auto">
+                    <form onSubmit={form.handleSubmit(onSubmit)}>
+                        <Card>
                             <CardHeader>
                                 <div className="flex items-center gap-3">
-                                    <div className={cn("rounded-full p-2.5 transition-colors", isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
-                                        <step.icon className="size-6" />
+                                    <div className="rounded-full p-2.5 bg-primary/10 text-primary">
+                                        {React.createElement(steps[currentStep].icon, { className: "size-6" })}
                                     </div>
                                     <div>
-                                        <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
-                                        <CardDescription>{step.description}</CardDescription>
+                                        <CardTitle className="text-xl font-bold">{steps[currentStep].title}</CardTitle>
+                                        <CardDescription>{steps[currentStep].description}</CardDescription>
                                     </div>
                                 </div>
                             </CardHeader>
-                           
-                            {isActive && (
-                                <AnimatePresence initial={false} custom={direction}>
-                                  <motion.div
-                                    key={currentStep}
-                                    custom={direction}
-                                    variants={variants}
-                                    initial="enter"
-                                    animate="center"
-                                    exit="exit"
-                                    transition={{
-                                      x: { type: "spring", stiffness: 350, damping: 40 },
-                                      opacity: { duration: 0.3 },
-                                    }}
-                                    className="flex-grow flex flex-col"
-                                  >
-                                    <CardContent className="flex-grow p-6">
-                                      {renderStepContent(currentStep)}
-                                    </CardContent>
-                                    <CardFooter className="flex justify-between bg-muted/30 p-4 mt-auto">
-                                      <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
-                                        <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                                      </Button>
-                                      {currentStep < steps.length - 1 ? (
-                                        <Button type="button" onClick={nextStep}>
-                                          Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                                        </Button>
-                                      ) : (
-                                        <Button type="submit">
-                                          <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                                        </Button>
-                                      )}
-                                    </CardFooter>
-                                  </motion.div>
-                                </AnimatePresence>
-                            )}
+                            <CardContent className="p-6">
+                                {renderStepContent(currentStep)}
+                            </CardContent>
+                            <CardFooter className="flex justify-between bg-muted/30 p-4">
+                                <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
+                                    <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                                </Button>
+                                {currentStep < steps.length - 1 ? (
+                                    <Button type="button" onClick={nextStep}>
+                                        Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                ) : (
+                                    <Button type="submit">
+                                        <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
+                                    </Button>
+                                )}
+                            </CardFooter>
                         </Card>
-                    </motion.div>
-                    )
-                })}
-            </div>
-          </form>
+                    </form>
+                </div>
+            </>
         ) : (
-          <motion.div id="calculator-results" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
+          <div id="calculator-results" className="space-y-12">
             <div className="text-center">
                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Seu Plano de Crescimento Personalizado</h2>
                  <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">Com base nas suas metas, aqui está uma projeção realista e um plano de ação para você decolar.</p>
@@ -425,9 +344,9 @@ export function GrowthCalculator() {
                     </Dialog>
                 </div>
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </section>
-  )
+  );
 }
