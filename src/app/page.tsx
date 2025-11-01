@@ -8,7 +8,7 @@ import {
   SiYoutube,
   SiTiktok,
   SiInstagram,
-  SiLinkedin,
+  SiThreads,
   SiX,
 } from "react-icons/si";
 
@@ -31,7 +31,7 @@ export default function LandingPage() {
     {
       id: "3",
       Icon: SiInstagram,
-      color: "#E4405F",
+      color: "url(#instagram-gradient)",
       rotation: 5,
     },
     {
@@ -48,8 +48,8 @@ export default function LandingPage() {
     },
     {
       id: "6",
-      Icon: SiLinkedin,
-      color: "#0A66C2",
+      Icon: SiThreads,
+      color: "#000000",
       rotation: 8,
     },
   ];

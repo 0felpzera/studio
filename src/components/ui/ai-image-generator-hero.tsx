@@ -75,6 +75,16 @@ export function ImageCarouselHero({
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-background via-background to-background overflow-hidden">
+      <svg width="0" height="0" style={{ position: 'absolute' }}>
+        <defs>
+          <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#f9ce34" />
+            <stop offset="25%" stopColor="#ee2a7b" />
+            <stop offset="50%" stopColor="#6228d7" />
+            <stop offset="100%" stopColor="#6228d7" />
+          </linearGradient>
+        </defs>
+      </svg>
       {/* Animated background gradient */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
@@ -147,10 +157,9 @@ export function ImageCarouselHero({
                           )}
                           style={{
                             transformStyle: "preserve-3d",
-                            color: color,
                           }}
                       >
-                          <Icon size="50%" className="transition-transform duration-500 group-hover:scale-110" />
+                          <Icon size="50%" className="transition-transform duration-500 group-hover:scale-110" style={{ color: color.startsWith('url') ? undefined : color, fill: color.startsWith('url') ? color : undefined }}/>
                           {/* Shine effect */}
                           <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       </div>
