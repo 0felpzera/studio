@@ -1,17 +1,31 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import Image from "next/image"
+import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { 
+  SiYoutube, 
+  SiTiktok, 
+  SiInstagram, 
+  SiFacebook, 
+  SiThreads,
+  SiX
+} from "react-icons/si";
 
-interface ImageCard {
-  id: string
-  src: string
-  alt: string
-  rotation: number
+interface SocialIcon {
+  Icon: React.ElementType;
+  color: string;
 }
+
+const socialIcons: SocialIcon[] = [
+  { Icon: SiYoutube, color: "#FF0000" },
+  { Icon: SiTiktok, color: "#000000" },
+  { Icon: SiInstagram, color: "#E4405F" },
+  { Icon: SiX, color: "#000000" },
+  { Icon: SiFacebook, color: "#1877F2" },
+  { Icon: SiThreads, color: "#000000" },
+];
 
 interface ImageCarouselHeroProps {
   title: string
@@ -19,7 +33,6 @@ interface ImageCarouselHeroProps {
   description: string
   ctaText: string
   onCtaClick?: () => void
-  images: ImageCard[]
   features?: Array<{
     title: string
     description: string
@@ -32,7 +45,6 @@ export function ImageCarouselHero({
   description,
   ctaText,
   onCtaClick,
-  images,
   features = [
     {
       title: "Realistic Results",
@@ -48,32 +60,6 @@ export function ImageCarouselHero({
     },
   ],
 }: ImageCarouselHeroProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
-  const [rotatingCards, setRotatingCards] = useState<number[]>([])
-
-  // Continuous rotation animation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setRotatingCards((prev) => prev.map((_, i) => (prev[i] + 0.5) % 360))
-    }, 50)
-
-    return () => clearInterval(interval)
-  }, [])
-
-  // Initialize rotating cards
-  useEffect(() => {
-    setRotatingCards(images.map((_, i) => i * (360 / images.length)))
-  }, [images.length])
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setMousePosition({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height,
-    })
-  }
-
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-background via-background to-background overflow-hidden">
       {/* Animated background gradient */}
@@ -107,64 +93,22 @@ export function ImageCarouselHero({
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
             </div>
-            {/* Carousel Container */}
+            {/* Social Icons Section */}
             <div
-            className="relative w-full h-96 sm:h-[500px]"
-            onMouseMove={handleMouseMove}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
+            className="relative w-full h-96 sm:h-[500px] flex items-center justify-center"
             >
-            {/* Rotating Image Cards */}
-            <div className="absolute inset-0 flex items-center justify-center perspective">
-                {images.map((image, index) => {
-                const totalCards = images.length
-                const angle = (rotatingCards[index] || 0) * (Math.PI / 180)
-                const radius = 180
-                const x = Math.cos(angle) * radius
-                const y = Math.sin(angle) * radius
-
-                // 3D perspective effect based on mouse position
-                const perspectiveX = (mousePosition.x - 0.5) * 20
-                const perspectiveY = (mousePosition.y - 0.5) * 20
-
-                return (
-                    <div
-                    key={image.id}
-                    className="absolute w-32 h-40 sm:w-40 sm:h-48 transition-all duration-300"
-                    style={{
-                        transform: `
-                        translate(${x}px, ${y}px)
-                        rotateX(${perspectiveY}deg)
-                        rotateY(${perspectiveX}deg)
-                        rotateZ(${image.rotation}deg)
-                        `,
-                        transformStyle: "preserve-3d",
-                    }}
-                    >
-                    <div
-                        className={cn(
-                        "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl",
-                        "transition-all duration-300 hover:shadow-3xl hover:scale-110",
-                        "cursor-pointer group",
-                        )}
-                        style={{
-                        transformStyle: "preserve-3d",
-                        }}
-                    >
-                        <Image
-                        src={image.src || "/placeholder.svg"}
-                        alt={image.alt}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        priority={index < 3}
-                        />
-                        {/* Shine effect */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </div>
-                    </div>
-                )
-                })}
-            </div>
+              <div className="grid grid-cols-3 gap-6">
+                {socialIcons.map(({ Icon, color }, i) => (
+                  <motion.div
+                    key={i}
+                    whileHover={{ y: -15, scale: 1.2 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                    className="flex justify-center items-center bg-card p-6 rounded-2xl shadow-lg border border-border/10 cursor-pointer"
+                  >
+                    <Icon size={60} style={{ color }} />
+                  </motion.div>
+                ))}
+              </div>
             </div>
         </div>
 
