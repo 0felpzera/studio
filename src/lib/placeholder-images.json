@@ -41,6 +41,12 @@
       "description": "Trending video thumbnail 6",
       "imageUrl": "https://images.unsplash.com/photo-1600861194942-f883de0dfe96?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHx2aWRlbyUyMGdhbWV8ZW58MHx8fHwxNzYxODgzNDQyfDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "video game"
+    },
+    {
+      "id": "demo-1",
+      "description": "Demonstration of AI reviewing a video",
+      "imageUrl": "https://images.unsplash.com/photo-1684369176170-463e84248b70?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      "imageHint": "AI interface"
     }
   ]
 }

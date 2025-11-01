@@ -1,3 +1,4 @@
+
 "use client"
 
 import type React from "react"
@@ -21,10 +22,6 @@ interface ImageCarouselHeroProps {
   ctaText: string
   onCtaClick?: () => void
   icons: IconCard[]
-  features?: Array<{
-    title: string
-    description: string
-  }>
 }
 
 export function ImageCarouselHero({
@@ -33,20 +30,6 @@ export function ImageCarouselHero({
   ctaText,
   onCtaClick,
   icons,
-  features = [
-    {
-      title: "Análise de Vídeo",
-      description: "Receba feedback da IA para otimizar seus vídeos.",
-    },
-    {
-      title: "Gerador de Ideias",
-      description: "Nunca mais fique sem ideias de conteúdo.",
-    },
-    {
-      title: "Plano de Conteúdo",
-      description: "Crie um calendário de postagens com a ajuda da IA.",
-    },
-  ],
 }: ImageCarouselHeroProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [rotatingCards, setRotatingCards] = useState<number[]>([])
@@ -91,7 +74,7 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 sm:pt-0">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 w-full max-w-6xl items-center">
             {/* Text Content Section */}
             <div className="relative z-20 text-center lg:text-left">
@@ -168,26 +151,6 @@ export function ImageCarouselHero({
                 })}
             </div>
             </div>
-        </div>
-
-        {/* Features Section */}
-        <div className="relative z-20 w-full max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 mt-12 sm:mt-16">
-          {features.map((feature, index) => (
-            <div
-              key={index}
-              className={cn(
-                "text-center p-6 rounded-xl",
-                "bg-card/50 backdrop-blur-sm border border-border/50",
-                "hover:bg-card/80 hover:border-border transition-all duration-300",
-                "group",
-              )}
-            >
-              <h3 className="text-lg sm:text-xl font-semibold text-foreground mb-2 group-hover:text-primary transition-colors">
-                {feature.title}
-              </h3>
-              <p className="text-sm sm:text-base text-muted-foreground">{feature.description}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>
