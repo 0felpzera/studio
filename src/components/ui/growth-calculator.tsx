@@ -99,24 +99,21 @@ export function GrowthCalculator() {
     
   const variants = {
     enter: (direction: number) => ({
-      x: direction > 0 ? '100%' : '-100%',
+      x: direction > 0 ? 50 : -50,
       opacity: 0,
-      scale: 0.8,
-      rotate: direction > 0 ? 10 : -10,
+      scale: 0.9,
     }),
     center: {
       zIndex: 1,
       x: 0,
       opacity: 1,
       scale: 1,
-      rotate: 0,
     },
     exit: (direction: number) => ({
       zIndex: 0,
-      x: direction < 0 ? '100%' : '-100%',
+      x: direction < 0 ? 50 : -50,
       opacity: 0,
-      scale: 0.8,
-      rotate: direction < 0 ? 10 : -10,
+      scale: 0.9,
     }),
   };
 
@@ -226,28 +223,24 @@ export function GrowthCalculator() {
 
   const getCardStyle = (stepIndex: number) => {
     const offset = stepIndex - currentStep;
-    const isVisible = Math.abs(offset) <= 1; // Only render current, next, and previous
+    const isVisible = Math.abs(offset) <= 2;
 
     if (!isVisible) {
       return { display: 'none' };
     }
   
-    if (offset === 0) {
-      return {
-        zIndex: 20,
-        transform: 'none',
-        opacity: 1,
-      };
-    }
-    
-    const scale = 1 - Math.abs(offset) * 0.1;
-    const translateX = offset > 0 ? 60 : -60;
-    const rotate = offset > 0 ? 5 : -5;
-    
+    const isBehind = offset > 0;
+
     return {
-        transform: `translateX(${translateX}px) scale(${scale}) rotate(${rotate}deg)`,
-        zIndex: 10 - Math.abs(offset),
-        opacity: Math.max(1 - Math.abs(offset) * 0.4, 0),
+        zIndex: steps.length - Math.abs(offset),
+        transform: `
+            translateX(${offset * 40}px) 
+            scale(${1 - Math.abs(offset) * 0.1})
+            rotate(${offset * 3}deg)
+        `,
+        opacity: offset === 0 ? 1 : (isBehind ? 0.3 : 0.6),
+        filter: offset !== 0 ? 'blur(1px)' : 'none',
+        transition: 'all 0.4s ease-out'
     };
   };
 
@@ -263,68 +256,65 @@ export function GrowthCalculator() {
 
         {!isCalculated ? (
           <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
-            <div className="relative h-[650px] flex items-center justify-center">
-              <AnimatePresence initial={false} custom={direction}>
-                {steps.map((step, index) => (
-                    <motion.div
-                      key={step.id}
-                      className="absolute w-full max-w-lg"
-                      custom={direction}
-                      initial="enter"
-                      animate={getCardStyle(index)}
-                      exit="exit"
-                      variants={variants}
-                      transition={{
-                        x: { type: "spring", stiffness: 200, damping: 25 },
-                        opacity: { duration: 0.3 },
-                        duration: 0.4
-                      }}
-                      style={{
-                        transformOrigin: 'center center',
-                        display: Math.abs(index - currentStep) > 1 ? 'none' : 'block' // Hide cards that are too far away
-                      }}
-                    >
-                      <Card className={cn(
-                          "shadow-2xl w-full h-[600px] flex flex-col transition-all duration-300",
-                          currentStep === index ? "border-2 border-primary/50 ring-4 ring-primary/10" : "border-border/50"
-                      )}>
-                        <CardHeader>
-                            <div className="flex items-center gap-3">
-                                <div className={cn("rounded-full p-2.5 transition-colors", currentStep === index ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
-                                <step.icon className="size-6" />
+            <div className="relative h-[650px] flex items-center justify-center -skew-y-3">
+                {steps.map((step, index) => {
+                    const isActive = currentStep === index;
+                    return (
+                        <div
+                            key={step.id}
+                            className="absolute w-full max-w-lg transition-all duration-500"
+                            style={getCardStyle(index)}
+                        >
+                        <Card className={cn(
+                            "shadow-2xl w-full h-[600px] flex flex-col transition-all duration-300 bg-card/80 backdrop-blur-sm",
+                            isActive ? "border-2 border-primary/50 ring-4 ring-primary/10" : "border"
+                        )}>
+                            <CardHeader>
+                                <div className="flex items-center gap-3">
+                                    <div className={cn("rounded-full p-2.5 transition-colors", isActive ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground")}>
+                                        <step.icon className="size-6" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-2xl font-bold">{step.title}</CardTitle>
+                                        <CardDescription>{step.description}</CardDescription>
+                                    </div>
                                 </div>
-                                <div>
-                                    <CardTitle className="text-2xl font-bold">{step.title}</CardTitle>
-                                    <CardDescription>{step.description}</CardDescription>
-                                </div>
-                            </div>
-                        </CardHeader>
+                            </CardHeader>
+                            <AnimatePresence initial={false}>
+                                {isActive && (
+                                    <motion.div
+                                        key={`content-${currentStep}`}
+                                        initial={{ opacity: 0, y: 10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.3, delay: 0.2 }}
+                                        className='flex-grow flex flex-col'
+                                    >
+                                        <CardContent className="flex-grow p-8">
+                                            {renderStepContent(index)}
+                                        </CardContent>
 
-                         {currentStep === index && (
-                             <>
-                                <CardContent className="flex-grow p-8">
-                                    {renderStepContent(index)}
-                                </CardContent>
-                                <CardFooter className="flex justify-between bg-muted/30 p-6">
-                                    <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
-                                        <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                                    </Button>
-                                    {currentStep < steps.length - 1 ? (
-                                        <Button type="button" onClick={nextStep}>
-                                        Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                                        </Button>
-                                    ) : (
-                                        <Button type="submit">
-                                        <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                                        </Button>
-                                    )}
-                                </CardFooter>
-                             </>
-                         )}
-                      </Card>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
+                                        <CardFooter className="flex justify-between bg-muted/30 p-6 mt-auto">
+                                            <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
+                                                <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                                            </Button>
+                                            {currentStep < steps.length - 1 ? (
+                                                <Button type="button" onClick={nextStep}>
+                                                Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                                                </Button>
+                                            ) : (
+                                                <Button type="submit">
+                                                <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
+                                                </Button>
+                                            )}
+                                        </CardFooter>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </Card>
+                    </div>
+                    )
+                })}
             </div>
           </form>
         ) : (
