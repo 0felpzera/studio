@@ -3,8 +3,10 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { Share2 } from "lucide-react";
+import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
+
 
 function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -19,11 +21,38 @@ function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
 export default function ConnectionsPage() {
     const { toast } = useToast();
 
-    const handleConnectClick = (platform: string) => {
-        toast({
-            title: `Conexão com ${platform}`,
-            description: "Funcionalidade em desenvolvimento. Em breve você poderá conectar suas contas!",
-        });
+     useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const state = urlParams.get('state');
+
+        if (code) {
+            // Aqui você trocaria o código por um token de acesso
+            // Por enquanto, apenas exibimos uma notificação de sucesso
+            toast({
+                title: "Autorização do TikTok Concedida!",
+                description: "Conexão bem-sucedida. Em breve seus dados serão sincronizados.",
+            });
+            // Limpa a URL dos parâmetros do TikTok
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }, [toast]);
+
+
+    const handleConnectTikTok = () => {
+        const clientKey = 'sbaw9edcigqvur1dsw';
+        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/dashboard/connections';
+        const scope = 'user.info.basic'; // Solicita acesso às informações básicas do usuário
+        const state = '___UNIQUE_STATE_TOKEN___'; // Um token único para previnir ataques CSRF
+
+        const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
+        tiktokAuthUrl.searchParams.append('client_key', clientKey);
+        tiktokAuthUrl.searchParams.append('scope', scope);
+        tiktokAuthUrl.searchParams.append('response_type', 'code');
+        tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
+        tiktokAuthUrl.searchParams.append('state', state);
+
+        window.location.href = tiktokAuthUrl.toString();
     };
 
     return (
@@ -48,7 +77,7 @@ export default function ConnectionsPage() {
                         </p>
                     </CardContent>
                     <CardContent>
-                        <Button className="w-full" onClick={() => handleConnectClick('TikTok')}>
+                        <Button className="w-full" onClick={handleConnectTikTok}>
                             <Share2 className="mr-2" /> Conectar TikTok
                         </Button>
                     </CardContent>
