@@ -16,6 +16,7 @@ import { GrowthChart } from '@/components/ui/growth-chart';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
 
 
 const step1Schema = z.object({
@@ -37,6 +38,8 @@ const step3Schema = z.object({
   priority: z.string().min(1, "A prioridade é obrigatória"),
 });
 
+const allSchemas = [step1Schema, step2Schema, step3Schema];
+
 const formSchema = step1Schema.merge(step2Schema).merge(step3Schema);
 type FormData = z.infer<typeof formSchema>;
 
@@ -49,6 +52,7 @@ const steps = [
 export function GrowthCalculator() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
+  const [highestStep, setHighestStep] = useState(0);
   const [formData, setFormData] = useState<Partial<FormData>>({
     niche: 'Moda',
     country: 'Brasil',
@@ -58,12 +62,35 @@ export function GrowthCalculator() {
     storiesPerMonth: 12,
     priority: 'Alcance'
   });
+  const { toast } = useToast();
 
-  const form = useForm({
-    resolver: zodResolver(steps[currentStep].schema),
+  const form = useForm<FormData>({
+    resolver: zodResolver(allSchemas[currentStep]),
     defaultValues: formData,
     mode: 'onChange',
   });
+
+  const handleStepClick = async (stepIndex: number) => {
+    if (stepIndex < currentStep) {
+      setCurrentStep(stepIndex);
+      return;
+    }
+
+    if (stepIndex > currentStep) {
+        const isValid = await form.trigger();
+        if (isValid) {
+            setCurrentStep(stepIndex);
+            setHighestStep(Math.max(highestStep, stepIndex));
+        } else {
+            toast({
+                title: "Campos Incompletos",
+                description: "Por favor, preencha todos os campos obrigatórios antes de avançar.",
+                variant: "destructive"
+            });
+        }
+    }
+  };
+
 
    const nextStep = async () => {
     const isValid = await form.trigger();
@@ -74,11 +101,17 @@ export function GrowthCalculator() {
       
       if (currentStep < steps.length - 1) {
         setCurrentStep(currentStep + 1);
-        // We need to reset the form with the new step's schema and merged data
+        setHighestStep(Math.max(highestStep, currentStep + 1));
         form.reset(updatedFormData);
       } else {
         onSubmit(updatedFormData);
       }
+    } else {
+         toast({
+            title: "Campos Incompletos",
+            description: "Por favor, preencha todos os campos obrigatórios antes de avançar.",
+            variant: "destructive"
+        });
     }
   };
 
@@ -222,19 +255,21 @@ export function GrowthCalculator() {
                        <div className="absolute left-4 top-4 h-full w-px bg-border -z-10" />
                        <ul className="space-y-8">
                         {steps.map((step, index) => {
-                          const isCompleted = currentStep > index;
+                          const isCompleted = index < currentStep || index <= highestStep;
                           const isCurrent = currentStep === index;
+                          const Icon = step.icon;
+                          
                           return (
-                            <li key={step.id} className="flex items-start gap-4">
-                              <div className={cn("size-8 rounded-full flex items-center justify-center font-bold",
+                            <li key={step.id} className="flex items-start gap-4 cursor-pointer" onClick={() => handleStepClick(index)}>
+                              <div className={cn("size-8 rounded-full flex items-center justify-center font-bold transition-colors",
                                 isCompleted ? 'bg-primary text-primary-foreground' : 
                                 isCurrent ? 'border-2 border-primary bg-background text-primary' :
                                 'bg-muted text-muted-foreground'
                               )}>
-                                {isCompleted ? <Check className="size-5" /> : step.id}
+                                {isCompleted && !isCurrent ? <Check className="size-5" /> : <Icon className="size-4" />}
                               </div>
                               <div>
-                                <h3 className={cn("font-semibold", isCurrent ? "text-foreground" : "text-muted-foreground")}>{step.title}</h3>
+                                <h3 className={cn("font-semibold transition-colors", isCurrent ? "text-foreground" : "text-muted-foreground")}>{step.title}</h3>
                                 <p className="text-sm text-muted-foreground">{step.description}</p>
                               </div>
                             </li>
@@ -370,5 +405,3 @@ export function GrowthCalculator() {
     </section>
   );
 }
-
-    
