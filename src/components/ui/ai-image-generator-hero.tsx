@@ -2,24 +2,25 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
+import type { IconType } from "react-icons";
 
-interface ImageCard {
+
+interface IconCard {
   id: string
-  src: string
-  alt: string
+  Icon: IconType
+  color: string
   rotation: number
 }
 
 interface ImageCarouselHeroProps {
   title: string
-  subtitle: string
   description: string
   ctaText: string
   onCtaClick?: () => void
-  images: ImageCard[]
+  icons: IconCard[]
   features?: Array<{
     title: string
     description: string
@@ -28,28 +29,26 @@ interface ImageCarouselHeroProps {
 
 export function ImageCarouselHero({
   title,
-  subtitle,
   description,
   ctaText,
   onCtaClick,
-  images,
+  icons,
   features = [
     {
-      title: "Realistic Results",
-      description: "Realistic Results Photos that look professionally crafted",
+      title: "Análise de Vídeo",
+      description: "Receba feedback da IA para otimizar seus vídeos.",
     },
     {
-      title: "Fast Generation",
-      description: "Turn ideas into images in seconds.",
+      title: "Gerador de Ideias",
+      description: "Nunca mais fique sem ideias de conteúdo.",
     },
     {
-      title: "Diverse Styles",
-      description: "Choose from a wide range of artistic options.",
+      title: "Plano de Conteúdo",
+      description: "Crie um calendário de postagens com a ajuda da IA.",
     },
   ],
 }: ImageCarouselHeroProps) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const [isHovering, setIsHovering] = useState(false)
   const [rotatingCards, setRotatingCards] = useState<number[]>([])
 
   // Continuous rotation animation
@@ -63,8 +62,8 @@ export function ImageCarouselHero({
 
   // Initialize rotating cards
   useEffect(() => {
-    setRotatingCards(images.map((_, i) => i * (360 / images.length)))
-  }, [images.length])
+    setRotatingCards(icons.map((_, i) => i * (360 / icons.length)))
+  }, [icons.length])
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
@@ -111,13 +110,11 @@ export function ImageCarouselHero({
             <div
             className="relative w-full h-96 sm:h-[500px]"
             onMouseMove={handleMouseMove}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
             >
-            {/* Rotating Image Cards */}
+            {/* Rotating Icon Cards */}
             <div className="absolute inset-0 flex items-center justify-center perspective">
-                {images.map((image, index) => {
-                const totalCards = images.length
+                {icons.map(({ Icon, color, rotation }, index) => {
+                const totalCards = icons.length
                 const angle = (rotatingCards[index] || 0) * (Math.PI / 180)
                 const radius = 180
                 const x = Math.cos(angle) * radius
@@ -128,40 +125,36 @@ export function ImageCarouselHero({
                 const perspectiveY = (mousePosition.y - 0.5) * 20
 
                 return (
-                    <div
-                    key={image.id}
-                    className="absolute w-32 h-40 sm:w-40 sm:h-48 transition-all duration-300"
-                    style={{
-                        transform: `
-                        translate(${x}px, ${y}px)
-                        rotateX(${perspectiveY}deg)
-                        rotateY(${perspectiveX}deg)
-                        rotateZ(${image.rotation}deg)
-                        `,
-                        transformStyle: "preserve-3d",
-                    }}
+                    <motion.div
+                      key={index}
+                      className="absolute w-24 h-24 sm:w-32 sm:h-32 transition-all duration-300"
+                      style={{
+                          transform: `
+                          translate(${x}px, ${y}px)
+                          rotateX(${perspectiveY}deg)
+                          rotateY(${perspectiveX}deg)
+                          rotateZ(${rotation}deg)
+                          `,
+                          transformStyle: "preserve-3d",
+                      }}
                     >
-                    <div
-                        className={cn(
-                        "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl",
-                        "transition-all duration-300 hover:shadow-3xl hover:scale-110",
-                        "cursor-pointer group",
-                        )}
-                        style={{
-                        transformStyle: "preserve-3d",
-                        }}
-                    >
-                        <Image
-                        src={image.src || "/placeholder.svg"}
-                        alt={image.alt}
-                        fill
-                        className="object-cover group-hover:scale-110 transition-transform duration-500"
-                        priority={index < 3}
-                        />
-                        {/* Shine effect */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                    </div>
-                    </div>
+                      <div
+                          className={cn(
+                          "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center",
+                          "bg-card/80 backdrop-blur-sm border border-border/50",
+                          "transition-all duration-300 hover:shadow-3xl hover:scale-110",
+                          "cursor-pointer group",
+                          )}
+                          style={{
+                            transformStyle: "preserve-3d",
+                            color: color,
+                          }}
+                      >
+                          <Icon size="50%" className="transition-transform duration-500 group-hover:scale-110" />
+                          {/* Shine effect */}
+                          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      </div>
+                    </motion.div>
                 )
                 })}
             </div>
