@@ -15,7 +15,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { GrowthChart } from '@/components/ui/growth-chart';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import { CardStack } from './card-stack';
 
 const step1Schema = z.object({
   niche: z.string().min(1, "O nicho é obrigatório"),
@@ -67,10 +67,12 @@ export function GrowthCalculator() {
   const nextStep = async () => {
     const isValid = await form.trigger();
     if (isValid) {
+      setFormData(prev => ({ ...prev, ...form.getValues() }));
       if (currentStep < steps.length - 1) {
-        setFormData(prev => ({ ...prev, ...form.getValues() }));
         setCurrentStep(currentStep + 1);
         form.reset({ ...formData, ...form.getValues() });
+      } else {
+        onSubmit(form.getValues());
       }
     }
   };
@@ -94,108 +96,139 @@ export function GrowthCalculator() {
     
   
   const renderStepContent = (stepIndex: number) => {
-      switch (stepIndex) {
-        case 0:
-          return (
-            <div className="space-y-4">
-               <div className="space-y-1.5">
-                  <Label htmlFor="instagram">@Instagram (opcional)</Label>
-                  <Input id="instagram" {...form.register('instagram')} placeholder="@seuusuario" />
-               </div>
+    switch (stepIndex) {
+      case 0:
+        return (
+          <div className="space-y-4">
               <div className="space-y-1.5">
-                  <Label htmlFor="niche">Nicho</Label>
-                   <Select onValueChange={(value) => form.setValue('niche', value)} defaultValue={form.getValues('niche')}>
-                      <SelectTrigger><SelectValue placeholder="Selecione seu nicho" /></SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="Moda">Moda</SelectItem>
-                          <SelectItem value="Beleza">Beleza</SelectItem>
-                          <SelectItem value="Fitness">Fitness</SelectItem>
-                          <SelectItem value="Culinária">Culinária</SelectItem>
-                          <SelectItem value="Lifestyle">Lifestyle</SelectItem>
-                          <SelectItem value="Tecnologia">Tecnologia</SelectItem>
-                          <SelectItem value="Viagem">Viagem</SelectItem>
-                           <SelectItem value="Games">Games</SelectItem>
-                           <SelectItem value="Comédia">Comédia</SelectItem>
-                      </SelectContent>
-                  </Select>
-                   {form.formState.errors.niche && <p className="text-xs font-medium text-destructive">{form.formState.errors.niche.message}</p>}
+                <Label htmlFor="instagram">@Instagram (opcional)</Label>
+                <Input id="instagram" {...form.register('instagram')} placeholder="@seuusuario" />
               </div>
-               <div className="space-y-1.5">
-                  <Label htmlFor="country">País/Região</Label>
-                   <Select onValueChange={(value) => form.setValue('country', value)} defaultValue={form.getValues('country')}>
-                      <SelectTrigger><SelectValue placeholder="Selecione seu país" /></SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="Brasil">Brasil</SelectItem>
-                          <SelectItem value="Portugal">Portugal</SelectItem>
-                          <SelectItem value="EUA">EUA</SelectItem>
-                          <SelectItem value="Outro">Outro</SelectItem>
-                      </SelectContent>
-                  </Select>
-                  {form.formState.errors.country && <p className="text-xs font-medium text-destructive">{form.formState.errors.country.message}</p>}
-              </div>
+            <div className="space-y-1.5">
+                <Label htmlFor="niche">Nicho</Label>
+                  <Select onValueChange={(value) => form.setValue('niche', value)} defaultValue={form.getValues('niche')}>
+                    <SelectTrigger><SelectValue placeholder="Selecione seu nicho" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Moda">Moda</SelectItem>
+                        <SelectItem value="Beleza">Beleza</SelectItem>
+                        <SelectItem value="Fitness">Fitness</SelectItem>
+                        <SelectItem value="Culinária">Culinária</SelectItem>
+                        <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+                        <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                        <SelectItem value="Viagem">Viagem</SelectItem>
+                          <SelectItem value="Games">Games</SelectItem>
+                          <SelectItem value="Comédia">Comédia</SelectItem>
+                    </SelectContent>
+                </Select>
+                  {form.formState.errors.niche && <p className="text-xs font-medium text-destructive">{form.formState.errors.niche.message}</p>}
             </div>
-          );
-        case 1:
-          return (
-            <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="followers">Seguidores Atuais</Label>
-                <Input id="followers" type="number" {...form.register('followers')} placeholder="Ex: 1500" />
-                 {form.formState.errors.followers && <p className="text-xs font-medium text-destructive">{form.formState.errors.followers.message}</p>}
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="avgViews">Média de Views por Reels (opcional)</Label>
-                <Input id="avgViews" type="number" {...form.register('avgViews')} placeholder="Ex: 5000" />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="engagement">Engajamento Médio % (opcional)</Label>
-                <Input id="engagement" type="number" {...form.register('engagement')} placeholder="Ex: 5" />
-              </div>
+                <Label htmlFor="country">País/Região</Label>
+                  <Select onValueChange={(value) => form.setValue('country', value)} defaultValue={form.getValues('country')}>
+                    <SelectTrigger><SelectValue placeholder="Selecione seu país" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Brasil">Brasil</SelectItem>
+                        <SelectItem value="Portugal">Portugal</SelectItem>
+                        <SelectItem value="EUA">EUA</SelectItem>
+                        <SelectItem value="Outro">Outro</SelectItem>
+                    </SelectContent>
+                </Select>
+                {form.formState.errors.country && <p className="text-xs font-medium text-destructive">{form.formState.errors.country.message}</p>}
             </div>
-          );
-        case 2:
-          return (
-            <div className="space-y-6">
-              <div className="space-y-1.5">
-                <Label htmlFor="followerGoal">Meta de Seguidores</Label>
-                <Input id="followerGoal" type="number" {...form.register('followerGoal')} placeholder="Ex: 100000" />
-                 {form.formState.errors.followerGoal && <p className="text-xs font-medium text-destructive">{form.formState.errors.followerGoal.message}</p>}
+          </div>
+        );
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="followers">Seguidores Atuais</Label>
+              <Input id="followers" type="number" {...form.register('followers')} placeholder="Ex: 1500" />
+                {form.formState.errors.followers && <p className="text-xs font-medium text-destructive">{form.formState.errors.followers.message}</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="avgViews">Média de Views por Reels (opcional)</Label>
+              <Input id="avgViews" type="number" {...form.register('avgViews')} placeholder="Ex: 5000" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="engagement">Engajamento Médio % (opcional)</Label>
+              <Input id="engagement" type="number" {...form.register('engagement')} placeholder="Ex: 5" />
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-6">
+            <div className="space-y-1.5">
+              <Label htmlFor="followerGoal">Meta de Seguidores</Label>
+              <Input id="followerGoal" type="number" {...form.register('followerGoal')} placeholder="Ex: 100000" />
+                {form.formState.errors.followerGoal && <p className="text-xs font-medium text-destructive">{form.formState.errors.followerGoal.message}</p>}
+            </div>
+            <div className="space-y-3">
+              <Label className="font-medium">Postagens por Mês</Label>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                    <Label htmlFor="reelsPerMonth" className="text-sm">Reels</Label>
+                    <span className="text-sm font-bold text-primary">{form.watch('reelsPerMonth')}</span>
+                </div>
+                <Slider id="reelsPerMonth" defaultValue={[formData.reelsPerMonth || 8]} max={60} step={1} onValueChange={([val]) => form.setValue('reelsPerMonth', val)} />
               </div>
-              <div className="space-y-3">
-                <Label className="font-medium">Postagens por Mês</Label>
-                <div className="space-y-2">
+              <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                      <Label htmlFor="reelsPerMonth" className="text-sm">Reels</Label>
-                      <span className="text-sm font-bold text-primary">{form.watch('reelsPerMonth')}</span>
+                    <Label htmlFor="storiesPerMonth" className="text-sm">Stories com CTA</Label>
+                    <span className="text-sm font-bold text-primary">{form.watch('storiesPerMonth')}</span>
                   </div>
-                  <Slider id="reelsPerMonth" defaultValue={[formData.reelsPerMonth || 8]} max={60} step={1} onValueChange={([val]) => form.setValue('reelsPerMonth', val)} />
-                </div>
-                <div className="space-y-2">
-                   <div className="flex justify-between items-center">
-                      <Label htmlFor="storiesPerMonth" className="text-sm">Stories com CTA</Label>
-                      <span className="text-sm font-bold text-primary">{form.watch('storiesPerMonth')}</span>
-                   </div>
-                  <Slider id="storiesPerMonth" defaultValue={[formData.storiesPerMonth || 12]} max={100} step={1} onValueChange={([val]) => form.setValue('storiesPerMonth', val)} />
-                </div>
-              </div>
-               <div className="space-y-1.5">
-                  <Label>Qual sua prioridade?</Label>
-                   <Select onValueChange={(value) => form.setValue('priority', value)} defaultValue={form.getValues('priority')}>
-                      <SelectTrigger><SelectValue placeholder="Selecione sua prioridade" /></SelectTrigger>
-                      <SelectContent>
-                          <SelectItem value="Alcance">Alcance</SelectItem>
-                          <SelectItem value="Conversão">Conversão</SelectItem>
-                          <SelectItem value="Autoridade">Autoridade</SelectItem>
-                      </SelectContent>
-                  </Select>
-                   {form.formState.errors.priority && <p className="text-xs font-medium text-destructive">{form.formState.errors.priority.message}</p>}
+                <Slider id="storiesPerMonth" defaultValue={[formData.storiesPerMonth || 12]} max={100} step={1} onValueChange={([val]) => form.setValue('storiesPerMonth', val)} />
               </div>
             </div>
-          );
-        default:
-          return null;
-      }
+              <div className="space-y-1.5">
+                <Label>Qual sua prioridade?</Label>
+                  <Select onValueChange={(value) => form.setValue('priority', value)} defaultValue={form.getValues('priority')}>
+                    <SelectTrigger><SelectValue placeholder="Selecione sua prioridade" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Alcance">Alcance</SelectItem>
+                        <SelectItem value="Conversão">Conversão</SelectItem>
+                        <SelectItem value="Autoridade">Autoridade</SelectItem>
+                    </SelectContent>
+                </Select>
+                  {form.formState.errors.priority && <p className="text-xs font-medium text-destructive">{form.formState.errors.priority.message}</p>}
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
+
+  const cards = steps.map((step, index) => ({
+    id: step.id,
+    content: (
+        <Card className="h-full bg-transparent border-0 shadow-none">
+            <CardHeader>
+                <div className="flex items-center gap-3">
+                    <div className="rounded-full p-2.5 bg-primary/10 text-primary">
+                        {React.createElement(step.icon, { className: "size-5" })}
+                    </div>
+                    <div>
+                        <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
+                        <CardDescription>{step.description}</CardDescription>
+                    </div>
+                </div>
+            </CardHeader>
+            <CardContent className="p-6">
+                {renderStepContent(index)}
+            </CardContent>
+            <CardFooter className="flex justify-between bg-card p-4 rounded-b-xl">
+                <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
+                    <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                </Button>
+                <Button type="button" onClick={nextStep}>
+                    {currentStep < steps.length - 1 ? 'Próximo' : 'Calcular Potencial'} 
+                    {currentStep < steps.length - 1 ? <ArrowRight className="ml-2 h-4 w-4" /> : <Sparkles className="ml-2 h-4 w-4" />}
+                </Button>
+            </CardFooter>
+        </Card>
+    )
+  }))
 
 
   return (
@@ -207,39 +240,8 @@ export function GrowthCalculator() {
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
                     <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
                 </div>
-                <div className="max-w-lg mx-auto">
-                    <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <Card>
-                            <CardHeader>
-                                <div className="flex items-center gap-3">
-                                    <div className="rounded-full p-2.5 bg-primary/10 text-primary">
-                                        {React.createElement(steps[currentStep].icon, { className: "size-6" })}
-                                    </div>
-                                    <div>
-                                        <CardTitle className="text-xl font-bold">{steps[currentStep].title}</CardTitle>
-                                        <CardDescription>{steps[currentStep].description}</CardDescription>
-                                    </div>
-                                </div>
-                            </CardHeader>
-                            <CardContent className="p-6">
-                                {renderStepContent(currentStep)}
-                            </CardContent>
-                            <CardFooter className="flex justify-between bg-muted/30 p-4">
-                                <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
-                                    <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                                </Button>
-                                {currentStep < steps.length - 1 ? (
-                                    <Button type="button" onClick={nextStep}>
-                                        Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Button>
-                                ) : (
-                                    <Button type="submit">
-                                        <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                                    </Button>
-                                )}
-                            </CardFooter>
-                        </Card>
-                    </form>
+                <div className="max-w-md mx-auto h-[550px]">
+                  <CardStack items={cards} currentStep={currentStep} />
                 </div>
             </>
         ) : (
