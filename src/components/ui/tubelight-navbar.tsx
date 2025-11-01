@@ -4,8 +4,10 @@
 import React, { useEffect, useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { LucideIcon } from "lucide-react"
+import { LucideIcon, LogIn } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Button } from "./button"
+import { useRouter } from "next/navigation"
 
 interface NavItem {
   name: string
@@ -21,6 +23,7 @@ interface NavBarProps {
 export function NavBar({ items, className }: NavBarProps) {
   const [activeTab, setActiveTab] = useState(items[0].name)
   const [isMobile, setIsMobile] = useState(false)
+  const router = useRouter();
 
   useEffect(() => {
     const handleResize = () => {
@@ -80,6 +83,21 @@ export function NavBar({ items, className }: NavBarProps) {
             </Link>
           )
         })}
+
+        <div className="hidden sm:flex items-center gap-2 pr-2">
+            <Button variant="ghost" size="sm" onClick={() => router.push('/login')}>
+                Entrar
+            </Button>
+            <Button size="sm" onClick={() => router.push('/signup')}>
+                Cadastre-se
+            </Button>
+        </div>
+        <div className="flex sm:hidden pr-1">
+             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => router.push('/login')}>
+                <LogIn className="size-4" />
+             </Button>
+        </div>
+
       </div>
     </div>
   )
