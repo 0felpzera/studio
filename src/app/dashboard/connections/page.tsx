@@ -47,7 +47,7 @@ export default function ConnectionsPage() {
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
         tiktokAuthUrl.searchParams.append('client_key', clientKey);
-        tiktokAuth_Url.searchParams.append('scope', scope);
+        tiktokAuthUrl.searchParams.append('scope', scope);
         tiktokAuthUrl.searchParams.append('response_type', 'code');
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
         tiktokAuthUrl.searchParams.append('state', state);
