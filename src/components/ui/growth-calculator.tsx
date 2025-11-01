@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,7 +15,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { GrowthChart } from '@/components/ui/growth-chart';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { CardStack } from './card-stack';
+import { cn } from '@/lib/utils';
+
 
 const step1Schema = z.object({
   niche: z.string().min(1, "O nicho é obrigatório"),
@@ -64,30 +65,36 @@ export function GrowthCalculator() {
     mode: 'onChange',
   });
 
-  const nextStep = async () => {
+   const nextStep = async () => {
     const isValid = await form.trigger();
     if (isValid) {
-      setFormData(prev => ({ ...prev, ...form.getValues() }));
+      const currentValues = form.getValues();
+      const updatedFormData = { ...formData, ...currentValues };
+      setFormData(updatedFormData);
+      
       if (currentStep < steps.length - 1) {
         setCurrentStep(currentStep + 1);
-        form.reset({ ...formData, ...form.getValues() });
+        // We need to reset the form with the new step's schema and merged data
+        form.reset(updatedFormData);
       } else {
-        onSubmit(form.getValues());
+        onSubmit(updatedFormData);
       }
     }
   };
 
   const prevStep = () => {
     if (currentStep > 0) {
-      setFormData(prev => ({ ...prev, ...form.getValues() }));
+      const currentValues = form.getValues();
+      const updatedFormData = { ...formData, ...currentValues };
+      setFormData(updatedFormData);
+      
       setCurrentStep(currentStep - 1);
-      form.reset({ ...formData, ...form.getValues() });
+      form.reset(updatedFormData);
     }
   };
   
-  const onSubmit = (data: any) => {
-    const finalData = { ...formData, ...data };
-    setFormData(finalData);
+  const onSubmit = (data: FormData) => {
+    setFormData(data);
     setIsCalculated(true);
     setTimeout(() => {
         document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -95,8 +102,8 @@ export function GrowthCalculator() {
   };
     
   
-  const renderStepContent = (stepIndex: number) => {
-    switch (stepIndex) {
+  const renderStepContent = () => {
+    switch (currentStep) {
       case 0:
         return (
           <div className="space-y-4">
@@ -199,51 +206,62 @@ export function GrowthCalculator() {
     }
   };
 
-  const cards = steps.map((step, index) => ({
-    id: step.id,
-    content: (
-        <Card className="h-full bg-transparent border-0 shadow-none">
-            <CardHeader>
-                <div className="flex items-center gap-3">
-                    <div className="rounded-full p-2.5 bg-primary/10 text-primary">
-                        {React.createElement(step.icon, { className: "size-5" })}
-                    </div>
-                    <div>
-                        <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
-                        <CardDescription>{step.description}</CardDescription>
-                    </div>
-                </div>
-            </CardHeader>
-            <CardContent className="p-6">
-                {renderStepContent(index)}
-            </CardContent>
-            <CardFooter className="flex justify-between bg-card p-4 rounded-b-xl">
-                <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
-                    <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                </Button>
-                <Button type="button" onClick={nextStep}>
-                    {currentStep < steps.length - 1 ? 'Próximo' : 'Calcular Potencial'} 
-                    {currentStep < steps.length - 1 ? <ArrowRight className="ml-2 h-4 w-4" /> : <Sparkles className="ml-2 h-4 w-4" />}
-                </Button>
-            </CardFooter>
-        </Card>
-    )
-  }))
-
-
   return (
     <section className="py-20 sm:py-32 bg-background overflow-hidden">
       <div className="container mx-auto px-4">
         {!isCalculated ? (
-            <>
-                <div className='text-center mb-16'>
+            <div className='max-w-4xl mx-auto'>
+                <div className='text-center mb-12'>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
                     <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
                 </div>
-                <div className="max-w-md mx-auto h-[550px]">
-                  <CardStack items={cards} currentStep={currentStep} />
+                <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+                  {/* Stepper */}
+                  <div className="md:col-span-1">
+                    <div className="relative">
+                       <div className="absolute left-4 top-4 h-full w-px bg-border -z-10" />
+                       <ul className="space-y-8">
+                        {steps.map((step, index) => {
+                          const isCompleted = currentStep > index;
+                          const isCurrent = currentStep === index;
+                          return (
+                            <li key={step.id} className="flex items-start gap-4">
+                              <div className={cn("size-8 rounded-full flex items-center justify-center font-bold",
+                                isCompleted ? 'bg-primary text-primary-foreground' : 
+                                isCurrent ? 'border-2 border-primary bg-background text-primary' :
+                                'bg-muted text-muted-foreground'
+                              )}>
+                                {isCompleted ? <Check className="size-5" /> : step.id}
+                              </div>
+                              <div>
+                                <h3 className={cn("font-semibold", isCurrent ? "text-foreground" : "text-muted-foreground")}>{step.title}</h3>
+                                <p className="text-sm text-muted-foreground">{step.description}</p>
+                              </div>
+                            </li>
+                          )
+                        })}
+                       </ul>
+                    </div>
+                  </div>
+                  {/* Form Card */}
+                  <div className="md:col-span-2">
+                    <Card>
+                        <CardContent className="p-6">
+                            {renderStepContent()}
+                        </CardContent>
+                        <CardFooter className="flex justify-between bg-muted/50 p-4 rounded-b-xl border-t">
+                            <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
+                                <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                            </Button>
+                            <Button type="button" onClick={nextStep}>
+                                {currentStep < steps.length - 1 ? 'Próximo' : 'Calcular Potencial'} 
+                                {currentStep < steps.length - 1 ? <ArrowRight className="ml-2 h-4 w-4" /> : <Sparkles className="ml-2 h-4 w-4" />}
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                  </div>
                 </div>
-            </>
+            </div>
         ) : (
           <div id="calculator-results" className="space-y-12">
             <div className="text-center">
@@ -352,3 +370,5 @@ export function GrowthCalculator() {
     </section>
   );
 }
+
+    
