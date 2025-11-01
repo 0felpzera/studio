@@ -34,7 +34,7 @@ import { Button } from '@/components/ui/button';
 export const Logo = () => {
   return (
     <Link
-      href="/dashboard"
+      href="/"
       className="font-normal flex space-x-2 items-center text-sm text-black py-1 relative z-20"
     >
       <TrendifyLogo className="h-7 w-7 text-primary" />
