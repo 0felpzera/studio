@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { GrowthChart } from '@/components/ui/growth-chart';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -50,6 +50,7 @@ const steps = [
 export function GrowthCalculator() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
+  const [direction, setDirection] = useState(1); // 1 for next, -1 for prev
   const [formData, setFormData] = useState<Partial<FormData>>({
     niche: 'Moda',
     country: 'Brasil',
@@ -69,6 +70,7 @@ export function GrowthCalculator() {
   const nextStep = async () => {
     const isValid = await form.trigger();
     if (isValid) {
+      setDirection(1);
       setFormData(prev => ({ ...prev, ...form.getValues() }));
       if (currentStep < steps.length - 1) {
         setCurrentStep(currentStep + 1);
@@ -78,6 +80,7 @@ export function GrowthCalculator() {
   };
 
   const prevStep = () => {
+    setDirection(-1);
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
       form.reset({ ...formData, ...form.getValues() });
@@ -89,175 +92,152 @@ export function GrowthCalculator() {
     setFormData(finalData);
     setIsCalculated(true);
     setTimeout(() => {
-        document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 100);
   };
-  
-  const getCardStyle = (stepIndex: number) => {
-    const offset = stepIndex - currentStep;
-    if (offset < 0) { // Completed steps
-        return {
-            transform: `translateX(-${(currentStep - stepIndex) * 5}%) translateY(-${(currentStep - stepIndex) * 5}%) rotateZ(-${(currentStep - stepIndex) * 2}deg)`,
-            opacity: 1 - (currentStep - stepIndex) * 0.3,
-            zIndex: stepIndex,
-        };
-    }
-    return {
-        transform: `translateX(${offset * 4}rem) translateY(${offset * 2.5}rem) rotateZ(${offset * 5}deg)`,
-        zIndex: steps.length - offset
-    };
-  };
 
-  const StepCard = ({ step, stepIndex }: {step: typeof steps[0], stepIndex: number}) => {
-    const StepIcon = step.icon;
-    const isCurrent = currentStep === stepIndex;
-
-    const renderStepContent = () => {
-        switch (stepIndex) {
-          case 0:
-            return (
-              <div className="space-y-4">
-                 <div className="space-y-1.5">
-                    <Label htmlFor="instagram">@Instagram (opcional)</Label>
-                    <Input id="instagram" {...form.register('instagram')} placeholder="@seuusuario" />
-                 </div>
-                <div className="space-y-1.5">
-                    <Label htmlFor="niche">Nicho</Label>
-                     <Select onValueChange={(value) => form.setValue('niche', value)} defaultValue={form.getValues('niche')}>
-                        <SelectTrigger><SelectValue placeholder="Selecione seu nicho" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Moda">Moda</SelectItem>
-                            <SelectItem value="Beleza">Beleza</SelectItem>
-                            <SelectItem value="Fitness">Fitness</SelectItem>
-                            <SelectItem value="Culinária">Culinária</SelectItem>
-                            <SelectItem value="Lifestyle">Lifestyle</SelectItem>
-                            <SelectItem value="Tecnologia">Tecnologia</SelectItem>
-                            <SelectItem value="Viagem">Viagem</SelectItem>
-                             <SelectItem value="Games">Games</SelectItem>
-                             <SelectItem value="Comédia">Comédia</SelectItem>
-                        </SelectContent>
-                    </Select>
-                     {form.formState.errors.niche && <p className="text-xs font-medium text-destructive">{form.formState.errors.niche.message}</p>}
-                </div>
-                 <div className="space-y-1.5">
-                    <Label htmlFor="country">País/Região</Label>
-                     <Select onValueChange={(value) => form.setValue('country', value)} defaultValue={form.getValues('country')}>
-                        <SelectTrigger><SelectValue placeholder="Selecione seu país" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Brasil">Brasil</SelectItem>
-                            <SelectItem value="Portugal">Portugal</SelectItem>
-                            <SelectItem value="EUA">EUA</SelectItem>
-                            <SelectItem value="Outro">Outro</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    {form.formState.errors.country && <p className="text-xs font-medium text-destructive">{form.formState.errors.country.message}</p>}
-                </div>
-              </div>
-            );
-          case 1:
-            return (
-              <div className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="followers">Seguidores Atuais</Label>
-                  <Input id="followers" type="number" {...form.register('followers')} placeholder="Ex: 1500" />
-                   {form.formState.errors.followers && <p className="text-xs font-medium text-destructive">{form.formState.errors.followers.message}</p>}
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="avgViews">Média de Views por Reels (opcional)</Label>
-                  <Input id="avgViews" type="number" {...form.register('avgViews')} placeholder="Ex: 5000" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="engagement">Engajamento Médio % (opcional)</Label>
-                  <Input id="engagement" type="number" {...form.register('engagement')} placeholder="Ex: 5" />
-                </div>
-              </div>
-            );
-          case 2:
-            return (
-              <div className="space-y-6">
-                <div className="space-y-1.5">
-                  <Label htmlFor="followerGoal">Meta de Seguidores</Label>
-                  <Input id="followerGoal" type="number" {...form.register('followerGoal')} placeholder="Ex: 100000" />
-                   {form.formState.errors.followerGoal && <p className="text-xs font-medium text-destructive">{form.formState.errors.followerGoal.message}</p>}
-                </div>
-                <div className="space-y-3">
-                  <Label className="font-medium">Postagens por Mês</Label>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                        <Label htmlFor="reelsPerMonth" className="text-sm">Reels</Label>
-                        <span className="text-sm font-bold text-primary">{form.watch('reelsPerMonth')}</span>
-                    </div>
-                    <Slider id="reelsPerMonth" defaultValue={[formData.reelsPerMonth || 8]} max={60} step={1} onValueChange={([val]) => form.setValue('reelsPerMonth', val)} />
-                  </div>
-                  <div className="space-y-2">
-                     <div className="flex justify-between items-center">
-                        <Label htmlFor="storiesPerMonth" className="text-sm">Stories com CTA</Label>
-                        <span className="text-sm font-bold text-primary">{form.watch('storiesPerMonth')}</span>
-                     </div>
-                    <Slider id="storiesPerMonth" defaultValue={[formData.storiesPerMonth || 12]} max={100} step={1} onValueChange={([val]) => form.setValue('storiesPerMonth', val)} />
-                  </div>
-                </div>
-                 <div className="space-y-1.5">
-                    <Label>Qual sua prioridade?</Label>
-                     <Select onValueChange={(value) => form.setValue('priority', value)} defaultValue={form.getValues('priority')}>
-                        <SelectTrigger><SelectValue placeholder="Selecione sua prioridade" /></SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Alcance">Alcance</SelectItem>
-                            <SelectItem value="Conversão">Conversão</SelectItem>
-                            <SelectItem value="Autoridade">Autoridade</SelectItem>
-                        </SelectContent>
-                    </Select>
-                     {form.formState.errors.priority && <p className="text-xs font-medium text-destructive">{form.formState.errors.priority.message}</p>}
-                </div>
-              </div>
-            );
-          default:
-            return null;
-        }
+    const variants = {
+        enter: (direction: number) => ({
+            x: direction > 0 ? '100%' : '-100%',
+            opacity: 0,
+        }),
+        center: {
+            x: '0%',
+            opacity: 1,
+        },
+        exit: (direction: number) => ({
+            x: direction < 0 ? '100%' : '-100%',
+            opacity: 0,
+        }),
     };
     
-    return (
-        <motion.div
-            style={getCardStyle(stepIndex)}
-            className={cn(
-                "absolute w-full max-w-lg transition-all duration-500 ease-in-out",
-                isCurrent ? "opacity-100" : "opacity-80 scale-90",
-            )}
-        >
-            <Card className="shadow-2xl">
-                <CardHeader>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className={cn("rounded-full p-2 transition-colors", isCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
-                            <StepIcon className="size-5" />
-                        </div>
-                        <div>
-                            <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
-                            <CardDescription>{step.description}</CardDescription>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <AnimatePresence mode="wait">
-                        {isCurrent && (
-                            <motion.div
-                                key={stepIndex}
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                transition={{ duration: 0.2 }}
-                            >
-                                {renderStepContent()}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </CardContent>
-            </Card>
-        </motion.div>
-    )
-  }
+    const getCardStyle = (stepIndex: number) => {
+        const offset = stepIndex - currentStep;
+        if (offset === 0) { // Current step
+            return {
+                transform: 'none',
+                opacity: 1,
+                zIndex: 20,
+            };
+        }
+        // Previous or Next cards
+        const scale = 1 - Math.abs(offset) * 0.1;
+        const translateX = offset * 40; // Horizontal separation
+        const rotate = offset * -5; // Rotation effect
+        
+        return {
+            transform: `translateX(${translateX}px) scale(${scale}) rotate(${rotate}deg)`,
+            opacity: 1,
+            zIndex: 10 - Math.abs(offset),
+        };
+  };
+
+  const renderStepContent = (stepIndex: number) => {
+      switch (stepIndex) {
+        case 0:
+          return (
+            <div className="space-y-4">
+               <div className="space-y-1.5">
+                  <Label htmlFor="instagram">@Instagram (opcional)</Label>
+                  <Input id="instagram" {...form.register('instagram')} placeholder="@seuusuario" />
+               </div>
+              <div className="space-y-1.5">
+                  <Label htmlFor="niche">Nicho</Label>
+                   <Select onValueChange={(value) => form.setValue('niche', value)} defaultValue={form.getValues('niche')}>
+                      <SelectTrigger><SelectValue placeholder="Selecione seu nicho" /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Moda">Moda</SelectItem>
+                          <SelectItem value="Beleza">Beleza</SelectItem>
+                          <SelectItem value="Fitness">Fitness</SelectItem>
+                          <SelectItem value="Culinária">Culinária</SelectItem>
+                          <SelectItem value="Lifestyle">Lifestyle</SelectItem>
+                          <SelectItem value="Tecnologia">Tecnologia</SelectItem>
+                          <SelectItem value="Viagem">Viagem</SelectItem>
+                           <SelectItem value="Games">Games</SelectItem>
+                           <SelectItem value="Comédia">Comédia</SelectItem>
+                      </SelectContent>
+                  </Select>
+                   {form.formState.errors.niche && <p className="text-xs font-medium text-destructive">{form.formState.errors.niche.message}</p>}
+              </div>
+               <div className="space-y-1.5">
+                  <Label htmlFor="country">País/Região</Label>
+                   <Select onValueChange={(value) => form.setValue('country', value)} defaultValue={form.getValues('country')}>
+                      <SelectTrigger><SelectValue placeholder="Selecione seu país" /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Brasil">Brasil</SelectItem>
+                          <SelectItem value="Portugal">Portugal</SelectItem>
+                          <SelectItem value="EUA">EUA</SelectItem>
+                          <SelectItem value="Outro">Outro</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  {form.formState.errors.country && <p className="text-xs font-medium text-destructive">{form.formState.errors.country.message}</p>}
+              </div>
+            </div>
+          );
+        case 1:
+          return (
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label htmlFor="followers">Seguidores Atuais</Label>
+                <Input id="followers" type="number" {...form.register('followers')} placeholder="Ex: 1500" />
+                 {form.formState.errors.followers && <p className="text-xs font-medium text-destructive">{form.formState.errors.followers.message}</p>}
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="avgViews">Média de Views por Reels (opcional)</Label>
+                <Input id="avgViews" type="number" {...form.register('avgViews')} placeholder="Ex: 5000" />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="engagement">Engajamento Médio % (opcional)</Label>
+                <Input id="engagement" type="number" {...form.register('engagement')} placeholder="Ex: 5" />
+              </div>
+            </div>
+          );
+        case 2:
+          return (
+            <div className="space-y-6">
+              <div className="space-y-1.5">
+                <Label htmlFor="followerGoal">Meta de Seguidores</Label>
+                <Input id="followerGoal" type="number" {...form.register('followerGoal')} placeholder="Ex: 100000" />
+                 {form.formState.errors.followerGoal && <p className="text-xs font-medium text-destructive">{form.formState.errors.followerGoal.message}</p>}
+              </div>
+              <div className="space-y-3">
+                <Label className="font-medium">Postagens por Mês</Label>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                      <Label htmlFor="reelsPerMonth" className="text-sm">Reels</Label>
+                      <span className="text-sm font-bold text-primary">{form.watch('reelsPerMonth')}</span>
+                  </div>
+                  <Slider id="reelsPerMonth" defaultValue={[formData.reelsPerMonth || 8]} max={60} step={1} onValueChange={([val]) => form.setValue('reelsPerMonth', val)} />
+                </div>
+                <div className="space-y-2">
+                   <div className="flex justify-between items-center">
+                      <Label htmlFor="storiesPerMonth" className="text-sm">Stories com CTA</Label>
+                      <span className="text-sm font-bold text-primary">{form.watch('storiesPerMonth')}</span>
+                   </div>
+                  <Slider id="storiesPerMonth" defaultValue={[formData.storiesPerMonth || 12]} max={100} step={1} onValueChange={([val]) => form.setValue('storiesPerMonth', val)} />
+                </div>
+              </div>
+               <div className="space-y-1.5">
+                  <Label>Qual sua prioridade?</Label>
+                   <Select onValueChange={(value) => form.setValue('priority', value)} defaultValue={form.getValues('priority')}>
+                      <SelectTrigger><SelectValue placeholder="Selecione sua prioridade" /></SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Alcance">Alcance</SelectItem>
+                          <SelectItem value="Conversão">Conversão</SelectItem>
+                          <SelectItem value="Autoridade">Autoridade</SelectItem>
+                      </SelectContent>
+                  </Select>
+                   {form.formState.errors.priority && <p className="text-xs font-medium text-destructive">{form.formState.errors.priority.message}</p>}
+              </div>
+            </div>
+          );
+        default:
+          return null;
+      }
+  };
 
   return (
-    <section className="py-20 sm:py-32 bg-background overflow-hidden">
+    <section className="py-20 sm:py-32 bg-background overflow-x-clip">
       <div className="container mx-auto px-4">
         {!isCalculated ? (
             <div className='text-center mb-16'>
@@ -268,25 +248,72 @@ export function GrowthCalculator() {
 
         {!isCalculated ? (
           <form onSubmit={form.handleSubmit(onSubmit)}>
-            <div className="relative h-[550px] flex items-center justify-center">
-                {steps.map((step, index) => (
-                    <StepCard key={step.id} step={step} stepIndex={index} />
-                ))}
-            </div>
-            
-            <div className="flex justify-between max-w-lg mx-auto mt-8">
-              <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
-                <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-              </Button>
-              {currentStep < steps.length - 1 ? (
-                <Button type="button" onClick={nextStep}>
-                  Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              ) : (
-                <Button type="submit">
-                  <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                </Button>
-              )}
+            <div className="relative h-[620px] flex items-center justify-center">
+              {steps.map((step, index) => {
+                const StepIcon = step.icon;
+                const isCurrent = index === currentStep;
+
+                return (
+                   <motion.div
+                        key={index}
+                        className="absolute w-full max-w-lg"
+                        style={getCardStyle(index)}
+                        animate={getCardStyle(index)}
+                        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                    >
+                     <Card className={cn(
+                        "shadow-xl transition-all duration-300 w-full",
+                        !isCurrent && "opacity-50 grayscale"
+                     )}>
+                        <CardHeader>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className={cn("rounded-full p-2 transition-colors", isCurrent ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground')}>
+                                    <StepIcon className="size-5" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-xl font-bold">{step.title}</CardTitle>
+                                    <CardDescription>{step.description}</CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <AnimatePresence initial={false} custom={direction}>
+                             {isCurrent && (
+                                <motion.div
+                                    key={currentStep}
+                                    custom={direction}
+                                    variants={variants}
+                                    initial="enter"
+                                    animate="center"
+                                    exit="exit"
+                                    transition={{
+                                        x: { type: 'spring', stiffness: 300, damping: 30 },
+                                        opacity: { duration: 0.2 },
+                                    }}
+                                >
+                                    <CardContent className="min-h-[300px] px-6 py-8">
+                                        {renderStepContent(index)}
+                                    </CardContent>
+                                    <CardFooter className="flex justify-between bg-muted/50 px-6 py-4">
+                                        <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
+                                            <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                                        </Button>
+                                        {currentStep < steps.length - 1 ? (
+                                            <Button type="button" onClick={nextStep}>
+                                            Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                                            </Button>
+                                        ) : (
+                                            <Button type="submit">
+                                            <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
+                                            </Button>
+                                        )}
+                                    </CardFooter>
+                                </motion.div>
+                             )}
+                        </AnimatePresence>
+                     </Card>
+                   </motion.div>
+                )
+              })}
             </div>
           </form>
         ) : (
@@ -384,14 +411,13 @@ export function GrowthCalculator() {
                             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2 pt-2">
                                 <li><strong>Crescimento de Seguidores:</strong> Projetado com base na sua frequência de postagem, nicho e taxas de engajamento médias do setor.</li>
                                 <li><strong>Potencial de Ganhos:</strong> Estimado a partir de valores de mercado para parcerias e publiposts, correlacionando o seu número de seguidores e engajamento.</li>
-<li><strong>Plano Recomendado:</strong> Sugestões otimizadas para equilibrar a produção de conteúdo com a máxima chance de crescimento, de acordo com a sua prioridade (alcance, conversão ou autoridade).</li>
+                                <li><strong>Plano Recomendado:</strong> Sugestões otimizadas para equilibrar a produção de conteúdo com a máxima chance de crescimento, de acordo com a sua prioridade (alcance, conversão ou autoridade).</li>
                             </ul>
                              <p className="text-xs text-center text-muted-foreground pt-4">Lembre-se: estes são dados estimados e não garantem resultados.</p>
                         </DialogContent>
                     </Dialog>
                 </div>
             </div>
-
           </motion.div>
         )}
       </div>
