@@ -31,7 +31,6 @@ export function ImageCarouselHero({
   onCtaClick,
   icons,
 }: ImageCarouselHeroProps) {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [rotatingCards, setRotatingCards] = useState<number[]>([])
 
   // Continuous rotation animation
@@ -48,13 +47,6 @@ export function ImageCarouselHero({
     setRotatingCards(icons.map((_, i) => i * (360 / icons.length)))
   }, [icons.length])
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    setMousePosition({
-      x: (e.clientX - rect.left) / rect.width,
-      y: (e.clientY - rect.top) / rect.height,
-    })
-  }
 
   return (
     <div className="relative w-full min-h-screen bg-gradient-to-b from-background via-background to-background overflow-hidden">
@@ -102,7 +94,6 @@ export function ImageCarouselHero({
             {/* Carousel Container */}
             <div
             className="relative w-full h-96 sm:h-[500px]"
-            onMouseMove={handleMouseMove}
             >
             {/* Rotating Icon Cards */}
             <div className="absolute inset-0 flex items-center justify-center perspective">
@@ -113,10 +104,6 @@ export function ImageCarouselHero({
                 const x = Math.cos(angle) * radius
                 const y = Math.sin(angle) * radius
 
-                // 3D perspective effect based on mouse position
-                const perspectiveX = (mousePosition.x - 0.5) * 20
-                const perspectiveY = (mousePosition.y - 0.5) * 20
-
                 return (
                     <motion.div
                       key={index}
@@ -124,8 +111,6 @@ export function ImageCarouselHero({
                       style={{
                           transform: `
                           translate(${x}px, ${y}px)
-                          rotateX(${perspectiveY}deg)
-                          rotateY(${perspectiveX}deg)
                           rotateZ(${rotation}deg)
                           `,
                           transformStyle: "preserve-3d",
