@@ -130,7 +130,7 @@ export function GrowthCalculator() {
       {
         className: "[grid-area:stack] translate-x-8 translate-y-16 md:translate-x-32 md:translate-y-20 hover:translate-y-10",
         isActive: currentStep === 2,
-        isCompleted: false, // Last step can't be completed before it's done
+        isCompleted: false,
       },
   ], [currentStep]);
 
@@ -250,7 +250,7 @@ export function GrowthCalculator() {
                     <CardDescription className="text-lg mt-2">Descubra seu potencial de crescimento e monetização.</CardDescription>
                 </div>
                 <div className="grid md:grid-cols-2 gap-16 items-center">
-                    <div className="w-full">
+                    <div className="w-full relative z-10">
                          <form onSubmit={form.handleSubmit(onSubmit)}>
                             <AnimatePresence mode="wait">
                                 {renderStep()}
