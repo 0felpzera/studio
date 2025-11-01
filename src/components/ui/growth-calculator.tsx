@@ -1,12 +1,12 @@
 
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Calendar, BarChart, DollarSign, Wand2, Sparkles, Lightbulb, TrendingUp, Users, Target } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Calendar, BarChart, DollarSign, Wand2, Sparkles, Lightbulb, TrendingUp, Users, Target, User, Activity, Goal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -41,17 +41,49 @@ const formSchema = step1Schema.merge(step2Schema).merge(step3Schema);
 type FormData = z.infer<typeof formSchema>;
 
 const steps = [
-  { id: 1, title: 'Conta & Nicho', schema: step1Schema },
-  { id: 2, title: 'Ponto de Partida', schema: step2Schema },
-  { id: 3, title: 'Meta & Cadência', schema: step3Schema },
+  { id: 1, title: 'Conta & Nicho', schema: step1Schema, icon: User, description: 'Nos diga sobre seu perfil.' },
+  { id: 2, title: 'Ponto de Partida', schema: step2Schema, icon: Activity, description: 'Quais suas métricas atuais?' },
+  { id: 3, title: 'Meta & Cadência', schema: step3Schema, icon: Goal, description: 'Quais seus objetivos?' },
 ];
+
+const StepCard = ({ isActive, isCompleted, title, description, icon: Icon }: { isActive: boolean, isCompleted: boolean, title: string, description: string, icon: React.ElementType }) => {
+  return (
+    <motion.div
+      className={cn(
+        "relative flex h-36 w-full max-w-sm -skew-y-3 select-none flex-col justify-between rounded-xl border-2 px-4 py-3 transition-all duration-300",
+        isActive ? 'border-primary bg-primary/10 shadow-lg shadow-primary/20' : 'bg-muted/70 backdrop-blur-sm',
+        isCompleted && !isActive ? 'border-green-500/50 bg-green-500/5' : ''
+      )}
+      initial={{ opacity: 0.5, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="flex items-center gap-3 skew-y-3">
+        <span className={cn(
+          "relative inline-block rounded-full p-2",
+           isActive ? 'bg-primary/20' : 'bg-muted-foreground/10'
+        )}>
+          <Icon className={cn("size-5", isActive ? 'text-primary' : 'text-muted-foreground')} />
+        </span>
+        <p className={cn("text-lg font-bold", isActive ? 'text-primary' : 'text-muted-foreground')}>{title}</p>
+      </div>
+      <p className="whitespace-nowrap text-md text-muted-foreground skew-y-3">{description}</p>
+    </motion.div>
+  );
+};
+
 
 export function GrowthCalculator() {
   const [currentStep, setCurrentStep] = useState(0);
   const [isCalculated, setIsCalculated] = useState(false);
   const [formData, setFormData] = useState<Partial<FormData>>({
+    niche: 'Moda',
+    country: 'Brasil',
+    followers: 1500,
+    followerGoal: 100000,
     reelsPerMonth: 8,
     storiesPerMonth: 12,
+    priority: 'Alcance'
   });
 
   const form = useForm({
@@ -79,11 +111,29 @@ export function GrowthCalculator() {
     const finalData = { ...formData, ...data };
     setFormData(finalData);
     setIsCalculated(true);
-    // Scroll to results
     setTimeout(() => {
         document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
   };
+  
+  const stepCards = useMemo(() => [
+      {
+        className: "[grid-area:stack] hover:-translate-y-10",
+        isActive: currentStep === 0,
+        isCompleted: currentStep > 0
+      },
+      {
+        className: "[grid-area:stack] translate-x-4 translate-y-8 md:translate-x-16 md:translate-y-10 hover:-translate-y-1",
+        isActive: currentStep === 1,
+        isCompleted: currentStep > 1
+      },
+      {
+        className: "[grid-area:stack] translate-x-8 translate-y-16 md:translate-x-32 md:translate-y-20 hover:translate-y-10",
+        isActive: currentStep === 2,
+        isCompleted: false, // Last step can't be completed before it's done
+      },
+  ], [currentStep]);
+
 
   const renderStep = () => {
     switch (currentStep) {
@@ -189,49 +239,54 @@ export function GrowthCalculator() {
     }
   };
 
-  const progress = ((currentStep + 1) / steps.length) * 100;
-
   return (
     <section className="py-20 sm:py-32 bg-background">
       <div className="container mx-auto px-4">
         {!isCalculated ? (
-             <Card className="max-w-2xl mx-auto overflow-hidden">
-             <CardHeader className="text-center p-8 bg-muted/30">
-                 <Wand2 className="mx-auto h-10 w-10 text-primary mb-4"/>
-                 <CardTitle className="text-3xl font-bold">Calculadora de Crescimento</CardTitle>
-                 <CardDescription className="text-lg">Descubra seu potencial de crescimento e monetização.</CardDescription>
-             </CardHeader>
-              <CardContent className="p-8">
-                <div className="mb-8">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-muted-foreground">Passo {currentStep + 1} de {steps.length}</span>
-                    <span className="text-sm font-semibold text-primary">{steps[currentStep].title}</span>
-                  </div>
-                  <div className="w-full bg-secondary rounded-full h-2">
-                    <motion.div className="bg-primary h-2 rounded-full" animate={{ width: `${progress}%` }} />
-                  </div>
+            <div className="max-w-4xl mx-auto">
+                 <div className="text-center mb-12">
+                    <Wand2 className="mx-auto h-10 w-10 text-primary mb-4"/>
+                    <CardTitle className="text-3xl font-bold">Calculadora de Crescimento</CardTitle>
+                    <CardDescription className="text-lg mt-2">Descubra seu potencial de crescimento e monetização.</CardDescription>
                 </div>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                    <AnimatePresence mode="wait">
-                        {renderStep()}
-                    </AnimatePresence>
-                    <div className="flex justify-between mt-10">
-                        <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 0}>
-                            <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
-                        </Button>
-                        {currentStep < steps.length - 1 ? (
-                            <Button type="button" onClick={nextStep}>
-                                Próximo <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        ) : (
-                            <Button type="submit">
-                                <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
-                            </Button>
-                        )}
+                <div className="grid md:grid-cols-2 gap-16 items-center">
+                    <div className="w-full">
+                         <form onSubmit={form.handleSubmit(onSubmit)}>
+                            <AnimatePresence mode="wait">
+                                {renderStep()}
+                            </AnimatePresence>
+                            <div className="flex justify-between mt-10">
+                                <Button type="button" variant="outline" onClick={prevStep} disabled={currentStep === 0} className={cn(currentStep === 0 && "opacity-0 pointer-events-none")}>
+                                    <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
+                                </Button>
+                                {currentStep < steps.length - 1 ? (
+                                    <Button type="button" onClick={nextStep}>
+                                        Próximo <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                ) : (
+                                    <Button type="submit">
+                                        <Sparkles className="mr-2 h-4 w-4" /> Calcular Potencial
+                                    </Button>
+                                )}
+                            </div>
+                        </form>
                     </div>
-                </form>
-              </CardContent>
-            </Card>
+                     <div className="hidden md:grid [grid-template-areas:'stack'] place-items-center h-72">
+                         {stepCards.map((card, index) => (
+                           <motion.div
+                              key={index}
+                              className={cn("transition-all duration-500 ease-in-out", card.className)}
+                           >
+                              <StepCard
+                                {...steps[index]}
+                                isActive={card.isActive}
+                                isCompleted={card.isCompleted}
+                              />
+                           </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </div>
         ) : (
           <motion.div id="calculator-results" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-12">
             <div className="text-center">
@@ -321,7 +376,7 @@ export function GrowthCalculator() {
                         <DialogDescription>
                             Nossas estimativas são baseadas em uma análise de mais de 10.000 perfis dentro do seu nicho e país. Consideramos os seguintes fatores:
                         </DialogDescription>
-                        </DialogHeader>
+                        </Header>
                         <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2 pt-2">
                             <li><strong>Crescimento de Seguidores:</strong> Projetado com base na sua frequência de postagem, nicho e taxas de engajamento médias do setor.</li>
                             <li><strong>Potencial de Ganhos:</strong> Estimado a partir de valores de mercado para parcerias e publiposts, correlacionando o seu número de seguidores e engajamento.</li>
