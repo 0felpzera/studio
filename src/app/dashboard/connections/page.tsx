@@ -47,12 +47,12 @@ export default function ConnectionsPage() {
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
         tiktokAuthUrl.searchParams.append('client_key', clientKey);
-        tiktokAuthUrl.searchParams.append('scope', scope);
+        tiktokAuth_Url.searchParams.append('scope', scope);
         tiktokAuthUrl.searchParams.append('response_type', 'code');
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
         tiktokAuthUrl.searchParams.append('state', state);
 
-        window.location.href = tiktokAuthUrl.toString();
+        window.open(tiktokAuthUrl.toString(), 'tiktokLogin', 'width=600,height=700');
     };
 
     return (
