@@ -20,6 +20,8 @@ import {
   Lightbulb,
   Bot,
   DollarSign,
+  Calculator,
+  MessageSquareQuote,
 } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -29,6 +31,7 @@ import { SocialProof } from "@/components/ui/social-proof";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Timeline } from "@/components/ui/timeline";
+import { Footer } from "@/components/ui/footer";
 
 
 export default function LandingPage() {
@@ -126,6 +129,8 @@ export default function LandingPage() {
   const navItems = [
     { name: "Início", url: "#", icon: Home },
     { name: "Recursos", url: "#features", icon: Star },
+    { name: "Calculadora", url: "#calculator", icon: Calculator },
+    { name: "Depoimentos", url: "#testimonials", icon: MessageSquareQuote },
   ];
 
   return (
@@ -153,6 +158,7 @@ export default function LandingPage() {
               </h2>
           </div>
       </motion.section>
+      <Footer />
     </div>
   );
 }
