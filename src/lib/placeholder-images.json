@@ -47,6 +47,24 @@
       "description": "Demonstration of AI reviewing a video",
       "imageUrl": "https://images.unsplash.com/photo-1684369176170-463e84248b70?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
       "imageHint": "AI interface"
+    },
+    {
+      "id": "testimonial-1",
+      "description": "Happy female content creator",
+      "imageUrl": "https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=300",
+      "imageHint": "happy woman"
+    },
+    {
+      "id": "testimonial-2",
+      "description": "Happy male content creator",
+      "imageUrl": "https://images.pexels.com/photos/91227/pexels-photo-91227.jpeg?auto=compress&cs=tinysrgb&w=300",
+      "imageHint": "happy man"
+    },
+    {
+      "id": "testimonial-3",
+      "description": "Another happy female content creator",
+      "imageUrl": "https://images.pexels.com/photos/1065084/pexels-photo-1065084.jpeg?auto=compress&cs=tinysrgb&w=300",
+      "imageHint": "smiling woman"
     }
   ]
 }

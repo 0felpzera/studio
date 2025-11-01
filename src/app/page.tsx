@@ -25,6 +25,8 @@ import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
 import { Timeline } from "@/components/ui/timeline";
+import { GrowthCalculator } from "@/components/ui/growth-calculator";
+import { SocialProof } from "@/components/ui/social-proof";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -179,6 +181,9 @@ export default function LandingPage() {
       <div id="features">
         <Timeline data={timelineData} />
       </div>
+
+       <GrowthCalculator />
+       <SocialProof />
 
        <section className="py-20 sm:py-32 bg-accent/30 text-accent-foreground">
           <div className="container mx-auto px-4 text-center">
