@@ -1,7 +1,7 @@
 
-"use client"
+"use client";
 
-import { ImageCarouselHero } from "@/components/ui/ai-image-generator-hero"
+import { ImageCarouselHero } from "@/components/ui/ai-image-generator-hero";
 import { NavBar } from "@/components/ui/tubelight-navbar";
 import { useRouter } from "next/navigation";
 import {
@@ -12,11 +12,19 @@ import {
   SiThreads,
   SiX,
 } from "react-icons/si";
-import { Home, LogIn, UserPlus, Lightbulb, Bot, Star, DollarSign, Presentation, AppWindow } from "lucide-react";
+import {
+  Home,
+  Star,
+  AppWindow,
+  Presentation,
+  Lightbulb,
+  Bot,
+  DollarSign,
+} from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
-
+import { Timeline } from "@/components/ui/timeline";
 
 export default function LandingPage() {
   const router = useRouter();
@@ -60,42 +68,103 @@ export default function LandingPage() {
     },
   ];
 
-  const features = [
+  const timelineData = [
     {
-      icon: <Presentation className="size-8 text-primary" />,
       title: "Diagnóstico",
-      description: "Análise de vídeo com IA para otimizar seu conteúdo antes de postar.",
+      content: (
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
+            Análise de vídeo com IA para otimizar seu conteúdo antes de postar,
+            melhorando a retenção e o engajamento.
+          </p>
+          <Image
+            src="https://assets.aceternity.com/templates/startup-1.webp"
+            alt="Diagnóstico de vídeo"
+            width={500}
+            height={500}
+            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
+          />
+        </div>
+      ),
     },
     {
-      icon: <Lightbulb className="size-8 text-primary" />,
-      title: "Ideias de Vídeos",
-      description: "Gere ideias perenes e de tendência para nunca ficar sem inspiração.",
+      title: "Ideias",
+      content: (
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
+            Gere ideias perenes e de tendência para nunca ficar sem inspiração.
+            Mantenha seu conteúdo fresco e relevante.
+          </p>
+          <Image
+            src="https://assets.aceternity.com/pro/bento-grids.png"
+            alt="Geração de ideias"
+            width={500}
+            height={500}
+            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
+          />
+        </div>
+      ),
     },
     {
-      icon: <Bot className="size-8 text-primary" />,
       title: "IA Coach",
-      description: "Seu treinador pessoal de IA para crescimento acelerado.",
+      content: (
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
+            Seu treinador pessoal de IA para crescimento acelerado, oferecendo
+            insights e estratégias personalizadas.
+          </p>
+          <Image
+            src="https://assets.aceternity.com/features-section.png"
+            alt="IA Coach"
+            width={500}
+            height={500}
+            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
+          />
+        </div>
+      ),
     },
     {
-      icon: <DollarSign className="size-8 text-primary" />,
       title: "Mídia Kit",
-      description: "Crie um mídia kit profissional com sugestões de preços.",
+      content: (
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
+            Crie um mídia kit profissional com sugestões de preços para
+            apresentar a marcas e monetizar sua influência.
+          </p>
+          <Image
+            src="https://assets.aceternity.com/cards.png"
+            alt="Mídia Kit"
+            width={500}
+            height={500}
+            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
+          />
+        </div>
+      ),
     },
     {
-      icon: <Star className="size-8 text-primary" />,
-      title: "Publis Inteligentes",
-      description: "Receba ideias criativas e autênticas para suas parcerias.",
+      title: "Publis",
+      content: (
+        <div>
+          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
+            Receba ideias criativas e autênticas para suas parcerias, garantindo
+            que suas publis ressoem com seu público.
+          </p>
+          <Image
+            src="https://assets.aceternity.com/templates/startup-2.webp"
+            alt="Publis Inteligentes"
+            width={500}
+            height={500}
+            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
+          />
+        </div>
+      ),
     },
   ];
 
   const navItems = [
-    { name: 'Início', url: '/', icon: Home },
-    { name: 'Recursos', url: '#features', icon: Star },
-    { name: 'Demo', url: '#demo', icon: AppWindow }
+    { name: "Início", url: "#", icon: Home },
+    { name: "Recursos", url: "#features", icon: Star },
   ];
-
-  const demoImage = PlaceHolderImages.find(img => img.id === "demo-1");
-
 
   return (
     <div className="bg-background text-foreground">
@@ -107,44 +176,11 @@ export default function LandingPage() {
         onCtaClick={() => router.push("/login")}
         icons={demoIcons}
       />
+      <div id="features">
+        <Timeline data={timelineData} />
+      </div>
 
-      <section id="features" className="py-16 sm:py-24">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-            {features.map((feature, index) => (
-              <div key={index} className="flex flex-col items-center text-center p-6 rounded-lg hover:bg-muted transition-colors">
-                <div className="mb-4">{feature.icon}</div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">{feature.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="demo" className="py-16 sm:py-24 bg-muted/50">
-        <div className="container mx-auto px-4 grid md:grid-cols-2 gap-12 items-center">
-            <div className="relative aspect-video rounded-xl shadow-2xl overflow-hidden">
-                 {demoImage && (
-                    <Image
-                      src={demoImage.imageUrl}
-                      alt={demoImage.description}
-                      data-ai-hint={demoImage.imageHint}
-                      fill
-                      className="object-cover"
-                    />
-                  )}
-            </div>
-          <div className="text-center md:text-left">
-            <h2 className="text-3xl sm:text-4xl font-serif font-bold mb-6">
-              A Trendify entende o que o algoritmo quer — e o que o seu público ama.
-            </h2>
-             <Button onClick={() => router.push('/login')} size="lg">Ver Demonstração</Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 sm:py-32 bg-accent/30 text-accent-foreground">
+       <section className="py-20 sm:py-32 bg-accent/30 text-accent-foreground">
           <div className="container mx-auto px-4 text-center">
                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">
                 “Todo criador tem potencial pra ser tendência. A Trendify te mostra o caminho.”
@@ -152,5 +188,5 @@ export default function LandingPage() {
           </div>
       </section>
     </div>
-  )
+  );
 }
