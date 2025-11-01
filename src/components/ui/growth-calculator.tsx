@@ -291,7 +291,7 @@ export function GrowthCalculator() {
                     <CardContent className="space-y-3">
                         <p>1. "3 mitos sobre {formData.niche} que você provavelmente acredita."</p>
                         <p>2. "O erro nº 1 que iniciantes em {formData.niche} cometem (e como evitar)."</p>
-                        <p>3. "Meu segredo para {alcançar algo no seu nicho} usando apenas..."</p>
+                        <p>3. "Meu segredo para {`alcançar algo no seu nicho`} usando apenas..."</p>
                     </CardContent>
                 </Card>
                  <Card>
@@ -302,7 +302,7 @@ export function GrowthCalculator() {
                     <CardContent className="space-y-3">
                         <div className="flex items-center gap-2"><Badge variant="secondary">Áudio</Badge> "Som de gatinho fofo para vídeos de unboxing"</div>
                         <div className="flex items-center gap-2"><Badge variant="secondary">Formato</Badge> "Transição de 'antes e depois' com corte rápido"</div>
-                        <div className="flex items-center gap-2"><Badge variant="secondary">Desafio</Badge> "Desafio de 7 dias para {tema do seu nicho}"</div>
+                        <div className="flex items-center gap-2"><Badge variant="secondary">Desafio</Badge> "Desafio de 7 dias para {'{tema do seu nicho}'}"</div>
                     </CardContent>
                 </Card>
             </div>
