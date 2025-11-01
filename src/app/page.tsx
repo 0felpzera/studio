@@ -24,10 +24,11 @@ import {
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
-import { Timeline } from "@/components/ui/timeline";
 import { GrowthCalculator } from "@/components/ui/growth-calculator";
 import { SocialProof } from "@/components/ui/social-proof";
 import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
 
 export default function LandingPage() {
   const router = useRouter();
@@ -71,98 +72,34 @@ export default function LandingPage() {
     },
   ];
 
-  const timelineData = [
+    const features = [
     {
-      title: "Diagnóstico",
-      content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
-            Análise de vídeo com IA para otimizar seu conteúdo antes de postar,
-            melhorando a retenção e o engajamento.
-          </p>
-          <Image
-            src="https://assets.aceternity.com/templates/startup-1.webp"
-            alt="Diagnóstico de vídeo"
-            width={500}
-            height={500}
-            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
-          />
-        </div>
-      ),
+      icon: <Presentation className="w-8 h-8 text-primary" />,
+      title: "Diagnóstico de Vídeo",
+      description: "Análise com IA para otimizar seu conteúdo antes de postar, melhorando retenção e engajamento.",
     },
     {
-      title: "Ideias",
-      content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
-            Gere ideias perenes e de tendência para nunca ficar sem inspiração.
-            Mantenha seu conteúdo fresco e relevante.
-          </p>
-          <Image
-            src="https://assets.aceternity.com/pro/bento-grids.png"
-            alt="Geração de ideias"
-            width={500}
-            height={500}
-            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
-          />
-        </div>
-      ),
+      icon: <Lightbulb className="w-8 h-8 text-primary" />,
+      title: "Gerador de Ideias",
+      description: "Gere ideias perenes e de tendência para nunca ficar sem inspiração. Mantenha seu conteúdo fresco.",
     },
     {
+      icon: <Bot className="w-8 h-8 text-primary" />,
       title: "IA Coach",
-      content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
-            Seu treinador pessoal de IA para crescimento acelerado, oferecendo
-            insights e estratégias personalizadas.
-          </p>
-          <Image
-            src="https://assets.aceternity.com/features-section.png"
-            alt="IA Coach"
-            width={500}
-            height={500}
-            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
-          />
-        </div>
-      ),
+      description: "Seu treinador pessoal de IA para crescimento acelerado, oferecendo insights e estratégias personalizadas.",
     },
     {
-      title: "Mídia Kit",
-      content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
-            Crie um mídia kit profissional com sugestões de preços para
-            apresentar a marcas e monetizar sua influência.
-          </p>
-          <Image
-            src="https://assets.aceternity.com/cards.png"
-            alt="Mídia Kit"
-            width={500}
-            height={500}
-            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
-          />
-        </div>
-      ),
+      icon: <DollarSign className="w-8 h-8 text-primary" />,
+      title: "Mídia Kit Pro",
+      description: "Crie um mídia kit profissional com sugestões de preços para apresentar a marcas e monetizar sua influência.",
     },
     {
-      title: "Publis",
-      content: (
-        <div>
-          <p className="text-neutral-800 dark:text-neutral-200 text-sm md:text-base font-normal mb-8">
-            Receba ideias criativas e autênticas para suas parcerias, garantindo
-            que suas publis ressoem com seu público.
-          </p>
-          <Image
-            src="https://assets.aceternity.com/templates/startup-2.webp"
-            alt="Publis Inteligentes"
-            width={500}
-            height={500}
-            className="rounded-lg object-cover h-44 md:h-60 lg:h-80 w-full shadow-lg"
-          />
-        </div>
-      ),
+      icon: <Star className="w-8 h-8 text-primary" />,
+      title: "Ideias para Publis",
+      description: "Receba ideias criativas e autênticas para suas parcerias, garantindo que suas publis ressoem com seu público.",
     },
   ];
+
 
   const navItems = [
     { name: "Início", url: "#", icon: Home },
@@ -191,9 +128,33 @@ export default function LandingPage() {
         onCtaClick={() => router.push("/signup")}
         icons={demoIcons}
       />
-      <div id="features">
-        <Timeline data={timelineData} />
-      </div>
+      
+      <motion.section 
+        id="features"
+        className="py-20 sm:py-32"
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.2 }}
+        variants={sectionVariants}
+       >
+        <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Ferramentas para o seu Sucesso</h2>
+                <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">
+                    Explore como cada recurso da Trendify pode impulsionar seu conteúdo e acelerar seu crescimento.
+                </p>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {features.map((feature, index) => (
+                <Card key={index} className="bg-card text-card-foreground flex flex-col items-center text-center p-6 lg:col-span-1 even:lg:col-span-2 odd:lg:col-span-1">
+                <div className="mb-4">{feature.icon}</div>
+                <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+                </Card>
+            ))}
+            </div>
+        </div>
+      </motion.section>
 
        <motion.div
          initial="hidden"
