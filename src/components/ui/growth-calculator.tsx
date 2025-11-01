@@ -376,7 +376,7 @@ export function GrowthCalculator() {
                         <DialogDescription>
                             Nossas estimativas são baseadas em uma análise de mais de 10.000 perfis dentro do seu nicho e país. Consideramos os seguintes fatores:
                         </DialogDescription>
-                        </Header>
+                        </DialogHeader>
                         <ul className="list-disc list-inside text-sm text-muted-foreground space-y-2 pt-2">
                             <li><strong>Crescimento de Seguidores:</strong> Projetado com base na sua frequência de postagem, nicho e taxas de engajamento médias do setor.</li>
                             <li><strong>Potencial de Ganhos:</strong> Estimado a partir de valores de mercado para parcerias e publiposts, correlacionando o seu número de seguidores e engajamento.</li>
