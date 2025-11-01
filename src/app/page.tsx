@@ -1,91 +1,86 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { CheckCircle, BarChart2, Lightbulb, Video, Bot, Star } from "lucide-react";
-import { TrendifyLogo } from "@/components/icons";
 
-const features = [
-    { name: "Diagnóstico de Conteúdo", icon: BarChart2 },
-    { name: "Ideias de Vídeos", icon: Lightbulb },
-    { name: "IA Coach", icon: Bot },
-    { name: "Mídia Kit Inteligente", icon: Star },
-    { name: "Publis Inteligentes", icon: Video },
-];
+"use client"
+
+import { ImageCarouselHero } from "@/components/ui/ai-image-generator-hero"
+import { useRouter } from "next/navigation";
 
 export default function LandingPage() {
-    return (
-        <div className="flex flex-col min-h-screen bg-background text-foreground">
-            <header className="px-4 lg:px-6 h-14 flex items-center border-b">
-                <Link href="#" className="flex items-center justify-center" prefetch={false}>
-                    <TrendifyLogo className="h-6 w-6 text-primary" />
-                    <span className="ml-2 text-lg font-semibold">Trendify</span>
-                </Link>
-                <nav className="ml-auto flex gap-4 sm:gap-6">
-                    <Link href="#features" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
-                        Ferramentas
-                    </Link>
-                    <Link href="/login" className="text-sm font-medium hover:underline underline-offset-4" prefetch={false}>
-                        Login
-                    </Link>
-                </nav>
-            </header>
-            <main className="flex-1 flex flex-col items-center justify-center text-center px-4">
-                <section className="space-y-6 pb-12 pt-16 md:pt-24 lg:pt-32">
-                    <div className="container flex max-w-[64rem] flex-col items-center gap-4 text-center">
-                        <h1 className="font-bold text-4xl sm:text-5xl md:text-6xl lg:text-7xl leading-tight">
-                            Transforme conteúdo em <span className="text-primary">tendência</span>
-                        </h1>
-                        <p className="max-w-[42rem] leading-normal text-muted-foreground sm:text-xl sm:leading-8">
-                           A Trendify entende o que o algoritmo quer — e o que o seu público ama. Menos ruído, mais clareza para você crescer.
-                        </p>
-                        <div className="space-x-4 mt-6">
-                            <Link href="/login">
-                                <Button size="lg" className="font-bold text-lg px-8 py-6">Comece grátis</Button>
-                            </Link>
-                        </div>
-                    </div>
-                </section>
-                <section id="features" className="container space-y-8 bg-muted/50 py-12 md:py-16 lg:py-24 rounded-2xl">
-                    <div className="mx-auto flex max-w-[58rem] flex-col items-center space-y-4 text-center">
-                        <h2 className="font-bold text-3xl leading-[1.1] sm:text-3xl md:text-5xl">
-                           Ferramentas para Criadores
-                        </h2>
-                        <p className="max-w-[85%] leading-normal text-muted-foreground sm:text-lg sm:leading-7">
-                           Tudo que você precisa para otimizar, criar e monetizar seu conteúdo em um só lugar.
-                        </p>
-                    </div>
-                    <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
-                        {features.map(feature => (
-                             <div key={feature.name} className="relative overflow-hidden rounded-lg border bg-card p-2 shadow-sm transition-all hover:shadow-md hover:-translate-y-1">
-                                <div className="flex h-[180px] flex-col justify-between rounded-md p-6">
-                                    <feature.icon className="h-12 w-12 text-primary" />
-                                    <div className="space-y-2">
-                                        <h3 className="font-bold text-lg">{feature.name}</h3>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-                 <section className="w-full py-24 md:py-32 lg:py-40 bg-accent mt-24">
-                    <div className="container max-w-[58rem] mx-auto text-center">
-                         <h2 className="font-bold text-3xl leading-[1.1] sm:text-3xl md:text-5xl text-accent-foreground">
-                           Todo criador tem potencial pra ser tendência.
-                        </h2>
-                         <p className="max-w-[85%] mx-auto mt-4 leading-normal text-accent-foreground/80 sm:text-lg sm:leading-7">
-                            A Trendify te mostra o caminho.
-                        </p>
-                    </div>
-                </section>
-            </main>
-            <footer className="py-6 md:px-8 md:py-4 border-t">
-                <div className="container flex items-center justify-between">
-                     <p className="text-sm text-muted-foreground">&copy; {new Date().getFullYear()} Trendify. Todos os direitos reservados.</p>
-                      <Link href="#" className="flex items-center justify-center" prefetch={false}>
-                        <TrendifyLogo className="h-6 w-6 text-foreground" />
-                        <span className="sr-only">Trendify</span>
-                    </Link>
-                </div>
-            </footer>
-        </div>
-    )
+  const router = useRouter();
+  const demoImages = [
+    {
+      id: "1",
+      src: "https://images.unsplash.com/photo-1684369176170-463e84248b70?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Mountain landscape",
+      rotation: -15,
+    },
+    {
+      id: "2",
+      src: "https://plus.unsplash.com/premium_photo-1677269465314-d5d2247a0b0c?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Abstract art",
+      rotation: -8,
+    },
+    {
+      id: "3",
+      src: "https://images.unsplash.com/photo-1524673360092-e07b7ae58845?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MjR8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "City skyline",
+      rotation: 5,
+    },
+    {
+      id: "4",
+      src: "https://plus.unsplash.com/premium_photo-1680610653084-6e4886519caf?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzN8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Nature photography",
+      rotation: 12,
+    },
+    {
+      id: "5",
+      src: "https://plus.unsplash.com/premium_photo-1680608979589-e9349ed066d5?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8QWl8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Digital art",
+      rotation: -12,
+    },
+    {
+      id: "6",
+      src: "https://images.unsplash.com/photo-1562575214-da9fcf59b907?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MzV8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Tropical leaves",
+      rotation: 8,
+    },
+    {
+      id: "7",
+      src: "https://plus.unsplash.com/premium_photo-1676637656210-390da73f4951?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mzd8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Tropical leaves",
+      rotation: 8,
+    },
+    {
+      id: "8",
+      src: "https://images.unsplash.com/photo-1664448003794-2d446c53dcae?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NTV8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
+      alt: "Tropical leaves",
+      rotation: 8,
+    },
+  ]
+
+  const demoFeatures = [
+    {
+      title: "Resultados Realistas",
+      description: "Fotos que parecem criadas por profissionais.",
+    },
+    {
+      title: "Geração Rápida",
+      description: "Transforme ideias em imagens em segundos.",
+    },
+    {
+      title: "Estilos Diversos",
+      description: "Escolha entre uma vasta gama de opções artísticas.",
+    },
+  ]
+
+  return (
+    <ImageCarouselHero
+      title="Crie Fotos Incríveis Geradas por IA Instantaneamente"
+      subtitle="Geração de Fotos com IA"
+      description="Transforme suas ideias em visuais de tirar o fôlego com tecnologia de IA de ponta."
+      ctaText="Comece a Gerar Agora"
+      onCtaClick={() => router.push("/login")}
+      images={demoImages}
+      features={demoFeatures}
+    />
+  )
 }
