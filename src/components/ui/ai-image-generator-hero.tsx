@@ -83,88 +83,89 @@ export function ImageCarouselHero({
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
-        {/* Carousel Container */}
-        <div
-          className="relative w-full max-w-6xl h-96 sm:h-[500px] mb-12 sm:mb-16"
-          onMouseMove={handleMouseMove}
-          onMouseEnter={() => setIsHovering(true)}
-          onMouseLeave={() => setIsHovering(false)}
-        >
-          {/* Rotating Image Cards */}
-          <div className="absolute inset-0 flex items-center justify-center perspective">
-            {images.map((image, index) => {
-              const totalCards = images.length
-              const angle = (rotatingCards[index] || 0) * (Math.PI / 180)
-              const radius = 180
-              const x = Math.cos(angle) * radius
-              const y = Math.sin(angle) * radius
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 w-full max-w-6xl items-center">
+            {/* Text Content Section */}
+            <div className="relative z-20 text-center lg:text-left">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight">
+                    {title}
+                </h1>
 
-              // 3D perspective effect based on mouse position
-              const perspectiveX = (mousePosition.x - 0.5) * 20
-              const perspectiveY = (mousePosition.y - 0.5) * 20
+                <p className="text-lg sm:text-xl text-muted-foreground mb-8 text-balance">{description}</p>
 
-              return (
-                <div
-                  key={image.id}
-                  className="absolute w-32 h-40 sm:w-40 sm:h-48 transition-all duration-300"
-                  style={{
-                    transform: `
-                      translate(${x}px, ${y}px)
-                      rotateX(${perspectiveY}deg)
-                      rotateY(${perspectiveX}deg)
-                      rotateZ(${image.rotation}deg)
-                    `,
-                    transformStyle: "preserve-3d",
-                  }}
-                >
-                  <div
+                {/* CTA Button */}
+                <button
+                    onClick={onCtaClick}
                     className={cn(
-                      "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl",
-                      "transition-all duration-300 hover:shadow-3xl hover:scale-110",
-                      "cursor-pointer group",
+                    "inline-flex items-center gap-2 px-8 py-3 rounded-full",
+                    "bg-primary text-primary-foreground font-medium",
+                    "hover:shadow-lg hover:scale-105 transition-all duration-300",
+                    "active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    "group",
                     )}
+                >
+                    {ctaText}
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </button>
+            </div>
+            {/* Carousel Container */}
+            <div
+            className="relative w-full h-96 sm:h-[500px]"
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsHovering(true)}
+            onMouseLeave={() => setIsHovering(false)}
+            >
+            {/* Rotating Image Cards */}
+            <div className="absolute inset-0 flex items-center justify-center perspective">
+                {images.map((image, index) => {
+                const totalCards = images.length
+                const angle = (rotatingCards[index] || 0) * (Math.PI / 180)
+                const radius = 180
+                const x = Math.cos(angle) * radius
+                const y = Math.sin(angle) * radius
+
+                // 3D perspective effect based on mouse position
+                const perspectiveX = (mousePosition.x - 0.5) * 20
+                const perspectiveY = (mousePosition.y - 0.5) * 20
+
+                return (
+                    <div
+                    key={image.id}
+                    className="absolute w-32 h-40 sm:w-40 sm:h-48 transition-all duration-300"
                     style={{
-                      transformStyle: "preserve-3d",
+                        transform: `
+                        translate(${x}px, ${y}px)
+                        rotateX(${perspectiveY}deg)
+                        rotateY(${perspectiveX}deg)
+                        rotateZ(${image.rotation}deg)
+                        `,
+                        transformStyle: "preserve-3d",
                     }}
-                  >
-                    <Image
-                      src={image.src || "/placeholder.svg"}
-                      alt={image.alt}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                      priority={index < 3}
-                    />
-                    {/* Shine effect */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-
-        {/* Content Section */}
-        <div className="relative z-20 text-center max-w-2xl mx-auto mb-12 sm:mb-16">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight">
-            {title}
-          </h1>
-
-          <p className="text-lg sm:text-xl text-muted-foreground mb-8 text-balance">{description}</p>
-
-          {/* CTA Button */}
-          <button
-            onClick={onCtaClick}
-            className={cn(
-              "inline-flex items-center gap-2 px-8 py-3 rounded-full",
-              "bg-primary text-primary-foreground font-medium",
-              "hover:shadow-lg hover:scale-105 transition-all duration-300",
-              "active:scale-95 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-              "group",
-            )}
-          >
-            {ctaText}
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </button>
+                    >
+                    <div
+                        className={cn(
+                        "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl",
+                        "transition-all duration-300 hover:shadow-3xl hover:scale-110",
+                        "cursor-pointer group",
+                        )}
+                        style={{
+                        transformStyle: "preserve-3d",
+                        }}
+                    >
+                        <Image
+                        src={image.src || "/placeholder.svg"}
+                        alt={image.alt}
+                        fill
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        priority={index < 3}
+                        />
+                        {/* Shine effect */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    </div>
+                    </div>
+                )
+                })}
+            </div>
+            </div>
         </div>
 
         {/* Features Section */}
