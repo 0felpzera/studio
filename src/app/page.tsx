@@ -76,6 +76,7 @@ export default function LandingPage() {
   const timelineData = [
     {
       title: "Recursos",
+      description: "Ferramentas de IA para cada etapa do seu processo criativo.",
       content: (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
             <Card className="bg-card text-card-foreground flex flex-col items-center text-center p-6">
@@ -108,12 +109,14 @@ export default function LandingPage() {
     },
     {
         title: "Calculadora",
+        description: "Simule seu crescimento e veja o potencial do seu perfil.",
         content: (
             <GrowthCalculator />
         )
     },
     {
         title: "Depoimentos",
+        description: "Veja o que outros criadores estão dizendo sobre a Trendify.",
         content: (
             <SocialProof />
         )
