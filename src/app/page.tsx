@@ -2,6 +2,7 @@
 "use client"
 
 import { ImageCarouselHero } from "@/components/ui/ai-image-generator-hero"
+import { NavBar } from "@/components/ui/tubelight-navbar";
 import { useRouter } from "next/navigation";
 import {
   SiFacebook,
@@ -11,6 +12,8 @@ import {
   SiThreads,
   SiX,
 } from "react-icons/si";
+import { Home, LogIn, UserPlus } from "lucide-react";
+
 
 export default function LandingPage() {
   const router = useRouter();
@@ -67,16 +70,26 @@ export default function LandingPage() {
       title: "Estilos Diversos",
       description: "Escolha entre uma vasta gama de opções artísticas.",
     },
-  ]
+  ];
+
+  const navItems = [
+    { name: 'Início', url: '/', icon: Home },
+    { name: 'Login', url: '/login', icon: LogIn },
+    { name: 'Cadastre-se', url: '/signup', icon: UserPlus }
+  ];
+
 
   return (
-    <ImageCarouselHero
-      title="Transforme Conteúdo em Tendência"
-      description="Sua plataforma de IA para viralizar nas redes sociais. Analise, crie e monetize com o poder da inteligência artificial."
-      ctaText="Comece a Crescer Agora"
-      onCtaClick={() => router.push("/login")}
-      icons={demoIcons}
-      features={demoFeatures}
-    />
+    <>
+      <NavBar items={navItems} />
+      <ImageCarouselHero
+        title="Transforme Conteúdo em Tendência"
+        description="Sua plataforma de IA para viralizar nas redes sociais. Analise, crie e monetize com o poder da inteligência artificial."
+        ctaText="Comece a Crescer Agora"
+        onCtaClick={() => router.push("/login")}
+        icons={demoIcons}
+        features={demoFeatures}
+      />
+    </>
   )
 }
