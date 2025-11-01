@@ -248,14 +248,11 @@ export function GrowthCalculator() {
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
                     <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
                 </div>
-                <div className="grid md:grid-cols-3 gap-8 md:gap-12 items-start">
-                  {/* Stepper */}
-                  <div className="md:col-span-1">
-                    <div className="relative">
-                       <div className="absolute left-4 top-4 h-full w-px bg-border -z-10" />
+                <Card className="grid md:grid-cols-12">
+                   <div className="md:col-span-4 p-6 bg-muted/50 rounded-l-xl border-r">
                        <ul className="space-y-8">
                         {steps.map((step, index) => {
-                          const isCompleted = index <= highestStep;
+                          const isCompleted = index < currentStep;
                           const isCurrent = currentStep === index;
                           const Icon = step.icon;
                           
@@ -263,9 +260,10 @@ export function GrowthCalculator() {
                             <li key={step.id} className="flex items-start gap-4 cursor-pointer" onClick={() => handleStepClick(index)}>
                               <div className={cn("size-8 rounded-full flex items-center justify-center font-bold transition-colors",
                                 isCompleted ? 'bg-primary text-primary-foreground' : 
-                                'bg-muted text-muted-foreground'
+                                isCurrent ? 'border-2 border-primary text-primary' :
+                                'bg-background text-muted-foreground border'
                               )}>
-                                {isCompleted && !isCurrent ? <Check className="size-5" /> : <Icon className="size-4" />}
+                                {isCompleted ? <Check className="size-5" /> : <Icon className="size-4" />}
                               </div>
                               <div>
                                 <h3 className={cn("font-semibold transition-colors", isCurrent ? "text-foreground" : "text-muted-foreground")}>{step.title}</h3>
@@ -275,15 +273,14 @@ export function GrowthCalculator() {
                           )
                         })}
                        </ul>
-                    </div>
                   </div>
-                  {/* Form Card */}
-                  <div className="md:col-span-2">
-                    <Card>
+                  
+                  <div className="md:col-span-8">
+                    <form>
                         <CardContent className="p-6">
                             {renderStepContent()}
                         </CardContent>
-                        <CardFooter className="flex justify-between bg-muted/50 p-4 rounded-b-xl border-t">
+                        <CardFooter className="flex justify-between p-4 border-t">
                             <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
                                 <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
                             </Button>
@@ -292,9 +289,9 @@ export function GrowthCalculator() {
                                 {currentStep < steps.length - 1 ? <ArrowRight className="ml-2 h-4 w-4" /> : <Sparkles className="ml-2 h-4 w-4" />}
                             </Button>
                         </CardFooter>
-                    </Card>
+                    </form>
                   </div>
-                </div>
+                </Card>
             </div>
         ) : (
           <div id="calculator-results" className="space-y-12">
