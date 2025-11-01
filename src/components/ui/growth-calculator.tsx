@@ -71,23 +71,23 @@ export function GrowthCalculator() {
   });
 
   const handleStepClick = async (stepIndex: number) => {
+    // Se o clique for para um passo anterior, navega sem validar
     if (stepIndex < currentStep) {
       setCurrentStep(stepIndex);
       return;
     }
-
-    if (stepIndex > currentStep) {
-        const isValid = await form.trigger();
-        if (isValid) {
-            setCurrentStep(stepIndex);
-            setHighestStep(Math.max(highestStep, stepIndex));
-        } else {
-            toast({
-                title: "Campos Incompletos",
-                description: "Por favor, preencha todos os campos obrigatórios antes de avançar.",
-                variant: "destructive"
-            });
-        }
+    
+    // Se o clique for para um passo futuro (ou o mesmo), valida o atual
+    const isValid = await form.trigger();
+    if (isValid) {
+      setCurrentStep(stepIndex);
+      setHighestStep(Math.max(highestStep, stepIndex));
+    } else {
+      toast({
+        title: "Campos Incompletos",
+        description: "Por favor, preencha todos os campos obrigatórios antes de avançar.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -104,7 +104,7 @@ export function GrowthCalculator() {
         setHighestStep(Math.max(highestStep, currentStep + 1));
         form.reset(updatedFormData);
       } else {
-        onSubmit(updatedFormData);
+        onSubmit(updatedFormData as FormData);
       }
     } else {
          toast({
@@ -248,14 +248,14 @@ export function GrowthCalculator() {
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
                     <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
                 </div>
-                <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+                <div className="grid md:grid-cols-3 gap-8 md:gap-12 items-start">
                   {/* Stepper */}
                   <div className="md:col-span-1">
                     <div className="relative">
                        <div className="absolute left-4 top-4 h-full w-px bg-border -z-10" />
                        <ul className="space-y-8">
                         {steps.map((step, index) => {
-                          const isCompleted = index < currentStep || index <= highestStep;
+                          const isCompleted = index <= highestStep;
                           const isCurrent = currentStep === index;
                           const Icon = step.icon;
                           
@@ -263,7 +263,6 @@ export function GrowthCalculator() {
                             <li key={step.id} className="flex items-start gap-4 cursor-pointer" onClick={() => handleStepClick(index)}>
                               <div className={cn("size-8 rounded-full flex items-center justify-center font-bold transition-colors",
                                 isCompleted ? 'bg-primary text-primary-foreground' : 
-                                isCurrent ? 'border-2 border-primary bg-background text-primary' :
                                 'bg-muted text-muted-foreground'
                               )}>
                                 {isCompleted && !isCurrent ? <Check className="size-5" /> : <Icon className="size-4" />}
