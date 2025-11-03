@@ -134,7 +134,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="bg-background text-foreground">
+    <div className="text-foreground">
       <NavBar items={navItems} />
       <ImageCarouselHero
         title="Transforme Conteúdo em Tendência"
@@ -144,7 +144,7 @@ export default function LandingPage() {
         icons={demoIcons}
       />
       
-      <div className="bg-muted/30 border-t">
+      <div className="border-t bg-background">
         <Timeline data={timelineData} />
 
          <motion.section 

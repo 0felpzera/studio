@@ -32,6 +32,18 @@ export function ImageCarouselHero({
   icons,
 }: ImageCarouselHeroProps) {
   const [rotatingCards, setRotatingCards] = useState<number[]>([])
+  const [radius, setRadius] = useState(180);
+
+  // Set radius based on screen size
+  useEffect(() => {
+    const updateRadius = () => {
+      setRadius(window.innerWidth < 768 ? 140 : 180);
+    };
+    
+    updateRadius();
+    window.addEventListener('resize', updateRadius);
+    return () => window.removeEventListener('resize', updateRadius);
+  }, []);
 
   // Continuous rotation animation
   useEffect(() => {
@@ -49,7 +61,7 @@ export function ImageCarouselHero({
 
 
   return (
-    <div className="relative w-full min-h-screen bg-gradient-to-b from-background via-background to-background overflow-hidden">
+    <div className="relative w-full min-h-screen bg-background overflow-hidden">
       <svg width="0" height="0" style={{ position: 'absolute' }}>
         <defs>
           <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -68,6 +80,51 @@ export function ImageCarouselHero({
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 sm:pt-0">
         <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 w-full max-w-6xl items-center">
+            {/* Carousel Container - Order changed for mobile */}
+            <div
+                className="relative w-full h-96 sm:h-[500px] lg:order-last"
+            >
+                {/* Rotating Icon Cards */}
+                <div className="absolute inset-0 flex items-center justify-center perspective">
+                    {icons.map(({ Icon, color, rotation }, index) => {
+                    const totalCards = icons.length
+                    const angle = (rotatingCards[index] || 0) * (Math.PI / 180)
+                    const x = Math.cos(angle) * radius
+                    const y = Math.sin(angle) * radius
+
+                    return (
+                        <motion.div
+                        key={index}
+                        className="absolute w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 transition-all duration-300"
+                        style={{
+                            transform: `
+                            translate(${x}px, ${y}px)
+                            rotateZ(${rotation}deg)
+                            `,
+                            transformStyle: "preserve-3d",
+                        }}
+                        >
+                        <div
+                            className={cn(
+                            "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center",
+                            "bg-card/80 backdrop-blur-sm border border-border/50",
+                            "transition-all duration-300 hover:shadow-3xl hover:scale-110",
+                            "cursor-pointer group",
+                            )}
+                            style={{
+                                transformStyle: "preserve-3d",
+                            }}
+                        >
+                            <Icon size="50%" className="transition-transform duration-500 group-hover:scale-110" style={{ color: color.startsWith('url') ? undefined : color, fill: color.startsWith('url') ? color : undefined }}/>
+                            {/* Shine effect */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                        </div>
+                        </motion.div>
+                    )
+                    })}
+                </div>
+            </div>
+            
             {/* Text Content Section */}
             <div className="relative z-20 text-center lg:text-left">
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight">
@@ -90,51 +147,6 @@ export function ImageCarouselHero({
                     {ctaText}
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </button>
-            </div>
-            {/* Carousel Container */}
-            <div
-            className="relative w-full h-96 sm:h-[500px]"
-            >
-            {/* Rotating Icon Cards */}
-            <div className="absolute inset-0 flex items-center justify-center perspective">
-                {icons.map(({ Icon, color, rotation }, index) => {
-                const totalCards = icons.length
-                const angle = (rotatingCards[index] || 0) * (Math.PI / 180)
-                const radius = 180
-                const x = Math.cos(angle) * radius
-                const y = Math.sin(angle) * radius
-
-                return (
-                    <motion.div
-                      key={index}
-                      className="absolute w-24 h-24 sm:w-32 sm:h-32 transition-all duration-300"
-                      style={{
-                          transform: `
-                          translate(${x}px, ${y}px)
-                          rotateZ(${rotation}deg)
-                          `,
-                          transformStyle: "preserve-3d",
-                      }}
-                    >
-                      <div
-                          className={cn(
-                          "relative w-full h-full rounded-2xl overflow-hidden shadow-2xl flex items-center justify-center",
-                          "bg-card/80 backdrop-blur-sm border border-border/50",
-                          "transition-all duration-300 hover:shadow-3xl hover:scale-110",
-                          "cursor-pointer group",
-                          )}
-                          style={{
-                            transformStyle: "preserve-3d",
-                          }}
-                      >
-                          <Icon size="50%" className="transition-transform duration-500 group-hover:scale-110" style={{ color: color.startsWith('url') ? undefined : color, fill: color.startsWith('url') ? color : undefined }}/>
-                          {/* Shine effect */}
-                          <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                      </div>
-                    </motion.div>
-                )
-                })}
-            </div>
             </div>
         </div>
       </div>

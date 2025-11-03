@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 240 20% 99%; /* Branco Gelo - Ajustado */
+    --background: 300 100% 98%; /* Lilás Pastel (#fff3ff) */
     --foreground: 240 10% 3.9%; /* Preto Suave */
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
@@ -18,7 +18,7 @@ body {
     --primary-foreground: 0 0% 98%;
     --secondary: 240 5% 96%; /* Cinza Neutro Claro */
     --secondary-foreground: 240 5% 35%;
-    --muted: 240 5% 96.1%;
+    --muted: 300 25% 96%; /* Lilás um pouco mais escuro para contraste */
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 270 90% 98%; /* Lilás Suave */
     --accent-foreground: 270 50% 40%;
