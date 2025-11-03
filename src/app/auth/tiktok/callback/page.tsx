@@ -2,12 +2,10 @@
 
 import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, CheckCircle, AlertTriangle, Info, User } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc, collection } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -43,13 +41,11 @@ function TikTokCallback() {
       return;
     }
     
-    // Se o usuário ainda está carregando, espere.
     if (isUserLoading) {
       setStatus("Verificando sua sessão...");
       return;
     }
 
-    // Se não há usuário logado, não podemos prosseguir.
     if (!user || !firestore) {
       setError("Você precisa estar logado para conectar uma conta.");
       setStatus("Usuário não autenticado.");
@@ -70,10 +66,10 @@ function TikTokCallback() {
         setUserInfo(result);
         setStatus("Informações do usuário recebidas com sucesso!");
 
-        // Salvar as informações no Firestore
-        const tiktokAccountRef = doc(collection(firestore, 'users', user.uid, 'tiktokAccounts'));
+        const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
+        
         await setDoc(tiktokAccountRef, {
-            id: tiktokAccountRef.id,
+            id: result.open_id,
             userId: user.uid,
             openId: result.open_id,
             username: result.display_name,
@@ -81,15 +77,16 @@ function TikTokCallback() {
             followerCount: result.follower_count,
             followingCount: result.following_count,
             likesCount: result.likes_count,
-            engagementRate: 0, // A ser calculado posteriormente
-        });
+            videoCount: result.video_count,
+            videos: result.videos,
+            engagementRate: 0, 
+        }, { merge: true });
 
         toast({
             title: "Conta TikTok Conectada!",
             description: `Bem-vindo, ${result.display_name}!`,
         });
 
-        // Redirecionar após um pequeno atraso
         setTimeout(() => {
             router.push('/dashboard/connections');
         }, 3000);
@@ -179,3 +176,4 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
+

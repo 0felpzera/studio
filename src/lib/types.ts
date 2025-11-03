@@ -1,4 +1,16 @@
 
+export type TiktokVideo = {
+    id: string;
+    title?: string;
+    cover_image_url?: string;
+    share_url: string;
+    view_count?: number;
+    like_count?: number;
+    comment_count?: number;
+    share_count?: number;
+    create_time?: number;
+}
+
 export type TiktokAccount = {
     id: string;
     userId: string;
@@ -8,5 +20,8 @@ export type TiktokAccount = {
     followerCount: number;
     followingCount: number;
     likesCount: number;
+    videoCount: number;
     engagementRate: number;
+    videos: TiktokVideo[];
 };
+

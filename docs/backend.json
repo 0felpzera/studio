@@ -62,6 +62,24 @@
         "userId"
       ]
     },
+    "TiktokVideo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TiktokVideo",
+      "type": "object",
+      "description": "Represents a single TikTok video.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "cover_image_url": { "type": "string", "format": "uri" },
+        "share_url": { "type": "string", "format": "uri" },
+        "view_count": { "type": "number" },
+        "like_count": { "type": "number" },
+        "comment_count": { "type": "number" },
+        "share_count": { "type": "number" },
+        "create_time": { "type": "number" }
+      },
+      "required": ["id", "share_url"]
+    },
     "TiktokAccount": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "TiktokAccount",
@@ -83,6 +101,25 @@
         "engagementRate": {
           "type": "number",
           "description": "Engagement rate of the TikTok account."
+        },
+        "followingCount": {
+          "type": "number",
+          "description": "Number of accounts the user is following."
+        },
+        "likesCount": {
+          "type": "number",
+          "description": "Total number of likes the user has received."
+        },
+        "videoCount": {
+          "type": "number",
+          "description": "Total number of videos the user has posted."
+        },
+        "videos": {
+          "type": "array",
+          "description": "A list of the user's recent TikTok videos.",
+          "items": {
+            "$ref": "#/backend/entities/TiktokVideo"
+          }
         }
       },
       "required": [

@@ -10,6 +10,7 @@ import {
   TrendingUp,
   UserPlus,
   Loader2,
+  Video,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -25,59 +26,27 @@ import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/fi
 import type { ContentTask } from '@/app/dashboard/content-calendar';
 import type { TiktokAccount } from '@/lib/types';
 import { useMemo } from 'react';
+import Image from 'next/image';
 
 const revenueData = [
-  { value: 1000 },
-  { value: 4500 },
-  { value: 2000 },
-  { value: 5200 },
-  { value: 1500 },
-  { value: 6100 },
-  { value: 3000 },
-  { value: 6800 },
-  { value: 2000 },
-  { value: 1000 },
-  { value: 4000 },
-  { value: 2000 },
-  { value: 3000 },
-  { value: 2000 },
-  { value: 6238 },
+  { value: 1000 }, { value: 4500 }, { value: 2000 }, { value: 5200 },
+  { value: 1500 }, { value: 6100 }, { value: 3000 }, { value: 6800 },
+  { value: 2000 }, { value: 1000 }, { value: 4000 }, { value: 2000 },
+  { value: 3000 }, { value: 2000 }, { value: 6238 },
 ];
 
 const customersData = [
-  { value: 2000 },
-  { value: 4500 },
-  { value: 2000 },
-  { value: 5200 },
-  { value: 1500 },
-  { value: 5100 },
-  { value: 2500 },
-  { value: 6800 },
-  { value: 1800 },
-  { value: 1000 },
-  { value: 3000 },
-  { value: 2000 },
-  { value: 2700 },
-  { value: 2000 },
-  { value: 4238 },
+  { value: 2000 }, { value: 4500 }, { value: 2000 }, { value: 5200 },
+  { value: 1500 }, { value: 5100 }, { value: 2500 }, { value: 6800 },
+  { value: 1800 }, { value: 1000 }, { value: 3000 }, { value: 2000 },
+  { value: 2700 }, { value: 2000 }, { value: 4238 },
 ];
 
 const activeUsersData = [
-  { value: 2000 },
-  { value: 3500 },
-  { value: 2000 },
-  { value: 5200 },
-  { value: 1200 },
-  { value: 4100 },
-  { value: 3500 },
-  { value: 5800 },
-  { value: 2000 },
-  { value: 800 },
-  { value: 3000 },
-  { value: 1000 },
-  { value: 4000 },
-  { value: 2000 },
-  { value: 4238 },
+  { value: 2000 }, { value: 3500 }, { value: 2000 }, { value: 5200 },
+  { value: 1200 }, { value: 4100 }, { value: 3500 }, { value: 5800 },
+  { value: 2000 }, { value: 800 }, { value: 3000 }, { value: 1000 },
+  { value: 4000 }, { value: 2000 }, { value: 4238 },
 ];
 
 
@@ -87,8 +56,8 @@ const trendingTopics = [
   { title: 'Desafio 30 Dias' },
 ];
 
-function formatNumber(value: number): string {
-    if (value === 0) return 'N/A';
+function formatNumber(value: number | undefined | null): string {
+    if (value === undefined || value === null) return 'N/A';
     if (value >= 1000000) {
         return (value / 1000000).toFixed(1) + 'M';
     }
@@ -133,6 +102,10 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
+    const totalViews = useMemo(() => {
+      if (!tiktokAccount || !tiktokAccount.videos) return 0;
+      return tiktokAccount.videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    }, [tiktokAccount]);
 
     const businessCards = [
         {
@@ -146,20 +119,20 @@ export default function DashboardPage() {
             gradientId: 'revenueGradient',
         },
         {
-            title: 'Engajamento',
-            period: 'Últimos 28 dias',
-            value: tiktokAccount ? formatPercentage(tiktokAccount.engagementRate) : 'N/A',
+            title: 'Total de Vídeos',
+            period: 'Total',
+            value: tiktokAccount ? formatNumber(tiktokAccount.videoCount) : 'N/A',
             isLoading: isLoadingTiktok,
-            icon: TrendingUp,
+            icon: Video,
             data: customersData,
             color: 'var(--color-blue-500)',
             gradientId: 'customersGradient',
         },
         {
             title: 'Visualizações',
-            period: 'Últimos 28 dias',
-            value: 'N/A', // Placeholder - no data in schema yet
-            isLoading: false,
+            period: 'Últimos 10 vídeos',
+            value: tiktokAccount ? formatNumber(totalViews) : 'N/A',
+            isLoading: isLoadingTiktok,
             icon: Film,
             data: activeUsersData,
             color: 'var(--color-violet-500)',
@@ -204,21 +177,13 @@ export default function DashboardPage() {
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
                           data={card.data}
-                          margin={{
-                            top: 5,
-                            right: 5,
-                            left: 5,
-                            bottom: 5,
-                          }}
+                          margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
                         >
                           <defs>
                             <linearGradient id={card.gradientId} x1="0" y1="0" x2="0" y2="1">
                               <stop offset="0%" stopColor={card.color} stopOpacity={0.3} />
                               <stop offset="100%" stopColor={card.color} stopOpacity={0.05} />
                             </linearGradient>
-                            <filter id={`dotShadow${i}`} x="-50%" y="-50%" width="200%" height="200%">
-                              <feDropShadow dx="2" dy="2" stdDeviation="3" floodColor="rgba(0,0,0,0.5)" />
-                            </filter>
                           </defs>
 
                           <Tooltip
@@ -242,12 +207,7 @@ export default function DashboardPage() {
                             fill={`url(#${card.gradientId})`}
                             strokeWidth={2}
                             dot={false}
-                            activeDot={{
-                              r: 6,
-                              fill: card.color,
-                              stroke: 'var(--background)',
-                              strokeWidth: 2,
-                            }}
+                            activeDot={{ r: 6, fill: card.color, stroke: 'var(--background)', strokeWidth: 2 }}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -259,6 +219,35 @@ export default function DashboardPage() {
           })}
         </div>
       </div>
+      
+      {tiktokAccount && tiktokAccount.videos && tiktokAccount.videos.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {tiktokAccount.videos.map((video) => (
+              <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
+                 <Card className="overflow-hidden">
+                    <div className="relative aspect-[9/16]">
+                      <Image 
+                        src={video.cover_image_url || '/placeholder.png'} 
+                        alt={video.title || 'TikTok Video'} 
+                        fill 
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <p className="text-white text-xs font-semibold truncate">{video.title || 'Sem título'}</p>
+                        <p className="text-white/80 text-xs">{formatNumber(video.view_count)} views</p>
+                      </div>
+                    </div>
+                 </Card>
+              </Link>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
@@ -321,3 +310,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

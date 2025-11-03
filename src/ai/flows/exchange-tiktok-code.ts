@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info.
+ * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info and videos.
  * 
  * - exchangeTikTokCode - The main flow function.
  * - ExchangeTikTokCodeInput - Input schema for the flow.
@@ -17,7 +17,20 @@ const ExchangeTikTokCodeInputSchema = z.object({
 
 export type ExchangeTikTokCodeInput = z.infer<typeof ExchangeTikTokCodeInputSchema>;
 
-// Based on the user.info.basic and user.info.stats scopes
+const TiktokVideoSchema = z.object({
+    id: z.string(),
+    title: z.string().optional(),
+    cover_image_url: z.string().url().optional(),
+    share_url: z.string().url(),
+    view_count: z.number().optional(),
+    like_count: z.number().optional(),
+    comment_count: z.number().optional(),
+    share_count: z.number().optional(),
+    create_time: z.number().optional(),
+});
+
+
+// Based on user.info.basic, user.info.stats, and video.list scopes
 const ExchangeTikTokCodeOutputSchema = z.object({
     open_id: z.string().describe("The user's unique identifier on TikTok."),
     union_id: z.string().describe("The user's unique identifier across TikTok platforms."),
@@ -26,12 +39,15 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     follower_count: z.number().describe("The number of followers the user has."),
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
+    video_count: z.number().describe("The total number of videos the user has uploaded."),
+    videos: z.array(TiktokVideoSchema).describe("A list of the user's public videos.")
 });
 
 export type ExchangeTikTokCodeOutput = z.infer<typeof ExchangeTikTokCodeOutputSchema>;
 
 const TIKTOK_TOKEN_URL = 'https://open.tiktokapis.com/v2/oauth/token/';
 const TIKTOK_USERINFO_URL = 'https://open.tiktokapis.com/v2/user/info/';
+const TIKTOK_VIDEOLIST_URL = 'https://open.tiktokapis.com/v2/video/list/';
 
 export async function exchangeTikTokCode(input: ExchangeTikTokCodeInput): Promise<ExchangeTikTokCodeOutput> {
     return exchangeTikTokCodeFlow(input);
@@ -62,37 +78,40 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             tokenParams.append('redirect_uri', 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback');
 
             const tokenResponse = await axios.post(TIKTOK_TOKEN_URL, tokenParams, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
-
-            const { access_token, open_id, error, error_description } = tokenResponse.data;
             
-            if (error) {
-                throw new Error(`TikTok API Error: ${error} - ${error_description}`);
-            }
-
-            if (!access_token) {
-                throw new Error('Failed to retrieve access token from TikTok.');
-            }
+            const { access_token, error, error_description } = tokenResponse.data;
+            
+            if (error) { throw new Error(`TikTok API Error: ${error} - ${error_description}`); }
+            if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
-            const fields = 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count';
-            const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${fields}`;
+            const userFields = 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count,video_count';
+            const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${userFields}`;
 
             const userInfoResponse = await axios.get(userInfoUrlWithParams, {
-                headers: {
-                    'Authorization': `Bearer ${access_token}`,
-                },
+                headers: { 'Authorization': `Bearer ${access_token}` },
             });
 
             if (userInfoResponse.data.error.code !== 'ok') {
                 throw new Error(`Failed to fetch user info: ${userInfoResponse.data.error.message}`);
             }
-
             const userInfo = userInfoResponse.data.data.user;
 
+            // Step 3: Use access token to fetch video list
+            const videoFields = 'id,title,cover_image_url,share_url,view_count,like_count,comment_count,share_count,create_time';
+            const videoListUrlWithParams = `${TIKTOK_VIDEOLIST_URL}?fields=${videoFields}`;
+
+            const videoListResponse = await axios.post(videoListUrlWithParams, {}, {
+                 headers: { 'Authorization': `Bearer ${access_token}` },
+            });
+            
+            if (videoListResponse.data.error.code !== 'ok') {
+                 throw new Error(`Failed to fetch video list: ${videoListResponse.data.error.message}`);
+            }
+            const videos = videoListResponse.data.data.videos || [];
+            
             return {
                 open_id: userInfo.open_id,
                 union_id: userInfo.union_id,
@@ -101,6 +120,8 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 follower_count: userInfo.follower_count,
                 following_count: userInfo.following_count,
                 likes_count: userInfo.likes_count,
+                video_count: userInfo.video_count,
+                videos: videos,
             };
         } catch (err: any) {
             if (axios.isAxiosError(err) && err.response) {
@@ -111,3 +132,4 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
