@@ -90,24 +90,6 @@ export default function LoginPage() {
                             Faça login para continuar a impulsionar seu conteúdo.
                         </p>
                     </div>
-                     <div className="grid grid-cols-1 gap-4">
-                        <Button variant="outline" disabled>
-                            <GoogleIcon className="mr-2 h-5 w-5" />
-                            Continuar com Google
-                        </Button>
-                        <Button variant="outline" disabled>
-                            <AppleIcon className="mr-2 h-5 w-5" />
-                            Continuar com Apple
-                        </Button>
-                    </div>
-                    <div className="relative">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
-                        </div>
-                    </div>
                     <form onSubmit={handleLogin} className="grid gap-4">
                         <div className="grid gap-2">
                             <Label htmlFor="email">E-mail</Label>
@@ -126,6 +108,25 @@ export default function LoginPage() {
                             {isLoading ? 'Entrando...' : 'Entrar'}
                         </Button>
                     </form>
+
+                    <div className="relative my-2">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
+                        </div>
+                    </div>
+
+                     <div className="grid grid-cols-2 gap-4">
+                        <Button variant="outline" size="icon" disabled className="w-full h-12">
+                            <GoogleIcon className="h-6 w-6" />
+                        </Button>
+                        <Button variant="outline" size="icon" disabled className="w-full h-12">
+                            <AppleIcon className="h-6 w-6" />
+                        </Button>
+                    </div>
+
                     <div className="mt-4 text-center text-sm">
                         Não tem uma conta?{" "}
                         <Link href="/signup" className="underline">
