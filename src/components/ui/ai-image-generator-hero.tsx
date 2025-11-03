@@ -69,11 +69,6 @@ export function ImageCarouselHero({
       color: "#000000",
     },
   ];
-  
-  const arcRadius = 180;
-  const totalAngle = 60;
-  const angleStep = totalAngle / (demoIcons.length - 1);
-
 
   return (
     <div className="relative w-full min-h-screen bg-background overflow-hidden">
@@ -93,48 +88,36 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-20 sm:pt-16">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-28 sm:pt-20">
          {/* Text Content Section */}
         <div className="relative z-20 text-center max-w-4xl">
-            {/* Arc Icons */}
-            <div className="relative h-40 mb-8 flex justify-center items-center">
-              {demoIcons.map(({ Icon, color, id }, index) => {
-                const angle = -totalAngle / 2 + index * angleStep;
-                const radian = (angle * Math.PI) / 180;
-                const x = arcRadius * Math.sin(radian);
-                const y = arcRadius - arcRadius * Math.cos(radian);
-
-                return (
-                  <motion.div
+            <motion.div
+              className="flex items-center justify-center gap-4 mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <div className="flex items-center gap-6 p-3 rounded-full bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
+                {demoIcons.map(({ Icon, color, id }) => (
+                  <div
                     key={id}
-                    initial={{ opacity: 0, x: 0, rotate: angle }}
-                    animate={{ opacity: 1, x: x, y: y, rotate: angle }}
-                    transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
-                    className="absolute"
+                    className={cn(
+                      "relative w-12 h-12 rounded-full flex items-center justify-center",
+                      "group"
+                    )}
                   >
-                    <div
-                      className={cn(
-                        "relative w-20 h-20 rounded-2xl flex items-center justify-center",
-                        "bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg",
-                        "group"
-                      )}
-                       style={{
-                        transform: `rotate(${-angle}deg)`
+                    <Icon
+                      size="60%"
+                      className="transition-transform duration-300 group-hover:scale-110"
+                      style={{
+                        color: color.startsWith("url") ? undefined : color,
+                        fill: color.startsWith("url") ? color : undefined,
                       }}
-                    >
-                      <Icon
-                        size="60%"
-                        className="transition-transform duration-300 group-hover:scale-110"
-                        style={{
-                          color: color.startsWith("url") ? undefined : color,
-                          fill: color.startsWith("url") ? color : undefined,
-                        }}
-                      />
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                    />
+                  </div>
+                ))}
+              </div>
+            </motion.div>
 
             <motion.h1 
                 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight"
