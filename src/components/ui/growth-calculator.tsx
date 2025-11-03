@@ -240,7 +240,7 @@ export function GrowthCalculator() {
   };
 
   return (
-    <section className="py-20 sm:py-32 bg-background overflow-hidden">
+    <section className="py-20 sm:py-32 overflow-hidden">
       <div className="container mx-auto px-4">
         {!isCalculated ? (
             <div className='max-w-4xl mx-auto'>
@@ -248,8 +248,8 @@ export function GrowthCalculator() {
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
                     <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
                 </div>
-                <Card className="grid md:grid-cols-12">
-                   <div className="md:col-span-4 p-6 bg-muted/50 rounded-l-xl border-r">
+                <Card className="grid md:grid-cols-12 bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
+                   <div className="md:col-span-4 p-6 bg-muted/50 rounded-l-xl border-r border-white/10">
                        <ul className="space-y-8">
                         {steps.map((step, index) => {
                           const isCompleted = index < currentStep;
@@ -261,7 +261,7 @@ export function GrowthCalculator() {
                               <div className={cn("size-8 rounded-full flex items-center justify-center font-bold transition-colors",
                                 isCompleted ? 'bg-primary text-primary-foreground' : 
                                 isCurrent ? 'border-2 border-primary text-primary' :
-                                'bg-background text-muted-foreground border'
+                                'bg-background/20 text-muted-foreground border'
                               )}>
                                 {isCompleted ? <Check className="size-5" /> : <Icon className="size-4" />}
                               </div>
@@ -280,7 +280,7 @@ export function GrowthCalculator() {
                         <CardContent className="p-6">
                             {renderStepContent()}
                         </CardContent>
-                        <CardFooter className="flex justify-between p-4 border-t">
+                        <CardFooter className="flex justify-between p-4 border-t border-white/10">
                             <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
                                 <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
                             </Button>
@@ -301,7 +301,7 @@ export function GrowthCalculator() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
+              <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Tempo para Atingir a Meta</CardTitle>
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -311,7 +311,7 @@ export function GrowthCalculator() {
                   <p className="text-xs text-muted-foreground">Previsão para Dezembro de 2024</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Potencial de Ganhos/Mês</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -321,7 +321,7 @@ export function GrowthCalculator() {
                   <p className="text-xs text-muted-foreground">Baseado em publis e parcerias</p>
                 </CardContent>
               </Card>
-              <Card>
+              <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium">Plano Semanal Recomendado</CardTitle>
                   <Target className="h-4 w-4 text-muted-foreground" />
@@ -333,7 +333,7 @@ export function GrowthCalculator() {
               </Card>
             </div>
 
-            <Card>
+            <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-primary" /> Curva de Crescimento de Seguidores</CardTitle>
                     <CardDescription>Uma projeção mensal para sua meta de {formData.followerGoal?.toLocaleString('pt-BR')} seguidores.</CardDescription>
@@ -344,7 +344,7 @@ export function GrowthCalculator() {
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card>
+                <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho</CardTitle>
                         <CardDescription>Ideias de inícios de vídeo para capturar a atenção imediatamente.</CardDescription>
@@ -355,7 +355,7 @@ export function GrowthCalculator() {
                         <p>3. "Meu segredo para {`alcançar algo no seu nicho`} usando apenas..."</p>
                     </CardContent>
                 </Card>
-                 <Card>
+                 <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta</CardTitle>
                          <CardDescription>Formatos e áudios que estão viralizando agora no seu nicho.</CardDescription>
@@ -378,7 +378,7 @@ export function GrowthCalculator() {
                         <DialogTrigger asChild>
                             <Button variant="link">Ver como calculamos</Button>
                         </DialogTrigger>
-                        <DialogContent>
+                        <DialogContent className="bg-card/50 backdrop-blur-lg border-white/10">
                             <DialogHeader>
                             <DialogTitle>Metodologia de Cálculo</DialogTitle>
                             <DialogDescription>
@@ -401,3 +401,5 @@ export function GrowthCalculator() {
     </section>
   );
 }
+
+    

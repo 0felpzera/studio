@@ -135,7 +135,7 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="text-foreground">
+    <div className="text-foreground bg-background">
       <NavBar items={navItems} />
       <ImageCarouselHero
         title="Transforme Conteúdo em Tendência"
@@ -165,3 +165,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    

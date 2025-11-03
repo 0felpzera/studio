@@ -134,7 +134,7 @@ const TestimonialCarousel = React.forwardRef<
                 key={testimonial.id}
                 className={cn(
                   "absolute w-full h-full rounded-2xl cursor-grab active:cursor-grabbing",
-                  "bg-card shadow-xl border border-border",
+                  "bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg",
                 )}
                 style={{
                   zIndex: getZIndex(),
@@ -215,3 +215,5 @@ const TestimonialCarousel = React.forwardRef<
 TestimonialCarousel.displayName = "TestimonialCarousel"
 
 export { TestimonialCarousel, type Testimonial }
+
+    
