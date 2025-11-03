@@ -90,14 +90,14 @@ export default function LoginPage() {
                             Faça login para continuar a impulsionar seu conteúdo.
                         </p>
                     </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-1 gap-4">
                         <Button variant="outline" disabled>
                             <GoogleIcon className="mr-2 h-5 w-5" />
-                            Google
+                            Continuar com Google
                         </Button>
                         <Button variant="outline" disabled>
                             <AppleIcon className="mr-2 h-5 w-5" />
-                            Apple
+                            Continuar com Apple
                         </Button>
                     </div>
                     <div className="relative">
@@ -141,7 +141,7 @@ export default function LoginPage() {
                             src={heroImage.imageUrl}
                             alt={heroImage.description}
                             data-ai-hint={heroImage.imageHint}
-                            layout="fill"
+                            fill
                             objectFit="cover"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
