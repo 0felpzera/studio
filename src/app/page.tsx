@@ -145,7 +145,7 @@ export default function LandingPage() {
         icons={demoIcons}
       />
       
-      <div className="bg-[#fff3ff] rounded-t-2xl">
+      <div className="bg-[#fff3ff] rounded-t-[50px]">
         <Timeline data={timelineData} />
 
          <motion.section 
