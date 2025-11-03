@@ -61,14 +61,14 @@ export default function ConnectionsPage() {
     const isTiktokConnected = useMemo(() => tiktokAccounts && tiktokAccounts.length > 0, [tiktokAccounts]);
 
      useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const state = urlParams.get('state');
-
         const handleConnection = async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            const state = urlParams.get('state');
+
              if (code && state && user && firestore && !isConnecting && !isTiktokConnected) {
                 setIsConnecting(true);
-                // Checar o 'state' para determinar a origem (TikTok ou Meta)
+                
                 if (state === '___UNIQUE_STATE_TOKEN_TIKTOK___') {
                     toast({
                         title: "Autorização do TikTok Concedida!",
@@ -99,6 +99,8 @@ export default function ConnectionsPage() {
                         });
                     } finally {
                         setIsConnecting(false);
+                         // Limpa a URL após o processamento
+                        window.history.replaceState({}, document.title, window.location.pathname);
                     }
                 
                 } else if (state === '___UNIQUE_STATE_TOKEN_META___') {
@@ -107,14 +109,16 @@ export default function ConnectionsPage() {
                         description: "Conexão com a Meta bem-sucedida.",
                     });
                      // Lógica para Instagram viria aqui
+                      // Limpa a URL após o processamento
+                    window.history.replaceState({}, document.title, window.location.pathname);
                 }
-                
-                // Limpa a URL
-                window.history.replaceState({}, document.title, window.location.pathname);
             }
         };
         
-        handleConnection();
+        // Apenas execute se o usuário e o firestore estiverem prontos
+        if(user && firestore) {
+            handleConnection();
+        }
 
     }, [toast, user, firestore, isConnecting, isTiktokConnected]);
 
@@ -169,7 +173,7 @@ export default function ConnectionsPage() {
 
     const handleConnectInstagram = () => {
         const appId = 'YOUR_META_APP_ID'; // SUBSTITUA PELO SEU APP ID DA META
-        const redirectUri = window.location.href;
+        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
         const scope = 'user_profile,user_media';
         const state = '___UNIQUE_STATE_TOKEN_META___';
 
@@ -202,7 +206,7 @@ export default function ConnectionsPage() {
             </header>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
+                <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">TikTok</CardTitle>
                         <TiktokIcon className="h-6 w-6 text-foreground" />
@@ -231,14 +235,14 @@ export default function ConnectionsPage() {
                     </CardContent>
                     <CardContent>
                         {isTiktokConnected ? (
-                            <AlertDialog>
+                             <AlertDialog>
                                 <AlertDialogTrigger asChild>
-                                    <Button className="w-full" variant="destructive" disabled={isDeleting}>
+                                    <Button variant="destructive" className="w-full" disabled={isDeleting}>
                                         {isDeleting ? <Loader2 className="mr-2 animate-spin" /> : <XCircle className="mr-2" />}
                                         Desconectar
                                     </Button>
                                 </AlertDialogTrigger>
-                                <AlertDialogContent className="bg-card/50 backdrop-blur-lg border-white/10">
+                                <AlertDialogContent>
                                     <AlertDialogHeader>
                                         <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                         <AlertDialogDescription>
@@ -262,7 +266,7 @@ export default function ConnectionsPage() {
                     </CardContent>
                 </Card>
                 
-                 <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
+                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Instagram</CardTitle>
                         <InstagramIcon className="h-6 w-6 text-foreground" />
@@ -283,5 +287,7 @@ export default function ConnectionsPage() {
         </div>
     );
 }
+
+    
 
     
