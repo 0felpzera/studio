@@ -1,16 +1,17 @@
+
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { TrendifyLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser } from '@/firebase';
-import { initiateEmailSignIn } from '@/firebase/non-blocking-login';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithEmailAndPassword } from 'firebase/auth';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function AppleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -40,6 +41,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
     useEffect(() => {
         if (!isUserLoading && user) {
@@ -56,7 +58,6 @@ export default function LoginPage() {
                 title: "Login bem-sucedido!",
                 description: "Redirecionando para o seu painel.",
             });
-            // O useEffect cuidará do redirecionamento
         } catch (error: any) {
              toast({
                 title: "Erro no Login",
@@ -76,18 +77,20 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="flex min-h-screen w-full items-center justify-center bg-background p-4">
-            <Card className="w-full max-w-md mx-auto">
-                <CardHeader className="text-center space-y-4 pt-8">
-                    <div className="inline-flex justify-center items-center gap-3">
-                        <TrendifyLogo className="h-8 w-8 text-primary" />
-                        <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
+        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
+            <div className="flex items-center justify-center py-12">
+                <div className="mx-auto grid w-[350px] gap-6">
+                    <div className="grid gap-2 text-center">
+                         <div className="inline-flex justify-center items-center gap-3 mb-4">
+                            <TrendifyLogo className="h-8 w-8 text-primary" />
+                            <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
+                        </div>
+                        <h1 className="text-3xl font-bold">Boas-vindas de volta!</h1>
+                        <p className="text-balance text-muted-foreground">
+                            Faça login para continuar a impulsionar seu conteúdo.
+                        </p>
                     </div>
-                    <CardTitle className="text-2xl font-headline !mt-2">Boas-vindas de volta, Criador!</CardTitle>
-                    <CardDescription>Faça login para transformar sua estratégia de conteúdo.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-4">
                         <Button variant="outline" disabled>
                             <GoogleIcon className="mr-2 h-5 w-5" />
                             Google
@@ -102,37 +105,53 @@ export default function LoginPage() {
                             <span className="w-full border-t" />
                         </div>
                         <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-card px-2 text-muted-foreground">Ou continue com</span>
+                            <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
                         </div>
                     </div>
-                    <form onSubmit={handleLogin} className="space-y-4">
-                        <div className="space-y-2">
+                    <form onSubmit={handleLogin} className="grid gap-4">
+                        <div className="grid gap-2">
                             <Label htmlFor="email">E-mail</Label>
                             <Input id="email" type="email" placeholder="criador@exemplo.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
-                        <div className="space-y-2">
+                        <div className="grid gap-2">
                             <div className="flex items-center">
                                 <Label htmlFor="password">Senha</Label>
-                                <Link href="#" className="ml-auto inline-block text-sm underline" prefetch={false}>
+                                <Link href="#" className="ml-auto inline-block text-sm underline">
                                     Esqueceu sua senha?
                                 </Link>
                             </div>
                             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
-                        <div className="pt-2">
-                            <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                                {isLoading ? 'Entrando...' : 'Entrar'}
-                            </Button>
-                        </div>
+                        <Button type="submit" className="w-full font-bold" disabled={isLoading}>
+                            {isLoading ? 'Entrando...' : 'Entrar'}
+                        </Button>
                     </form>
-                    <div className="text-center text-sm">
-                        Não tem uma conta?{' '}
-                        <Link href="/signup" className="underline" prefetch={false}>
+                    <div className="mt-4 text-center text-sm">
+                        Não tem uma conta?{" "}
+                        <Link href="/signup" className="underline">
                             Cadastre-se
                         </Link>
                     </div>
-                </CardContent>
-            </Card>
+                </div>
+            </div>
+            <div className="hidden bg-muted lg:block">
+                {heroImage && (
+                    <div className="relative h-full w-full">
+                         <Image
+                            src={heroImage.imageUrl}
+                            alt={heroImage.description}
+                            data-ai-hint={heroImage.imageHint}
+                            layout="fill"
+                            objectFit="cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                        <div className="absolute bottom-10 left-10 text-white max-w-md">
+                            <h2 className="text-3xl font-serif font-bold">"A criatividade é a inteligência se divertindo."</h2>
+                            <p className="mt-2 text-lg font-light">- Albert Einstein (atribuído)</p>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
