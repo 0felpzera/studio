@@ -335,7 +335,7 @@ export function GrowthCalculator() {
 
             <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                 <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><TrendingUp className="h-5 w-5 text-primary" /> Curva de Crescimento de Seguidores</CardTitle>
+                    <CardTitle className="flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5 text-primary" /> Curva de Crescimento de Seguidores</CardTitle>
                     <CardDescription>Uma projeção mensal para sua meta de {formData.followerGoal?.toLocaleString('pt-BR')} seguidores.</CardDescription>
                 </CardHeader>
                  <CardContent className="h-[350px] pl-0">
@@ -346,7 +346,7 @@ export function GrowthCalculator() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho</CardTitle>
+                        <CardTitle className="flex items-center gap-2 font-bold"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho</CardTitle>
                         <CardDescription>Ideias de inícios de vídeo para capturar a atenção imediatamente.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -357,7 +357,7 @@ export function GrowthCalculator() {
                 </Card>
                  <Card className="bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta</CardTitle>
+                        <CardTitle className="flex items-center gap-2 font-bold"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta</CardTitle>
                          <CardDescription>Formatos e áudios que estão viralizando agora no seu nicho.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -380,7 +380,7 @@ export function GrowthCalculator() {
                         </DialogTrigger>
                         <DialogContent className="bg-card/50 backdrop-blur-lg border-white/10">
                             <DialogHeader>
-                            <DialogTitle>Metodologia de Cálculo</DialogTitle>
+                            <DialogTitle className="font-bold">Metodologia de Cálculo</DialogTitle>
                             <DialogDescription>
                                 Nossas estimativas são baseadas em uma análise de mais de 10.000 perfis dentro do seu nicho e país. Consideramos os seguintes fatores:
                             </DialogDescription>
