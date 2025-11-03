@@ -144,20 +144,22 @@ export default function LandingPage() {
         icons={demoIcons}
       />
       
-      <Timeline data={timelineData} />
+      <div className="bg-muted/30 border-t">
+        <Timeline data={timelineData} />
 
-       <motion.section 
-         className="py-20 sm:py-32 bg-accent/30 text-accent-foreground"
-         initial={{ opacity: 0, y: 50 }}
-         whileInView={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }}
-         viewport={{ once: true, amount: 0.5 }}
-       >
-          <div className="container mx-auto px-4 text-center">
-               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">
-                “Todo criador tem potencial pra ser tendência. A Trendify te mostra o caminho.”
-              </h2>
-          </div>
-      </motion.section>
+         <motion.section 
+           className="py-20 sm:py-32 text-accent-foreground"
+           initial={{ opacity: 0, y: 50 }}
+           whileInView={{ opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }}
+           viewport={{ once: true, amount: 0.5 }}
+         >
+            <div className="container mx-auto px-4 text-center">
+                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">
+                  “Todo criador tem potencial pra ser tendência. A Trendify te mostra o caminho.”
+                </h2>
+            </div>
+        </motion.section>
+      </div>
       <Footer />
     </div>
   );
