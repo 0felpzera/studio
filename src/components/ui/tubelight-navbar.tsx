@@ -96,10 +96,10 @@ export function NavBar({ items, className }: NavBarProps) {
         />
 
         <div className="hidden sm:flex items-center gap-1 pl-2">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/login')}>
+            <Button variant="ghost" size="sm" onClick={() => router.push('/login')} className="whitespace-nowrap">
                 Entrar
             </Button>
-            <Button size="sm" onClick={() => router.push('/signup')}>
+            <Button size="sm" onClick={() => router.push('/signup')} className="whitespace-nowrap">
                 Cadastre-se
             </Button>
         </div>
