@@ -2,10 +2,11 @@
 
 import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useUser, useFirestore } from '@/firebase';
 import { doc, setDoc, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 function TikTokCallback() {
   const router = useRouter();
@@ -13,19 +14,43 @@ function TikTokCallback() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
+  const [authCode, setAuthCode] = useState<string | null>(null);
+  const [authState, setAuthState] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState("Aguardando resposta do TikTok...");
 
   useEffect(() => {
     // Wait until user and firestore are loaded
     if (isUserLoading || !firestore) {
+        setStatusMessage("Aguardando autenticação do Firebase...");
       return;
     }
 
     const code = searchParams.get('code');
     const state = searchParams.get('state');
+    const returnedError = searchParams.get('error');
+    const errorDescription = searchParams.get('error_description');
+
+    if (returnedError) {
+        setError(errorDescription || "O TikTok retornou um erro desconhecido.");
+        setStatusMessage("Erro na autenticação.");
+        toast({
+            title: "Erro de Autenticação do TikTok",
+            description: errorDescription || "Não foi possível autorizar sua conta.",
+            variant: "destructive"
+        });
+        // Redirect after a delay to allow user to see the error
+        setTimeout(() => router.replace('/dashboard/connections'), 5000);
+        return;
+    }
+
+    setAuthCode(code);
+    setAuthState(state);
 
     const processCallback = async () => {
       // If there is no user after loading, redirect to login
       if (!user) {
+        setStatusMessage("Usuário não encontrado. Redirecionando para o login...");
         toast({
             title: "Usuário não encontrado",
             description: "Você precisa estar logado para conectar sua conta.",
@@ -37,7 +62,9 @@ function TikTokCallback() {
       
       // If there is code and state, process the connection
       if (code && state) {
+        setStatusMessage("Verificando estado e código de autorização...");
         if (state === '___UNIQUE_STATE_TOKEN_TIKTOK___') {
+            setStatusMessage("Estado validado. Salvando conexão no banco de dados...");
           try {
             // Create a new document in the subcollection with a random ID
             const tiktokAccountsColRef = collection(firestore, 'users', user.uid, 'tiktokAccounts');
@@ -50,24 +77,37 @@ function TikTokCallback() {
               engagementRate: 0.05, // Example data (5%)
             });
 
+            setStatusMessage("Conta TikTok Conectada com sucesso! Redirecionando...");
             toast({
               title: "Conta TikTok Conectada!",
-              description: "Seus dados foram sincronizados com sucesso.",
+              description: "Seus dados (de exemplo) foram sincronizados com sucesso.",
             });
 
-          } catch (error) {
+          } catch (error: any) {
             console.error("Erro ao salvar conta do TikTok:", error);
+            setStatusMessage("Erro ao salvar os dados da conexão.");
+             setError(error.message);
             toast({
               title: "Erro ao salvar conexão",
               description: "Não foi possível salvar os dados da sua conta TikTok.",
               variant: "destructive",
             });
           }
+        } else {
+            setStatusMessage("Erro de validação. O estado (state) não corresponde.");
+            setError("O token de estado CSRF não corresponde. A solicitação pode ter sido forjada.");
+            toast({
+              title: "Erro de Segurança",
+              description: "A validação do estado falhou. Por favor, tente conectar novamente.",
+              variant: "destructive",
+            });
         }
+      } else {
+        setStatusMessage("Nenhum código de autorização encontrado. Redirecionando...");
       }
       
-      // After processing (or if there is no code), redirect to the connections page
-      router.replace('/dashboard/connections');
+      // After processing, redirect to the connections page after a short delay
+      setTimeout(() => router.replace('/dashboard/connections'), 3000);
     };
 
     processCallback();
@@ -75,9 +115,50 @@ function TikTokCallback() {
   }, [user, isUserLoading, firestore, router, searchParams, toast]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background">
-      <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      <p className="mt-4 text-muted-foreground">Finalizando conexão com o TikTok...</p>
+    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                    Processando Conexão com TikTok
+                </CardTitle>
+                <CardDescription>
+                   {statusMessage}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2 p-4 border rounded-lg bg-muted/50">
+                    <h4 className="font-semibold">Dados Recebidos do TikTok</h4>
+                    {authCode ? (
+                        <p className="text-sm font-mono break-all">
+                            <span className="font-semibold">Código (code): </span> {authCode}
+                        </p>
+                    ) : (
+                         <p className="text-sm text-muted-foreground">Aguardando código de autorização...</p>
+                    )}
+                    {authState && (
+                        <p className="text-sm font-mono break-all">
+                             <span className="font-semibold">Estado (state): </span> {authState}
+                        </p>
+                    )}
+                </div>
+                 {error && (
+                    <div className="flex items-start gap-3 text-destructive bg-destructive/10 p-3 rounded-lg">
+                        <AlertTriangle className="h-5 w-5 mt-0.5"/>
+                        <div>
+                            <h4 className="font-semibold">Ocorreu um Erro</h4>
+                            <p className="text-sm">{error}</p>
+                        </div>
+                    </div>
+                )}
+                {!error && authCode && (
+                     <div className="flex items-center gap-3 text-green-600 bg-green-500/10 p-3 rounded-lg">
+                        <CheckCircle className="h-5 w-5"/>
+                        <p className="text-sm font-medium">Recebemos os dados e estamos processando sua conexão.</p>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     </div>
   );
 }
