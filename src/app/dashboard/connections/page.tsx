@@ -76,7 +76,7 @@ export default function ConnectionsPage() {
 
     const handleConnectInstagram = () => {
         const appId = 'YOUR_META_APP_ID'; // SUBSTITUA PELO SEU APP ID DA META
-        const redirectUri = window.location.origin + window.location.pathname;
+        const redirectUri = window.location.href;
         const scope = 'user_profile,user_media';
         const state = '___UNIQUE_STATE_TOKEN_META___';
 
