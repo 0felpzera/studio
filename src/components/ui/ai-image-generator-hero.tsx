@@ -37,7 +37,7 @@ export function ImageCarouselHero({
   // Set radius based on screen size
   useEffect(() => {
     const updateRadius = () => {
-      setRadius(window.innerWidth < 768 ? 140 : 180);
+      setRadius(window.innerWidth < 768 ? 120 : 180);
     };
     
     updateRadius();
@@ -79,7 +79,7 @@ export function ImageCarouselHero({
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 sm:pt-0">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 w-full max-w-6xl items-center">
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 w-full max-w-7xl items-center">
             {/* Carousel Container - Order changed for mobile */}
             <div
                 className="relative w-full h-96 sm:h-[500px] lg:order-last"
@@ -95,7 +95,7 @@ export function ImageCarouselHero({
                     return (
                         <motion.div
                         key={index}
-                        className="absolute w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 transition-all duration-300"
+                        className="absolute w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 transition-all duration-300"
                         style={{
                             transform: `
                             translate(${x}px, ${y}px)
