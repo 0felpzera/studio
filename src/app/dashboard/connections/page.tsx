@@ -59,8 +59,8 @@ export default function ConnectionsPage() {
 
 
     const handleConnectTikTok = () => {
-        const clientKey = 'sbaw9edcigqvur1dsw';
-        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/dashboard/connections';
+        const clientKey = 'sbaw9edcigqvur1dsw'; // SUBSTITUA PELA SUA CLIENT KEY DO TIKTOK
+        const redirectUri = window.location.origin + window.location.pathname;
         const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
@@ -75,7 +75,7 @@ export default function ConnectionsPage() {
 
     const handleConnectInstagram = () => {
         const appId = 'YOUR_META_APP_ID'; // SUBSTITUA PELO SEU APP ID DA META
-        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/dashboard/connections';
+        const redirectUri = window.location.origin + window.location.pathname;
         const scope = 'user_profile,user_media';
         const state = '___UNIQUE_STATE_TOKEN_META___';
 
@@ -147,3 +147,5 @@ export default function ConnectionsPage() {
         </div>
     );
 }
+
+    
