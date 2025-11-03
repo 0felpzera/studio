@@ -1,12 +1,14 @@
 
-
 'use client';
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Share2 } from "lucide-react";
-import { useEffect } from "react";
+import { Share2, Settings, Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { doc, setDoc, collection } from "firebase/firestore";
+import type { TiktokAccount } from "@/lib/types";
 
 
 function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -34,29 +36,76 @@ function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
 export default function ConnectionsPage() {
     const { toast } = useToast();
     const tiktokScope = 'user.info.basic'; 
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+    const [isConnecting, setIsConnecting] = useState(false);
+
+    const tiktokAccountsQuery = useMemoFirebase(() => {
+        if (!firestore || !user) return null;
+        return collection(firestore, 'users', user.uid, 'tiktokAccounts');
+    }, [firestore, user]);
+
+    const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+
+    const isTiktokConnected = useMemo(() => tiktokAccounts && tiktokAccounts.length > 0, [tiktokAccounts]);
 
      useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const state = urlParams.get('state');
 
-        if (code && state) {
-            // Checar o 'state' para determinar a origem (TikTok ou Meta)
-            if (state === '___UNIQUE_STATE_TOKEN_TIKTOK___') {
-                toast({
-                    title: "Autorização do TikTok Concedida!",
-                    description: "Conexão bem-sucedida. Em breve seus dados serão sincronizados.",
-                });
-            } else if (state === '___UNIQUE_STATE_TOKEN_META___') {
-                 toast({
-                    title: "Autorização do Instagram Concedida!",
-                    description: "Conexão com a Meta bem-sucedida.",
-                });
+        const handleConnection = async () => {
+             if (code && state && user && firestore && !isConnecting && !isTiktokConnected) {
+                setIsConnecting(true);
+                // Checar o 'state' para determinar a origem (TikTok ou Meta)
+                if (state === '___UNIQUE_STATE_TOKEN_TIKTOK___') {
+                    toast({
+                        title: "Autorização do TikTok Concedida!",
+                        description: "Conexão bem-sucedida. Sincronizando seus dados.",
+                    });
+
+                    // Simular a criação de uma conta no Firestore
+                    try {
+                        const tiktokAccountId = 'tiktok-' + user.uid; // ID de exemplo
+                        const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccountId);
+                        await setDoc(tiktokAccountRef, {
+                            id: tiktokAccountId,
+                            userId: user.uid,
+                            followerCount: 25000, // Dado de exemplo
+                            engagementRate: 0.05, // Dado de exemplo (5%)
+                        });
+                        toast({
+                            title: "Conta TikTok Conectada!",
+                            description: "Seus dados de exemplo foram salvos no seu perfil.",
+                        });
+
+                    } catch (error) {
+                        console.error("Erro ao salvar conta do TikTok:", error);
+                        toast({
+                            title: "Erro ao salvar conexão",
+                            description: "Não foi possível salvar os dados da sua conta TikTok.",
+                            variant: "destructive",
+                        });
+                    } finally {
+                        setIsConnecting(false);
+                    }
+                
+                } else if (state === '___UNIQUE_STATE_TOKEN_META___') {
+                    toast({
+                        title: "Autorização do Instagram Concedida!",
+                        description: "Conexão com a Meta bem-sucedida.",
+                    });
+                     // Lógica para Instagram viria aqui
+                }
+                
+                // Limpa a URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
-            
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }, [toast]);
+        };
+        
+        handleConnection();
+
+    }, [toast, user, firestore, isConnecting, isTiktokConnected]);
 
 
     const handleConnectTikTok = () => {
@@ -115,15 +164,38 @@ export default function ConnectionsPage() {
                         <TiktokIcon className="h-6 w-6 text-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-lg font-bold">Não conectado</div>
-                        <p className="text-xs text-muted-foreground">
-                            Conecte sua conta para importar métricas de engajamento e seguidores.
-                        </p>
+                        {isLoadingTiktok || isConnecting ? (
+                            <div className="flex items-center gap-2">
+                                <Loader2 className="h-5 w-5 animate-spin"/>
+                                <span className="text-lg font-bold">Verificando...</span>
+                            </div>
+                        ) : isTiktokConnected ? (
+                            <>
+                                <div className="text-lg font-bold text-green-500">Conectado</div>
+                                <p className="text-xs text-muted-foreground">
+                                    Suas métricas do TikTok estão sendo sincronizadas.
+                                </p>
+                            </>
+                        ) : (
+                            <>
+                                <div className="text-lg font-bold">Não conectado</div>
+                                <p className="text-xs text-muted-foreground">
+                                    Conecte sua conta para importar métricas de engajamento e seguidores.
+                                </p>
+                            </>
+                        )}
                     </CardContent>
                     <CardContent>
-                        <Button className="w-full" onClick={handleConnectTikTok}>
-                            <Share2 className="mr-2" /> Conectar TikTok
-                        </Button>
+                        {isTiktokConnected ? (
+                             <Button className="w-full" variant="secondary">
+                                <Settings className="mr-2" /> Gerenciar Conexão
+                            </Button>
+                        ) : (
+                            <Button className="w-full" onClick={handleConnectTikTok} disabled={isUserLoading || isLoadingTiktok || isConnecting}>
+                                <Share2 className="mr-2" /> Conectar TikTok
+                            </Button>
+                        )}
+                        
                     </CardContent>
                 </Card>
                 

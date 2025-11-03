@@ -9,6 +9,7 @@ import {
   ChevronRight,
   TrendingUp,
   UserPlus,
+  Loader2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,8 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
+import type { TiktokAccount } from '@/lib/types';
+import { useMemo } from 'react';
 
 const revenueData = [
   { value: 1000 },
@@ -94,6 +97,10 @@ function formatNumber(value: number): string {
     return value.toString();
 }
 
+function formatPercentage(value: number): string {
+    return (value * 100).toFixed(1) + '%';
+}
+
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
@@ -107,14 +114,30 @@ export default function DashboardPage() {
             limit(2)
         );
     }, [user, firestore]);
+    
+    const tiktokAccountsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return collection(firestore, 'users', user.uid, 'tiktokAccounts');
+    }, [user, firestore]);
+
 
     const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
+    const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+
+    const tiktokAccount = useMemo(() => {
+        if (tiktokAccounts && tiktokAccounts.length > 0) {
+            return tiktokAccounts[0];
+        }
+        return null;
+    }, [tiktokAccounts]);
+    
 
     const businessCards = [
         {
             title: 'Seguidores',
             period: 'Total',
-            value: '12.5k', // Placeholder
+            value: tiktokAccount ? formatNumber(tiktokAccount.followerCount) : '0',
+            isLoading: isLoadingTiktok,
             icon: UserPlus,
             data: revenueData,
             color: 'var(--color-emerald-500)',
@@ -123,7 +146,8 @@ export default function DashboardPage() {
         {
             title: 'Engajamento',
             period: 'Últimos 28 dias',
-            value: '4.8%', // Placeholder
+            value: tiktokAccount ? formatPercentage(tiktokAccount.engagementRate) : '0%',
+            isLoading: isLoadingTiktok,
             icon: TrendingUp,
             data: customersData,
             color: 'var(--color-blue-500)',
@@ -132,7 +156,8 @@ export default function DashboardPage() {
         {
             title: 'Visualizações',
             period: 'Últimos 28 dias',
-            value: '1.2M', // Placeholder
+            value: '1.2M', // Placeholder - no data in schema yet
+            isLoading: false,
             icon: Film,
             data: activeUsersData,
             color: 'var(--color-violet-500)',
@@ -166,7 +191,11 @@ export default function DashboardPage() {
                   <div className="flex items-end gap-2.5 justify-between">
                     <div className="flex flex-col gap-1">
                       <div className="text-sm text-muted-foreground whitespace-nowrap">{card.period}</div>
-                      <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
+                       {card.isLoading ? (
+                            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                        ) : (
+                            <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
+                        )}
                     </div>
 
                     <div className="max-w-40 h-16 w-full relative">
