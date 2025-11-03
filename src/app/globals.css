@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 240 10% 99%; /* Branco Gelo */
+    --background: 240 20% 99%; /* Branco Gelo - Ajustado */
     --foreground: 240 10% 3.9%; /* Preto Suave */
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
