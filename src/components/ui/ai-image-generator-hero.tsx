@@ -71,7 +71,7 @@ export function ImageCarouselHero({
   ];
   
   const arcRadius = 180;
-  const totalAngle = 160;
+  const totalAngle = 120;
   const angleStep = totalAngle / (demoIcons.length - 1);
 
 
@@ -93,7 +93,7 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-32 sm:pt-24">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 sm:pt-20">
          {/* Text Content Section */}
         <div className="relative z-20 text-center max-w-4xl">
             {/* Arc Icons */}
