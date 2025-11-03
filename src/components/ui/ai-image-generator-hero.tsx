@@ -35,7 +35,6 @@ export function ImageCarouselHero({
   description,
   ctaText,
   onCtaClick,
-  icons,
 }: ImageCarouselHeroProps) {
 
   const demoIcons = [
@@ -70,6 +69,11 @@ export function ImageCarouselHero({
       color: "#000000",
     },
   ];
+  
+  const arcRadius = 150;
+  const totalAngle = 120;
+  const angleStep = totalAngle / (demoIcons.length - 1);
+
 
   return (
     <div className="relative w-full min-h-screen bg-background overflow-hidden">
@@ -92,32 +96,54 @@ export function ImageCarouselHero({
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-32 sm:pt-24">
          {/* Text Content Section */}
         <div className="relative z-20 text-center max-w-4xl">
-            {/* Static Icons */}
-            <motion.div 
-                className="flex justify-center items-center gap-4 mb-8"
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-            >
-                {demoIcons.map(({ Icon, color, id }) => (
+            {/* Arc Icons */}
+            <div className="relative h-40 mb-8 flex justify-center items-center">
+              {demoIcons.map(({ Icon, color, id }, index) => {
+                const angle = -totalAngle / 2 + index * angleStep;
+                const radian = (angle * Math.PI) / 180;
+                const x = arcRadius * Math.sin(radian);
+                const y = arcRadius - arcRadius * Math.cos(radian);
+
+                return (
+                  <motion.div
+                    key={id}
+                    initial={{ opacity: 0, y: -20, rotate: angle }}
+                    animate={{ opacity: 1, y: 0, rotate: angle }}
+                    transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+                    className="absolute"
+                    style={{
+                      transform: `translateX(${x}px) translateY(${y}px) rotate(${angle}deg)`,
+                    }}
+                  >
                     <div
-                        key={id}
-                        className={cn(
-                        "relative w-12 h-12 rounded-xl flex items-center justify-center",
+                      className={cn(
+                        "relative w-16 h-16 rounded-2xl flex items-center justify-center",
                         "bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg",
-                        "group",
-                        )}
+                        "group"
+                      )}
+                       style={{
+                        transform: `rotate(${-angle}deg)`
+                      }}
                     >
-                        <Icon size="50%" className="transition-transform duration-300 group-hover:scale-110" style={{ color: color.startsWith('url') ? undefined : color, fill: color.startsWith('url') ? color : undefined }}/>
+                      <Icon
+                        size="60%"
+                        className="transition-transform duration-300 group-hover:scale-110"
+                        style={{
+                          color: color.startsWith("url") ? undefined : color,
+                          fill: color.startsWith("url") ? color : undefined,
+                        }}
+                      />
                     </div>
-                ))}
-            </motion.div>
+                  </motion.div>
+                );
+              })}
+            </div>
 
             <motion.h1 
                 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
+                transition={{ duration: 0.5, delay: 0.6 }}
             >
                 {title}
             </motion.h1>
@@ -126,7 +152,7 @@ export function ImageCarouselHero({
                 className="text-lg sm:text-xl text-muted-foreground mb-8 text-balance"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.6 }}
+                transition={{ duration: 0.5, delay: 0.8 }}
             >
                 {description}
             </motion.p>
@@ -143,7 +169,7 @@ export function ImageCarouselHero({
                 )}
                  initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.8 }}
+                transition={{ duration: 0.5, delay: 1 }}
             >
                 {ctaText}
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
