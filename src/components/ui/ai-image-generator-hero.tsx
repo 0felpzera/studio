@@ -107,12 +107,12 @@ export function ImageCarouselHero({
                 return (
                   <motion.div
                     key={id}
-                    initial={{ opacity: 0, y: -20, rotate: angle }}
-                    animate={{ opacity: 1, y: 0, rotate: angle }}
+                    initial={{ opacity: 0, y: 0, rotate: angle }}
+                    animate={{ opacity: 1, y: y, rotate: angle }}
                     transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
                     className="absolute"
                     style={{
-                      transform: `translateX(${x}px) translateY(${y}px) rotate(${angle}deg)`,
+                      transform: `translateX(${x}px)`,
                     }}
                   >
                     <div
