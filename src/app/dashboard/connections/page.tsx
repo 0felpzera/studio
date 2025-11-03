@@ -61,7 +61,7 @@ export default function ConnectionsPage() {
 
     const handleConnectTikTok = () => {
         const clientKey = 'sbaw8kkl7ahscrla44'; // Client Key do TikTok
-        const redirectUri = window.location.href;
+        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
         const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
