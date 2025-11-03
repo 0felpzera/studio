@@ -6,6 +6,10 @@ import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
 import { LogoCloud } from "./logo-cloud-3";
+import { ContainerScroll } from "./container-scroll-animation";
+import Image from "next/image";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useRouter } from "next/navigation";
 
 
 interface ImageCarouselHeroProps {
@@ -29,15 +33,15 @@ const logos = [
         alt: "YouTube Logo",
     },
     {
-        src: "https://svgl.app/library/x-wordmark-light.svg",
+        src: "https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023_%28white%29.svg",
         alt: "X Logo",
     },
     {
-        src: "https://svgl.app/library/facebook-wordmark-light.svg",
+        src: "https://upload.wikimedia.org/wikipedia/commons/b/b9/Facebook_wordmark_%282023%29.svg",
         alt: "Facebook Logo",
     },
     {
-        src: "https://svgl.app/library/threads-wordmark-light.svg",
+        src: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_%28app%29_logo.svg",
         alt: "Threads Logo",
     },
 ];
@@ -48,27 +52,17 @@ export function ImageCarouselHero({
   ctaText,
   onCtaClick,
 }: ImageCarouselHeroProps) {
+  const router = useRouter();
+  const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
   return (
-    <div className="relative w-full min-h-screen bg-background overflow-hidden">
-      <svg width="0" height="0" style={{ position: 'absolute' }}>
-        <defs>
-          <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#f9ce34" />
-            <stop offset="25%" stopColor="#ee2a7b" />
-            <stop offset="50%" stopColor="#6228d7" />
-            <stop offset="100%" stopColor="#6228d7" />
-          </linearGradient>
-        </defs>
-      </svg>
-      {/* Animated background gradient */}
+    <div className="relative w-full bg-background overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-20 sm:pt-20">
-         {/* Text Content Section */}
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28">
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
               className="mb-8"
@@ -97,7 +91,6 @@ export function ImageCarouselHero({
                 {description}
             </motion.p>
 
-            {/* CTA Button */}
             <motion.button
                 onClick={onCtaClick}
                 className={cn(
