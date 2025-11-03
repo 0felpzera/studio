@@ -70,8 +70,8 @@ export function ImageCarouselHero({
     },
   ];
   
-  const arcRadius = 150;
-  const totalAngle = 120;
+  const arcRadius = 180;
+  const totalAngle = 160;
   const angleStep = totalAngle / (demoIcons.length - 1);
 
 
