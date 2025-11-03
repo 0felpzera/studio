@@ -59,15 +59,6 @@ export default function ConnectionsPage() {
 
     const isTiktokConnected = useMemo(() => tiktokAccounts && tiktokAccounts.length > 0, [tiktokAccounts]);
 
-     useEffect(() => {
-        // Clean up URL from callback parameters to avoid reprocessing
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.has('code') || urlParams.has('state')) {
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }, []);
-
-
     const handleConnectTikTok = () => {
         const clientKey = 'sbaw8kkl7ahscrla44'; // TikTok Client Key
         const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
@@ -167,7 +158,7 @@ export default function ConnectionsPage() {
                             <>
                                 <div className="text-lg font-bold text-green-500">Conectado</div>
                                 <p className="text-xs text-muted-foreground">
-                                    Suas métricas do TikTok estão sendo sincronizadas.
+                                    Sua conta <span className='font-bold'>{tiktokAccounts?.[0].username}</span> está sincronizada.
                                 </p>
                             </>
                         ) : (

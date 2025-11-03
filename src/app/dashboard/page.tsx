@@ -88,6 +88,7 @@ const trendingTopics = [
 ];
 
 function formatNumber(value: number): string {
+    if (value === 0) return 'N/A';
     if (value >= 1000000) {
         return (value / 1000000).toFixed(1) + 'M';
     }
@@ -98,6 +99,7 @@ function formatNumber(value: number): string {
 }
 
 function formatPercentage(value: number): string {
+    if (value === 0) return 'N/A';
     return (value * 100).toFixed(1) + '%';
 }
 
