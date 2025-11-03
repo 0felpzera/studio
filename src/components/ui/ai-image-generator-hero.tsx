@@ -13,6 +13,8 @@ import {
   SiThreads,
   SiX,
 } from "react-icons/si";
+import { InfiniteSlider } from "./infinite-slider";
+
 
 interface ImageCarouselHeroProps {
   title: string
@@ -21,6 +23,14 @@ interface ImageCarouselHeroProps {
   onCtaClick?: () => void
 }
 
+const icons = [
+  { Component: SiYoutube, color: "#FF0000" },
+  { Component: SiTiktok, color: "#000000" },
+  { Component: SiInstagram, color: "url(#instagram-gradient)" },
+  { Component: SiX, color: "#000000" },
+  { Component: SiFacebook, color: "#1877F2" },
+  { Component: SiThreads, color: "#000000" },
+];
 
 export function ImageCarouselHero({
   title,
@@ -29,40 +39,6 @@ export function ImageCarouselHero({
   onCtaClick,
 }: ImageCarouselHeroProps) {
 
-  const demoIcons = [
-    {
-      id: "1",
-      Icon: SiYoutube,
-      color: "#FF0000",
-    },
-    {
-      id: "2",
-      Icon: SiTiktok,
-      color: "#000000",
-    },
-    {
-      id: "3",
-      Icon: SiInstagram,
-      color: "url(#instagram-gradient)",
-    },
-    {
-      id: "4",
-      Icon: SiX,
-      color: "#000000",
-    },
-    {
-      id: "5",
-      Icon: SiFacebook,
-      color: "#1877F2",
-    },
-    {
-      id: "6",
-      Icon: SiThreads,
-      color: "#000000",
-    },
-  ];
-
-
   return (
     <div className="relative w-full bg-background overflow-hidden">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -70,33 +46,36 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6 lg:px-8 pt-28">
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
-              className="mb-8"
+              className="mb-8 w-full"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="flex items-center gap-6 p-3 rounded-full bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
-                <svg width="0" height="0" className="absolute">
-                  <defs>
-                    <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style={{ stopColor: '#feda75', stopOpacity: 1 }} />
-                      <stop offset="25%" style={{ stopColor: '#fa7e1e', stopOpacity: 1 }} />
-                      <stop offset="50%" style={{ stopColor: '#d62976', stopOpacity: 1 }} />
-                      <stop offset="75%" style={{ stopColor: '#962fbf', stopOpacity: 1 }} />
-                      <stop offset="100%" style={{ stopColor: '#4f5bd5', stopOpacity: 1 }} />
-                    </linearGradient>
-                  </defs>
-                </svg>
-                {demoIcons.map(({ Icon, id, color }) => (
-                  <Icon
-                    key={id}
-                    className="text-2xl text-white/80"
-                    style={{ color: color.startsWith("url") ? color : undefined, fill: color.startsWith("url") ? "" : color }}
-                  />
-                ))}
+              <div className="overflow-hidden py-4 [mask-image:linear-gradient(to_right,transparent,black_20%,black_80%,transparent)]">
+                  <InfiniteSlider gap={60} speed={40}>
+                      {icons.map(({ Component, color }, index) => (
+                        <div key={index} className="flex items-center gap-2 text-muted-foreground">
+                            <svg width="0" height="0" className="absolute">
+                                <defs>
+                                    <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" style={{ stopColor: '#feda75' }} />
+                                    <stop offset="25%" style={{ stopColor: '#fa7e1e' }} />
+                                    <stop offset="50%" style={{ stopColor: '#d62976' }} />
+                                    <stop offset="75%" style={{ stopColor: '#962fbf' }} />
+                                    <stop offset="100%" style={{ stopColor: '#4f5bd5' }} />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <Component
+                                className="text-3xl"
+                                style={{ fill: color.startsWith('url') ? color : 'currentColor', color: color.startsWith('url') ? undefined : color }}
+                            />
+                        </div>
+                      ))}
+                  </InfiniteSlider>
               </div>
             </motion.div>
 
