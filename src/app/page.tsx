@@ -71,8 +71,8 @@ export default function LandingPage() {
     },
     {
       id: "6",
-      Icon: SiThreads,
-      color: "#000000",
+      Icon: SiFacebook,
+      color: "#1877F2",
       rotation: 8,
     },
   ];

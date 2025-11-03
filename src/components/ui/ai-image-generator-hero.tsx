@@ -95,7 +95,7 @@ export function ImageCarouselHero({
                     return (
                         <motion.div
                         key={index}
-                        className="absolute w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 transition-all duration-300"
+                        className="absolute w-24 h-24 sm:w-28 sm:h-28 lg:w-32 lg:h-32 transition-all duration-300"
                         style={{
                             transform: `
                             translate(${x}px, ${y}px)
