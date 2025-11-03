@@ -136,7 +136,7 @@ export default function DashboardPage() {
         {
             title: 'Seguidores',
             period: 'Total',
-            value: tiktokAccount ? formatNumber(tiktokAccount.followerCount) : '0',
+            value: tiktokAccount ? formatNumber(tiktokAccount.followerCount) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: UserPlus,
             data: revenueData,
@@ -146,7 +146,7 @@ export default function DashboardPage() {
         {
             title: 'Engajamento',
             period: 'Últimos 28 dias',
-            value: tiktokAccount ? formatPercentage(tiktokAccount.engagementRate) : '0%',
+            value: tiktokAccount ? formatPercentage(tiktokAccount.engagementRate) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: TrendingUp,
             data: customersData,
@@ -156,7 +156,7 @@ export default function DashboardPage() {
         {
             title: 'Visualizações',
             period: 'Últimos 28 dias',
-            value: '1.2M', // Placeholder - no data in schema yet
+            value: 'N/A', // Placeholder - no data in schema yet
             isLoading: false,
             icon: Film,
             data: activeUsersData,
