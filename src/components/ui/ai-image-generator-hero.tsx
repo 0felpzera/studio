@@ -109,12 +109,12 @@ export function ImageCarouselHero({
                     key={id}
                     initial={{ opacity: 0, x: 0, rotate: angle }}
                     animate={{ opacity: 1, x: x, y: y, rotate: angle }}
-                    transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
+                    transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
                     className="absolute"
                   >
                     <div
                       className={cn(
-                        "relative w-16 h-16 rounded-2xl flex items-center justify-center",
+                        "relative w-20 h-20 rounded-2xl flex items-center justify-center",
                         "bg-card/80 backdrop-blur-sm border border-border/50 shadow-lg",
                         "group"
                       )}
