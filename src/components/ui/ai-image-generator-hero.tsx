@@ -14,6 +14,8 @@ import {
   SiX,
 } from "react-icons/si";
 import { InfiniteSlider } from "./infinite-slider";
+import Image from "next/image";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 
 interface ImageCarouselHeroProps {
@@ -38,6 +40,7 @@ export function ImageCarouselHero({
   ctaText,
   onCtaClick,
 }: ImageCarouselHeroProps) {
+  const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
   return (
     <div className="relative w-full bg-background overflow-hidden">
@@ -46,7 +49,7 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6 lg:px-8 pt-28">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh] px-4 sm:px-6 lg:px-8 pt-40">
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
               className="mb-8 w-full"
@@ -114,6 +117,28 @@ export function ImageCarouselHero({
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </motion.button>
         </div>
+      </div>
+      
+       <div className="relative z-10 container mx-auto px-4 mt-16 sm:mt-20">
+        <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+            viewport={{ once: true, amount: 0.3 }}
+            className="bg-background/20 p-2 sm:p-4 rounded-2xl shadow-2xl border border-border/20 backdrop-blur-sm"
+        >
+            {heroImage && (
+                <Image
+                    src={heroImage.imageUrl}
+                    alt={heroImage.description}
+                    data-ai-hint={heroImage.imageHint}
+                    width={1200}
+                    height={800}
+                    className="rounded-lg w-full"
+                    priority
+                />
+            )}
+        </motion.div>
       </div>
     </div>
   )
