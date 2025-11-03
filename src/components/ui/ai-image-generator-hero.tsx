@@ -5,30 +5,42 @@ import type React from "react"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
-import {
-  SiFacebook,
-  SiYoutube,
-  SiTiktok,
-  SiInstagram,
-  SiX,
-  SiThreads,
-} from "react-icons/si";
-import type { IconType } from "react-icons";
+import { LogoCloud } from "./logo-cloud-3";
 
-
-interface IconCard {
-  id: string
-  Icon: IconType
-  color: string
-}
 
 interface ImageCarouselHeroProps {
   title: string
   description: string
   ctaText: string
   onCtaClick?: () => void
-  icons: IconCard[]
 }
+
+const logos = [
+    {
+        src: "https://svgl.app/library/tiktok-wordmark-light.svg",
+        alt: "TikTok Logo",
+    },
+    {
+        src: "https://svgl.app/library/instagram-wordmark-light.svg",
+        alt: "Instagram Logo",
+    },
+    {
+        src: "https://svgl.app/library/youtube-wordmark-light.svg",
+        alt: "YouTube Logo",
+    },
+    {
+        src: "https://svgl.app/library/x-wordmark-light.svg",
+        alt: "X Logo",
+    },
+    {
+        src: "https://svgl.app/library/facebook-wordmark-light.svg",
+        alt: "Facebook Logo",
+    },
+    {
+        src: "https://svgl.app/library/threads-wordmark-light.svg",
+        alt: "Threads Logo",
+    },
+];
 
 export function ImageCarouselHero({
   title,
@@ -36,39 +48,6 @@ export function ImageCarouselHero({
   ctaText,
   onCtaClick,
 }: ImageCarouselHeroProps) {
-
-  const demoIcons = [
-    {
-      id: "1",
-      Icon: SiYoutube,
-      color: "#FF0000",
-    },
-    {
-      id: "2",
-      Icon: SiTiktok,
-      color: "#000000",
-    },
-    {
-      id: "3",
-      Icon: SiInstagram,
-      color: "url(#instagram-gradient)",
-    },
-    {
-      id: "4",
-      Icon: SiX,
-      color: "#000000",
-    },
-    {
-      id: "5",
-      Icon: SiFacebook,
-      color: "#1877F2",
-    },
-    {
-      id: "6",
-      Icon: SiThreads,
-      color: "#000000",
-    },
-  ];
 
   return (
     <div className="relative w-full min-h-screen bg-background overflow-hidden">
@@ -88,35 +67,16 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-28 sm:pt-20">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-20 sm:pt-20">
          {/* Text Content Section */}
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
-              className="flex items-center justify-center gap-4 mb-8"
+              className="mb-8"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <div className="flex items-center gap-6 p-3 rounded-full bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
-                {demoIcons.map(({ Icon, color, id }) => (
-                  <div
-                    key={id}
-                    className={cn(
-                      "relative w-12 h-12 rounded-full flex items-center justify-center",
-                      "group"
-                    )}
-                  >
-                    <Icon
-                      size="60%"
-                      className="transition-transform duration-300 group-hover:scale-110"
-                      style={{
-                        color: color.startsWith("url") ? undefined : color,
-                        fill: color.startsWith("url") ? color : undefined,
-                      }}
-                    />
-                  </div>
-                ))}
-              </div>
+              <LogoCloud logos={logos} />
             </motion.div>
 
             <motion.h1 
