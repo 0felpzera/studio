@@ -44,9 +44,9 @@
     },
     {
       "id": "demo-1",
-      "description": "Demonstration of AI reviewing a video",
-      "imageUrl": "https://images.unsplash.com/photo-1684369176170-463e84248b70?ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fGFpfGVufDB8MXwwfHx8MA%3D%3D&auto=format&fit=crop&q=60&w=900",
-      "imageHint": "AI interface"
+      "description": "Demonstration of a dashboard interface",
+      "imageUrl": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "imageHint": "dashboard interface"
     },
     {
       "id": "testimonial-1",
