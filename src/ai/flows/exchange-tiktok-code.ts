@@ -52,46 +52,62 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             throw new Error('TikTok client key or secret is not configured in environment variables.');
         }
 
-        // Step 1: Exchange authorization code for an access token
-        const tokenParams = new URLSearchParams();
-        tokenParams.append('client_key', clientKey);
-        tokenParams.append('client_secret', clientSecret);
-        tokenParams.append('code', code);
-        tokenParams.append('grant_type', 'authorization_code');
-        tokenParams.append('redirect_uri', 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback');
+        try {
+            // Step 1: Exchange authorization code for an access token
+            const tokenParams = new URLSearchParams();
+            tokenParams.append('client_key', clientKey);
+            tokenParams.append('client_secret', clientSecret);
+            tokenParams.append('code', code);
+            tokenParams.append('grant_type', 'authorization_code');
+            tokenParams.append('redirect_uri', 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback');
 
-        const tokenResponse = await axios.post(TIKTOK_TOKEN_URL, tokenParams, {
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-        });
-        
-        const { access_token, open_id } = tokenResponse.data;
+            const tokenResponse = await axios.post(TIKTOK_TOKEN_URL, tokenParams, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            });
 
-        if (!access_token) {
-            throw new Error('Failed to retrieve access token from TikTok.');
+            const { access_token, open_id, error, error_description } = tokenResponse.data;
+            
+            if (error) {
+                throw new Error(`TikTok API Error: ${error} - ${error_description}`);
+            }
+
+            if (!access_token) {
+                throw new Error('Failed to retrieve access token from TikTok.');
+            }
+            
+            // Step 2: Use the access token to fetch user information
+            const fields = 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count';
+            const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${fields}`;
+
+            const userInfoResponse = await axios.get(userInfoUrlWithParams, {
+                headers: {
+                    'Authorization': `Bearer ${access_token}`,
+                },
+            });
+
+            if (userInfoResponse.data.error.code !== 'ok') {
+                throw new Error(`Failed to fetch user info: ${userInfoResponse.data.error.message}`);
+            }
+
+            const userInfo = userInfoResponse.data.data.user;
+
+            return {
+                open_id: userInfo.open_id,
+                union_id: userInfo.union_id,
+                avatar_url: userInfo.avatar_url,
+                display_name: userInfo.display_name,
+                follower_count: userInfo.follower_count,
+                following_count: userInfo.following_count,
+                likes_count: userInfo.likes_count,
+            };
+        } catch (err: any) {
+            if (axios.isAxiosError(err) && err.response) {
+                console.error("Axios Error Details:", err.response.data);
+                throw new Error(`API Request Failed: ${err.response.status} ${err.response.statusText} - ${JSON.stringify(err.response.data)}`);
+            }
+            throw err; // Re-throw other errors
         }
-        
-        // Step 2: Use the access token to fetch user information
-        const fields = 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count';
-        const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${fields}`;
-
-        const userInfoResponse = await axios.get(userInfoUrlWithParams, {
-            headers: {
-                'Authorization': `Bearer ${access_token}`,
-            },
-        });
-
-        const userInfo = userInfoResponse.data.data.user;
-
-        return {
-            open_id: userInfo.open_id,
-            union_id: userInfo.union_id,
-            avatar_url: userInfo.avatar_url,
-            display_name: userInfo.display_name,
-            follower_count: userInfo.follower_count,
-            following_count: userInfo.following_count,
-            likes_count: userInfo.likes_count,
-        };
     }
 );
