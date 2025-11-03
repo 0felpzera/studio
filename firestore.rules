@@ -71,7 +71,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/instagramAccounts/{instagramAccountId} {
-      allow read: if isSignedIn() && isOwner(userId);
+      allow read, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
@@ -88,7 +88,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/tiktokAccounts/{tiktokAccountId} {
-      allow read: if isSignedIn() && isOwner(userId);
+      allow read, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
@@ -105,7 +105,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/goals/{goalId} {
-      allow read: if isSignedIn() && isOwner(userId);
+      allow read, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
@@ -122,7 +122,7 @@ service cloud.firestore {
      * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
      */
     match /users/{userId}/contentTasks/{contentTaskId} {
-      allow read: if isSignedIn() && isOwner(userId);
+      allow read, list: if isSignedIn() && isOwner(userId);
       allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
       allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
       allow delete: if isSignedIn() && isExistingOwner(userId);
