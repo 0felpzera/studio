@@ -12,7 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 function TiktokIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
         <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12.52.02c1.31-.02 2.61.16 3.82.54a8.65 8.65 0 0 1 4.24 4.24c.38 1.21.56 2.51.54 3.82a8.65 8.65 0 0 1-4.24 4.24c-1.21.38-2.51.56-3.82.54a8.65 8.65 0 0 1-4.24-4.24c-.38-1.21-.56-2.51-.54-3.82a8.65 8.65 0 0 1 4.24-4.24c1.21-.38 2.51-.56 3.82-.54Z"></path>
+            <path d="M12.52.02c1.31-.02 2.61.16 3.82.54a8.65 8.65 0 0 1 4.24 4.24c.38 1.21.56 2.51.54 3.82a8.65 8.65 0 0 1-4.24 4.24c-1.21.38-2.51.56-3.82.54a8.65 8.65 0 0 1-4.24-4.24c-.38-1.21-.56-2.51-.54-3.82a8.65 8.65
+ 0 0 1 4.24-4.24c1.21-.38 2.51-.56 3.82-.54Z"></path>
             <path d="M10.26 8.71a4.23 4.23 0 0 1 1.4-1.4c1.47-.97 3.23-1.05 4.83-.26 1.6.79 2.72 2.22 2.91 3.85.19 1.63-.44 3.29-1.85 4.25-1.41.96-3.17 1.04-4.77.25a4.23 4.23 0 0 1-1.4-1.4"></path>
             <path d="M8.69 16.7v-5.47a2.76 2.76 0 0 1-.7-2.76 2.76 2.76 0 0 1 2.76-2.76v5.53"></path>
         </svg>
@@ -60,7 +61,7 @@ export default function ConnectionsPage() {
 
     const handleConnectTikTok = () => {
         const clientKey = 'sbaw8kkl7ahscrla44'; // Client Key do TikTok
-        const redirectUri = window.location.origin + window.location.pathname;
+        const redirectUri = window.location.href;
         const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
@@ -70,7 +71,7 @@ export default function ConnectionsPage() {
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
         tiktokAuthUrl.searchParams.append('state', state);
 
-        window.open(tiktokAuthUrl.toString(), 'tiktokLogin', 'width=600,height=700');
+        window.location.href = tiktokAuthUrl.toString();
     };
 
     const handleConnectInstagram = () => {
@@ -95,7 +96,7 @@ export default function ConnectionsPage() {
         metaAuthUrl.searchParams.append('response_type', 'code');
         metaAuthUrl.searchParams.append('state', state);
 
-        window.open(metaAuthUrl.toString(), 'metaLogin', 'width=600,height=700');
+        window.location.href = metaAuthUrl.toString();
     };
 
     return (
@@ -147,5 +148,3 @@ export default function ConnectionsPage() {
         </div>
     );
 }
-
-    
