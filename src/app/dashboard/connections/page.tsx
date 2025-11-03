@@ -59,7 +59,7 @@ export default function ConnectionsPage() {
 
 
     const handleConnectTikTok = () => {
-        const clientKey = 'sbaw9edcigqvur1dsw'; // SUBSTITUA PELA SUA CLIENT KEY DO TIKTOK
+        const clientKey = 'sbaw8kkl7ahscrla44'; // Client Key do TikTok
         const redirectUri = window.location.origin + window.location.pathname;
         const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
 
