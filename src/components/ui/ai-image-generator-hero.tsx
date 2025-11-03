@@ -5,6 +5,14 @@ import type React from "react"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
+import {
+  SiFacebook,
+  SiYoutube,
+  SiTiktok,
+  SiInstagram,
+  SiX,
+  SiThreads,
+} from "react-icons/si";
 import type { IconType } from "react-icons";
 
 
@@ -12,7 +20,6 @@ interface IconCard {
   id: string
   Icon: IconType
   color: string
-  rotation: number
 }
 
 interface ImageCarouselHeroProps {
@@ -30,6 +37,39 @@ export function ImageCarouselHero({
   onCtaClick,
   icons,
 }: ImageCarouselHeroProps) {
+
+  const demoIcons = [
+    {
+      id: "1",
+      Icon: SiYoutube,
+      color: "#FF0000",
+    },
+    {
+      id: "2",
+      Icon: SiTiktok,
+      color: "#000000",
+    },
+    {
+      id: "3",
+      Icon: SiInstagram,
+      color: "url(#instagram-gradient)",
+    },
+    {
+      id: "4",
+      Icon: SiX,
+      color: "#000000",
+    },
+    {
+      id: "5",
+      Icon: SiFacebook,
+      color: "#1877F2",
+    },
+    {
+      id: "6",
+      Icon: SiThreads,
+      color: "#000000",
+    },
+  ];
 
   return (
     <div className="relative w-full min-h-screen bg-background overflow-hidden">
@@ -59,7 +99,7 @@ export function ImageCarouselHero({
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
             >
-                {icons.map(({ Icon, color, id }) => (
+                {demoIcons.map(({ Icon, color, id }) => (
                     <div
                         key={id}
                         className={cn(
