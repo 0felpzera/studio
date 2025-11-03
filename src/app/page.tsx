@@ -22,6 +22,7 @@ import {
   DollarSign,
   Calculator,
   MessageSquareQuote,
+  LogIn,
 } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -144,7 +145,7 @@ export default function LandingPage() {
         icons={demoIcons}
       />
       
-      <div className="border-t bg-background">
+      <div className="border-t bg-[#fff3ff]">
         <Timeline data={timelineData} />
 
          <motion.section 

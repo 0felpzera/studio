@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 300 100% 98%; /* Lilás Pastel (#fff3ff) */
+    --background: 0 0% 100%;
     --foreground: 240 10% 3.9%; /* Preto Suave */
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
