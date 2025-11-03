@@ -60,7 +60,7 @@ export default function ConnectionsPage() {
     const isTiktokConnected = useMemo(() => tiktokAccounts && tiktokAccounts.length > 0, [tiktokAccounts]);
 
      useEffect(() => {
-        // Limpar a URL de parâmetros de callback para evitar reprocessamento
+        // Clean up URL from callback parameters to avoid reprocessing
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('code') || urlParams.has('state')) {
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -69,7 +69,7 @@ export default function ConnectionsPage() {
 
 
     const handleConnectTikTok = () => {
-        const clientKey = 'sbaw8kkl7ahscrla44'; // Client Key do TikTok
+        const clientKey = 'sbaw8kkl7ahscrla44'; // TikTok Client Key
         const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
         const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
 
@@ -94,7 +94,8 @@ export default function ConnectionsPage() {
         }
 
         setIsDeleting(true);
-        const tiktokAccountId = tiktokAccounts[0].id;
+        // Assuming only one TikTok account can be connected at a time.
+        const tiktokAccountId = tiktokAccounts[0].id; 
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccountId);
 
         try {
@@ -117,7 +118,7 @@ export default function ConnectionsPage() {
 
 
     const handleConnectInstagram = () => {
-        const appId = 'YOUR_META_APP_ID'; // SUBSTITUA PELO SEU APP ID DA META
+        const appId = 'YOUR_META_APP_ID'; // REPLACE WITH YOUR META APP ID
         const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
         const scope = 'user_profile,user_media';
         const state = '___UNIQUE_STATE_TOKEN_META___';
@@ -232,7 +233,3 @@ export default function ConnectionsPage() {
         </div>
     );
 }
-
-    
-
-    
