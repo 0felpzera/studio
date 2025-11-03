@@ -71,15 +71,15 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         if (!access_token) {
             throw new Error('Failed to retrieve access token from TikTok.');
         }
-
+        
         // Step 2: Use the access token to fetch user information
-        const userInfoResponse = await axios.get(TIKTOK_USERINFO_URL, {
+        const fields = 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count';
+        const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${fields}`;
+
+        const userInfoResponse = await axios.get(userInfoUrlWithParams, {
             headers: {
                 'Authorization': `Bearer ${access_token}`,
             },
-            params: {
-                fields: 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count'
-            }
         });
 
         const userInfo = userInfoResponse.data.data.user;
