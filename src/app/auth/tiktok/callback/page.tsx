@@ -78,9 +78,10 @@ function TikTokCallback() {
             openId: result.open_id,
             username: result.display_name,
             avatarUrl: result.avatar_url,
-            // Dados de exemplo, já que a API basic não retorna isso
-            followerCount: 0,
-            engagementRate: 0, 
+            followerCount: result.follower_count,
+            followingCount: result.following_count,
+            likesCount: result.likes_count,
+            engagementRate: 0, // A ser calculado posteriormente
         });
 
         toast({
@@ -152,7 +153,7 @@ function TikTokCallback() {
                             </Avatar>
                             <div>
                                 <p className="font-bold text-xl">{userInfo.display_name}</p>
-                                <p className="text-sm text-muted-foreground">ID: {userInfo.open_id}</p>
+                                <p className="text-sm text-muted-foreground">Seguidores: {userInfo.follower_count.toLocaleString('pt-BR')}</p>
                             </div>
                         </CardContent>
                          <CardContent>

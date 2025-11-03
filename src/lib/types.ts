@@ -6,5 +6,7 @@ export type TiktokAccount = {
     username: string;
     avatarUrl: string;
     followerCount: number;
+    followingCount: number;
+    likesCount: number;
     engagementRate: number;
 };

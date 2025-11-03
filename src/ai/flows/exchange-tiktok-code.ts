@@ -17,12 +17,15 @@ const ExchangeTikTokCodeInputSchema = z.object({
 
 export type ExchangeTikTokCodeInput = z.infer<typeof ExchangeTikTokCodeInputSchema>;
 
-// Based on the user.info.basic scope
+// Based on the user.info.basic and user.info.stats scopes
 const ExchangeTikTokCodeOutputSchema = z.object({
     open_id: z.string().describe("The user's unique identifier on TikTok."),
     union_id: z.string().describe("The user's unique identifier across TikTok platforms."),
     avatar_url: z.string().url().describe("URL for the user's profile picture."),
     display_name: z.string().describe("The user's public display name."),
+    follower_count: z.number().describe("The number of followers the user has."),
+    following_count: z.number().describe("The number of users the user is following."),
+    likes_count: z.number().describe("The number of likes the user has received."),
 });
 
 export type ExchangeTikTokCodeOutput = z.infer<typeof ExchangeTikTokCodeOutputSchema>;
@@ -75,7 +78,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 'Authorization': `Bearer ${access_token}`,
             },
             params: {
-                fields: 'open_id,union_id,avatar_url,display_name'
+                fields: 'open_id,union_id,avatar_url,display_name,follower_count,following_count,likes_count'
             }
         });
 
@@ -86,6 +89,9 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             union_id: userInfo.union_id,
             avatar_url: userInfo.avatar_url,
             display_name: userInfo.display_name,
+            follower_count: userInfo.follower_count,
+            following_count: userInfo.following_count,
+            likes_count: userInfo.likes_count,
         };
     }
 );
