@@ -7,7 +7,6 @@ import {
   CalendarDays,
   Film,
   ChevronRight,
-  CircleDollarSign,
   TrendingUp,
   UserPlus,
 } from 'lucide-react';
@@ -15,12 +14,14 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
-  CardFooter,
 } from '@/components/ui/card';
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
+import type { ContentTask } from '@/app/dashboard/content-calendar';
 
 const revenueData = [
   { value: 1000 },
@@ -76,55 +77,6 @@ const activeUsersData = [
   { value: 4238 },
 ];
 
-const businessCards = [
-  {
-    title: 'Seguidores',
-    period: 'Últimos 28 dias',
-    value: '12.5k',
-    timestamp: '',
-    data: revenueData,
-    color: 'var(--color-emerald-500)',
-    icon: UserPlus,
-    gradientId: 'revenueGradient',
-  },
-  {
-    title: 'Engajamento',
-    period: 'Últimos 28 dias',
-    value: '4.8%',
-    timestamp: '3h atrás',
-    data: customersData,
-    color: 'var(--color-blue-500)',
-    icon: TrendingUp,
-    gradientId: 'customersGradient',
-  },
-  {
-    title: 'Visualizações',
-    period: 'Últimos 28 dias',
-    value: '1.2M',
-    timestamp: '1h atrás',
-    data: activeUsersData,
-    color: 'var(--color-violet-500)',
-    icon: Film,
-    gradientId: 'usersGradient',
-  },
-];
-
-const upcomingPosts = [
-  {
-    platform: 'TikTok',
-    title: 'Trend do Momento',
-    time: 'Hoje, 14:00',
-    icon: CalendarDays,
-    color: 'text-sky-500',
-  },
-  {
-    platform: 'Reels',
-    title: 'Tutorial de Make',
-    time: 'Amanhã, 10:00',
-    icon: Film,
-    color: 'text-rose-500',
-  },
-];
 
 const trendingTopics = [
   { title: "Audio Viral: 'Summer Vibes'" },
@@ -132,12 +84,67 @@ const trendingTopics = [
   { title: 'Desafio 30 Dias' },
 ];
 
+function formatNumber(value: number): string {
+    if (value >= 1000000) {
+        return (value / 1000000).toFixed(1) + 'M';
+    }
+    if (value >= 1000) {
+        return (value / 1000).toFixed(1) + 'k';
+    }
+    return value.toString();
+}
+
 export default function DashboardPage() {
+    const { user, isUserLoading } = useUser();
+    const firestore = useFirestore();
+
+    const upcomingTasksQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(
+            collection(firestore, 'users', user.uid, 'contentTasks'),
+            where('isCompleted', '==', false),
+            orderBy('date', 'asc'),
+            limit(2)
+        );
+    }, [user, firestore]);
+
+    const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
+
+    const businessCards = [
+        {
+            title: 'Seguidores',
+            period: 'Total',
+            value: '12.5k', // Placeholder
+            icon: UserPlus,
+            data: revenueData,
+            color: 'var(--color-emerald-500)',
+            gradientId: 'revenueGradient',
+        },
+        {
+            title: 'Engajamento',
+            period: 'Últimos 28 dias',
+            value: '4.8%', // Placeholder
+            icon: TrendingUp,
+            data: customersData,
+            color: 'var(--color-blue-500)',
+            gradientId: 'customersGradient',
+        },
+        {
+            title: 'Visualizações',
+            period: 'Últimos 28 dias',
+            value: '1.2M', // Placeholder
+            icon: Film,
+            data: activeUsersData,
+            color: 'var(--color-violet-500)',
+            gradientId: 'usersGradient',
+        },
+    ];
+
   return (
     <div className="space-y-6">
       <header className="space-y-1.5">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Olá, Criador! 👋
+          Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
         </h1>
         <p className="text-muted-foreground">
           Seu painel de comando para dominar as redes sociais.
@@ -151,23 +158,17 @@ export default function DashboardPage() {
             return (
               <Card key={i}>
                 <CardContent className="space-y-5">
-                  {/* Header with icon and title */}
                   <div className="flex items-center gap-2">
                     <Icon className="size-5" style={{ color: card.color }} />
                     <span className="text-base font-semibold">{card.title}</span>
                   </div>
 
                   <div className="flex items-end gap-2.5 justify-between">
-                    {/* Details */}
                     <div className="flex flex-col gap-1">
-                      {/* Period */}
                       <div className="text-sm text-muted-foreground whitespace-nowrap">{card.period}</div>
-
-                      {/* Value */}
                       <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
                     </div>
 
-                    {/* Chart */}
                     <div className="max-w-40 h-16 w-full relative">
                       <ResponsiveContainer width="100%" height="100%">
                         <AreaChart
@@ -194,21 +195,15 @@ export default function DashboardPage() {
                             content={({ active, payload }) => {
                               if (active && payload && payload.length) {
                                 const value = payload[0].value as number;
-                                const formatValue = (val: number) => {
-                                  return `${(val / 1000).toFixed(1)}k`;
-                                };
-
                                 return (
-                                  <div className="bg-background/95 backdrop-blur-sm border border-border shadow-lg rounded-lg p-2 pointer-events-none">
-                                    <p className="text-sm font-semibold text-foreground">{formatValue(value)}</p>
+                                  <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-2 pointer-events-none">
+                                    <p className="text-sm font-semibold text-foreground">{formatNumber(value)}</p>
                                   </div>
                                 );
                               }
                               return null;
                             }}
                           />
-
-                          {/* Area with gradient and enhanced shadow */}
                           <Area
                             type="monotone"
                             dataKey="value"
@@ -219,9 +214,8 @@ export default function DashboardPage() {
                             activeDot={{
                               r: 6,
                               fill: card.color,
-                              stroke: 'white',
+                              stroke: 'var(--background)',
                               strokeWidth: 2,
-                              filter: `url(#dotShadow${i})`,
                             }}
                           />
                         </AreaChart>
@@ -241,16 +235,20 @@ export default function DashboardPage() {
             <CardTitle className="font-bold">Próximos Posts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {upcomingPosts.map((post) => (
-              <div key={post.title} className="flex items-center gap-4">
+             {isLoadingTasks && <p className="text-sm text-muted-foreground">Carregando tarefas...</p>}
+             {!isLoadingTasks && upcomingPosts?.length === 0 && <p className="text-sm text-muted-foreground">Nenhum post futuro agendado. Gere um plano!</p>}
+            {upcomingPosts?.map((post) => (
+              <div key={post.id} className="flex items-center gap-4">
                 <div className="rounded-lg bg-muted p-3">
-                  <post.icon className={`h-6 w-6 ${post.color}`} />
+                  {post.platform.toLowerCase() === 'tiktok' ? <CalendarDays className="h-6 w-6 text-sky-500" /> : <Film className="h-6 w-6 text-rose-500" />}
                 </div>
                 <div className="flex-grow">
                   <p className="font-semibold">
-                    {post.platform} - {post.title}
+                    {post.platform} - {post.description}
                   </p>
-                  <p className="text-sm text-muted-foreground">{post.time}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {post.date ? new Date(post.date.toDate()).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit' }) : 'Data pendente'}
+                  </p>
                 </div>
               </div>
             ))}

@@ -72,8 +72,8 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <header className="flex h-20 items-center justify-between gap-4 bg-background/95 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <div className="flex flex-col h-screen">
+      <header className="flex h-20 items-center justify-between gap-4 px-4 sticky top-0 z-50">
         <Logo />
 
         <div className="absolute left-1/2 -translate-x-1/2">

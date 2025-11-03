@@ -4,16 +4,14 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-// Define CardContext
 type CardContextType = {
   variant: 'default' | 'accent';
 };
 
 const CardContext = React.createContext<CardContextType>({
-  variant: 'default', // Default value
+  variant: 'default',
 });
 
-// Hook to use CardContext
 const useCardContext = () => {
   const context = React.useContext(CardContext);
   if (!context) {
@@ -22,11 +20,10 @@ const useCardContext = () => {
   return context;
 };
 
-// Variants
 const cardVariants = cva('flex flex-col items-stretch text-card-foreground rounded-xl', {
   variants: {
     variant: {
-      default: 'bg-card border border-border shadow-xs black/5',
+      default: 'bg-card/60 border border-white/10 backdrop-blur-lg shadow-lg',
       accent: 'bg-muted shadow-xs p-1',
     },
   },
@@ -35,10 +32,10 @@ const cardVariants = cva('flex flex-col items-stretch text-card-foreground round
   },
 });
 
-const cardHeaderVariants = cva('flex items-center justify-between flex-wrap px-5 min-h-14 gap-2.5', {
+const cardHeaderVariants = cva('flex flex-wrap items-center justify-between gap-2.5 px-5 min-h-14', {
   variants: {
     variant: {
-      default: 'border-b border-border',
+      default: 'border-b border-white/10',
       accent: '',
     },
   },
@@ -47,11 +44,12 @@ const cardHeaderVariants = cva('flex items-center justify-between flex-wrap px-5
   },
 });
 
+
 const cardContentVariants = cva('grow p-5', {
   variants: {
     variant: {
       default: '',
-      accent: 'bg-card rounded-t-xl [&:last-child]:rounded-b-xl',
+      accent: 'bg-card/60 backdrop-blur-lg rounded-t-xl [&:last-child]:rounded-b-xl',
     },
   },
   defaultVariants: {
@@ -63,7 +61,7 @@ const cardTableVariants = cva('grid grow', {
   variants: {
     variant: {
       default: '',
-      accent: 'bg-card rounded-xl',
+      accent: 'bg-card/60 backdrop-blur-lg rounded-xl',
     },
   },
   defaultVariants: {
@@ -74,8 +72,8 @@ const cardTableVariants = cva('grid grow', {
 const cardFooterVariants = cva('flex items-center px-5 min-h-14', {
   variants: {
     variant: {
-      default: 'border-t border-border',
-      accent: 'bg-card rounded-b-xl mt-[2px]',
+      default: 'border-t border-white/10',
+      accent: 'bg-card/60 backdrop-blur-lg rounded-b-xl mt-[2px]',
     },
   },
   defaultVariants: {
@@ -83,7 +81,6 @@ const cardFooterVariants = cva('flex items-center px-5 min-h-14', {
   },
 });
 
-// Card Component
 function Card({
   className,
   variant = 'default',
@@ -96,31 +93,26 @@ function Card({
   );
 }
 
-// CardHeader Component
 function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const { variant } = useCardContext();
   return <div data-slot="card-header" className={cn(cardHeaderVariants({ variant }), className)} {...props} />;
 }
 
-// CardContent Component
 function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const { variant } = useCardContext();
   return <div data-slot="card-content" className={cn(cardContentVariants({ variant }), className)} {...props} />;
 }
 
-// CardTable Component
 function CardTable({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const { variant } = useCardContext();
   return <div data-slot="card-table" className={cn(cardTableVariants({ variant }), className)} {...props} />;
 }
 
-// CardFooter Component
 function CardFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const { variant } = useCardContext();
   return <div data-slot="card-footer" className={cn(cardFooterVariants({ variant }), className)} {...props} />;
 }
 
-// Other Components
 function CardHeading({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return <div data-slot="card-heading" className={cn('space-y-1', className)} {...props} />;
 }
@@ -143,5 +135,4 @@ function CardDescription({ className, ...props }: React.HTMLAttributes<HTMLDivEl
   return <div data-slot="card-description" className={cn('text-sm text-muted-foreground', className)} {...props} />;
 }
 
-// Exports
 export { Card, CardContent, CardDescription, CardFooter, CardHeader, CardHeading, CardTable, CardTitle, CardToolbar };
