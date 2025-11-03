@@ -83,27 +83,27 @@ export default function LandingPage() {
       description: "Ferramentas de IA para cada etapa do seu processo criativo.",
       content: (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="bg-card text-card-foreground flex flex-col items-center text-center p-6">
+            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
                 <div className="mb-4"><Presentation className="w-8 h-8 text-primary" /></div>
                 <h3 className="text-xl font-bold mb-2">Diagnóstico de Vídeo</h3>
                 <p className="text-muted-foreground">Análise com IA para otimizar seu conteúdo antes de postar.</p>
             </Card>
-            <Card className="bg-card text-card-foreground flex flex-col items-center text-center p-6">
+            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
                 <div className="mb-4"><Lightbulb className="w-8 h-8 text-primary" /></div>
                 <h3 className="text-xl font-bold mb-2">Gerador de Ideias</h3>
                 <p className="text-muted-foreground">Gere ideias perenes e de tendência para nunca ficar sem inspiração.</p>
             </Card>
-            <Card className="bg-card text-card-foreground flex flex-col items-center text-center p-6">
+            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
                 <div className="mb-4"><Bot className="w-8 h-8 text-primary" /></div>
                 <h3 className="text-xl font-bold mb-2">IA Coach</h3>
                 <p className="text-muted-foreground">Seu treinador pessoal de IA para crescimento acelerado.</p>
             </Card>
-            <Card className="bg-card text-card-foreground flex flex-col items-center text-center p-6">
+            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
                 <div className="mb-4"><DollarSign className="w-8 h-8 text-primary" /></div>
                 <h3 className="text-xl font-bold mb-2">Mídia Kit Pro</h3>
                 <p className="text-muted-foreground">Crie um mídia kit profissional com sugestões de preços.</p>
             </Card>
-            <Card className="bg-card text-card-foreground flex flex-col items-center text-center p-6">
+            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
                 <div className="mb-4"><Star className="w-8 h-8 text-primary" /></div>
                 <h3 className="text-xl font-bold mb-2">Ideias para Publis</h3>
                 <p className="text-muted-foreground">Receba ideias criativas e autênticas para suas parcerias.</p>
