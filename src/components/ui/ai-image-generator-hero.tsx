@@ -5,12 +5,14 @@ import type React from "react"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { motion } from "framer-motion"
-import { LogoCloud } from "./logo-cloud-3";
-import { ContainerScroll } from "./container-scroll-animation";
-import Image from "next/image";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { useRouter } from "next/navigation";
-
+import {
+  SiFacebook,
+  SiYoutube,
+  SiTiktok,
+  SiInstagram,
+  SiThreads,
+  SiX,
+} from "react-icons/si";
 
 interface ImageCarouselHeroProps {
   title: string
@@ -19,32 +21,6 @@ interface ImageCarouselHeroProps {
   onCtaClick?: () => void
 }
 
-const logos = [
-    {
-        src: "https://svgl.app/library/tiktok-wordmark-light.svg",
-        alt: "TikTok Logo",
-    },
-    {
-        src: "https://svgl.app/library/instagram-wordmark-light.svg",
-        alt: "Instagram Logo",
-    },
-    {
-        src: "https://svgl.app/library/youtube-wordmark-light.svg",
-        alt: "YouTube Logo",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/5/57/X_logo_2023_%28white%29.svg",
-        alt: "X Logo",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/b/b9/Facebook_wordmark_%282023%29.svg",
-        alt: "Facebook Logo",
-    },
-    {
-        src: "https://upload.wikimedia.org/wikipedia/commons/9/9d/Threads_%28app%29_logo.svg",
-        alt: "Threads Logo",
-    },
-];
 
 export function ImageCarouselHero({
   title,
@@ -52,8 +28,40 @@ export function ImageCarouselHero({
   ctaText,
   onCtaClick,
 }: ImageCarouselHeroProps) {
-  const router = useRouter();
-  const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
+
+  const demoIcons = [
+    {
+      id: "1",
+      Icon: SiYoutube,
+      color: "#FF0000",
+    },
+    {
+      id: "2",
+      Icon: SiTiktok,
+      color: "#000000",
+    },
+    {
+      id: "3",
+      Icon: SiInstagram,
+      color: "url(#instagram-gradient)",
+    },
+    {
+      id: "4",
+      Icon: SiX,
+      color: "#000000",
+    },
+    {
+      id: "5",
+      Icon: SiFacebook,
+      color: "#1877F2",
+    },
+    {
+      id: "6",
+      Icon: SiThreads,
+      color: "#000000",
+    },
+  ];
+
 
   return (
     <div className="relative w-full bg-background overflow-hidden">
@@ -62,7 +70,7 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] px-4 sm:px-6 lg:px-8 pt-24 sm:pt-28">
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
               className="mb-8"
@@ -70,7 +78,26 @@ export function ImageCarouselHero({
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <LogoCloud logos={logos} />
+              <div className="flex items-center gap-6 p-3 rounded-full bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
+                <svg width="0" height="0" className="absolute">
+                  <defs>
+                    <linearGradient id="instagram-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" style={{ stopColor: '#feda75', stopOpacity: 1 }} />
+                      <stop offset="25%" style={{ stopColor: '#fa7e1e', stopOpacity: 1 }} />
+                      <stop offset="50%" style={{ stopColor: '#d62976', stopOpacity: 1 }} />
+                      <stop offset="75%" style={{ stopColor: '#962fbf', stopOpacity: 1 }} />
+                      <stop offset="100%" style={{ stopColor: '#4f5bd5', stopOpacity: 1 }} />
+                    </linearGradient>
+                  </defs>
+                </svg>
+                {demoIcons.map(({ Icon, id, color }) => (
+                  <Icon
+                    key={id}
+                    className="text-2xl text-white/80"
+                    style={{ color: color.startsWith("url") ? color : undefined, fill: color.startsWith("url") ? "" : color }}
+                  />
+                ))}
+              </div>
             </motion.div>
 
             <motion.h1 
