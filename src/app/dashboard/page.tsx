@@ -115,6 +115,13 @@ export default function DashboardPage() {
         return sortedVideos.map(video => ({ value: video.view_count || 0 }));
     }, [sortedVideos]);
 
+    const getTrendColor = (data: { value: number }[]) => {
+      if (data.length < 2) return 'var(--color-blue-500)'; // Neutral color for single data point
+      const first = data[0]?.value ?? 0;
+      const last = data[data.length - 1]?.value ?? 0;
+      return last >= first ? 'var(--color-emerald-500)' : 'var(--color-red-500)';
+    }
+
     const businessCards = [
         {
             title: 'Seguidores',
@@ -123,8 +130,8 @@ export default function DashboardPage() {
             isLoading: isLoadingTiktok,
             icon: UserPlus,
             data: followersData.length > 0 ? followersData : [{value: 0}],
-            color: 'var(--color-emerald-500)',
-            gradientId: 'revenueGradient',
+            color: getTrendColor(followersData),
+            gradientId: 'followersGradient',
         },
         {
             title: 'Total de Vídeos',
@@ -133,8 +140,8 @@ export default function DashboardPage() {
             isLoading: isLoadingTiktok,
             icon: Video,
             data: videoCountData.length > 0 ? videoCountData : [{value: 0}],
-            color: 'var(--color-blue-500)',
-            gradientId: 'customersGradient',
+            color: getTrendColor(videoCountData),
+            gradientId: 'videoCountGradient',
         },
         {
             title: 'Visualizações',
@@ -143,8 +150,8 @@ export default function DashboardPage() {
             isLoading: isLoadingTiktok,
             icon: Film,
             data: viewsData.length > 0 ? viewsData : [{value: 0}],
-            color: 'var(--color-violet-500)',
-            gradientId: 'usersGradient',
+            color: getTrendColor(viewsData),
+            gradientId: 'viewsGradient',
         },
     ];
 
@@ -333,3 +340,4 @@ export default function DashboardPage() {
     
 
     
+
