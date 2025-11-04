@@ -11,7 +11,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import axios from 'axios';
 
 const ExchangeTikTokCodeInputSchema = z.object({
@@ -112,12 +112,15 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 "like_count", "comment_count", "share_count", "create_time"
             ];
             
-            const videoListPayload = { fields: videoFields, max_count: 20 };
-            
             const videoListResponse = await axios.post(
                 TIKTOK_VIDEOLIST_URL,
-                videoListPayload,
-                { headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' } }
+                { fields: videoFields, max_count: 20 },
+                {
+                    headers: { 
+                        'Authorization': `Bearer ${access_token}`, 
+                        'Content-Type': 'application/json',
+                    },
+                }
             );
 
             if (videoListResponse.data.error.code !== 'ok') {
@@ -152,5 +155,3 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
-
-    
