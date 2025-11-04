@@ -93,11 +93,11 @@ export default function DashboardPage() {
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
         if (sortedVideos.length === 1) {
-            return [{ value: (tiktokAccount.followerCount || 0) * 0.95 }, { value: tiktokAccount.followerCount || 0 }];
+            return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
         // This is a simplified trend. A real implementation might store historical follower counts.
         return sortedVideos.map((_, index) => ({
-            value: (tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * (tiktokAccount.followerCount || 0) * 0.01
+            value: Math.round((tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * (tiktokAccount.followerCount || 0) * 0.01)
         }));
     }, [tiktokAccount, sortedVideos]);
 
