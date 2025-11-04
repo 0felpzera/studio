@@ -91,7 +91,7 @@ export default function VideoAnalyzer() {
             <CardTitle className="font-bold">Envie Seu Vídeo</CardTitle>
             <CardDescription>Selecione um arquivo de vídeo para iniciar a análise.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <div 
               className="relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted"
               onClick={() => fileInputRef.current?.click()}
@@ -110,40 +110,46 @@ export default function VideoAnalyzer() {
               <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
             </div>
              {selectedFile && (
-                <div className="flex items-center p-2 text-sm rounded-md bg-muted text-muted-foreground">
+                <div className="flex items-center p-2 text-sm rounded-md bg-muted text-muted-foreground mt-4">
                     <Video className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span className="truncate flex-1">{selectedFile.name}</span>
                 </div>
              )}
           </CardContent>
-          <CardContent>
+          <CardFooter>
             <Button onClick={handleAnalyzeClick} disabled={isLoading || !selectedFile} className="w-full font-bold">
               {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2" />Analisar Vídeo</>}
             </Button>
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
 
       <div className="space-y-6">
         {isLoading && (
-            <Card>
+            <Card className="animate-pulse">
                 <CardHeader>
-                    <div className="h-6 w-3/4 bg-muted rounded animate-pulse"></div>
-                    <div className="h-4 w-1/2 bg-muted rounded animate-pulse mt-2"></div>
+                    <div className="h-6 w-3/4 bg-muted rounded"></div>
+                    <div className="h-4 w-1/2 bg-muted rounded mt-2"></div>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                    <div className="h-10 w-full bg-muted rounded animate-pulse"></div>
-                    <div className="h-10 w-full bg-muted rounded animate-pulse"></div>
-                    <div className="h-10 w-full bg-muted rounded animate-pulse"></div>
+                    <div className="h-10 w-full bg-muted rounded"></div>
+                    <div className="h-10 w-full bg-muted rounded"></div>
+                    <div className="h-10 w-full bg-muted rounded"></div>
                 </CardContent>
             </Card>
         )}
         {!isLoading && !analysisResult && (
-            <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
-                <Sparkles className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Sua análise aparecerá aqui</h3>
-                <p className="text-muted-foreground">Envie um vídeo e clique em "Analisar" para ver a mágica.</p>
-            </div>
+             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+                <CardHeader>
+                    <div className="mx-auto bg-secondary p-3 rounded-full">
+                        <Sparkles className="size-8 text-muted-foreground" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <h3 className="text-xl font-semibold mt-2">Sua análise aparecerá aqui</h3>
+                    <p className="text-muted-foreground mt-2">Envie um vídeo e clique em "Analisar" para ver a mágica.</p>
+                </CardContent>
+             </Card>
         )}
         {analysisResult && (
           <div className="space-y-6">
@@ -203,7 +209,7 @@ export default function VideoAnalyzer() {
                 <div>
                   <h4 className="font-semibold text-sm mb-2">Hashtags Sugeridas:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
+                    {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary" appearance="light">{tag}</Badge>)}
                   </div>
                 </div>
               </CardContent>

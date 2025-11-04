@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, CheckCircle, Circle } from 'lucide-react';
+import { Loader2, Check } from 'lucide-react';
 import {
   generateWeeklyContentCalendar,
   GenerateWeeklyContentCalendarOutput,
@@ -46,7 +46,6 @@ import {
   serverTimestamp,
   Timestamp,
   query,
-  orderBy
 } from 'firebase/firestore';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Progress } from '@/components/ui/progress';
@@ -100,7 +99,6 @@ export default function ContentCalendar() {
 
   const contentTasksQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    // Allow reading of empty collections by applying rules to the path, not the resource
     const contentTasksCollection = collection(firestore, 'users', user.uid, 'contentTasks');
     return query(contentTasksCollection);
   }, [firestore, user]);
@@ -139,7 +137,6 @@ export default function ContentCalendar() {
         const docRef = doc(
           collection(firestore, 'users', user.uid, 'contentTasks')
         );
-        // Add timestamp here when creating the task object for the batch
         batch.set(docRef, { ...task, date: serverTimestamp() });
       });
       await batch.commit();
@@ -173,7 +170,6 @@ export default function ContentCalendar() {
     updateDocumentNonBlocking(taskRef, { isCompleted: !currentStatus });
   };
   
-  // Sort tasks by date client-side
   const sortedCalendar = useMemo(() => {
     if (!calendar) return [];
     return [...calendar].sort((a, b) => {
@@ -228,11 +224,6 @@ export default function ContentCalendar() {
                           placeholder="Ex: Atingir 10k seguidores em 3 meses"
                           className="resize-none"
                           {...field}
-                          onInput={(e) => {
-                            const target = e.target as HTMLTextAreaElement;
-                            target.style.height = 'auto';
-                            target.style.height = `${target.scrollHeight}px`;
-                          }}
                         />
                       </FormControl>
                       <FormMessage />
@@ -272,7 +263,7 @@ export default function ContentCalendar() {
                     </FormItem>
                   )}
                 />
-                <Button
+                 <Button
                   type="submit"
                   disabled={isLoading || isUserLoading}
                   className="w-full font-bold"
@@ -289,81 +280,76 @@ export default function ContentCalendar() {
         </Card>
       </div>
       <div className="md:col-span-2">
-        {totalTasks > 0 && (
-          <Card className="mb-6">
+        <Card>
             <CardHeader>
               <CardTitle className="font-bold">Progresso Semanal</CardTitle>
-              <CardDescription>
-                Você completou {completedTasks} de {totalTasks} tarefas esta
-                semana.
+                <CardDescription>
+                  Você completou {completedTasks} de {totalTasks} tarefas esta semana.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Progress value={progress} />
+               {totalTasks > 0 && <Progress value={progress} />}
+                {(isLoading || isLoadingTasks) && (
+                  <div className="flex items-center justify-center h-48">
+                    <Loader2 className="size-12 animate-spin text-primary" />
+                  </div>
+                )}
+                {!isLoading && !isLoadingTasks && totalTasks === 0 && (
+                  <div className="flex flex-col items-center justify-center h-48 text-center rounded-lg border-2 border-dashed">
+                    <h3 className="text-xl font-semibold">
+                      Seu plano aparecerá aqui
+                    </h3>
+                    <p className="text-muted-foreground">
+                      Preencha o formulário para começar!
+                    </p>
+                  </div>
+                )}
             </CardContent>
-          </Card>
-        )}
-        <div className="space-y-4">
-          {(isLoading || isLoadingTasks) && (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="size-12 animate-spin text-primary" />
-            </div>
-          )}
-          {!isLoading && !isLoadingTasks && totalTasks === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 text-center rounded-lg border-2 border-dashed">
-              <h3 className="text-xl font-semibold">
-                Seu plano aparecerá aqui
-              </h3>
-              <p className="text-muted-foreground">
-                Preencha o formulário para começar!
-              </p>
-            </div>
-          )}
-          {sortedCalendar.map((plan) => (
-            <Card
-              key={plan.id}
-              className={`transition-all ${
-                plan.isCompleted ? 'bg-muted/50' : ''
-              }`}
-            >
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div className="space-y-1.5">
-                  <CardTitle className="font-bold flex items-center gap-2">
-                    <span className="text-sm font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                      {plan.platform}
-                    </span>
-                  </CardTitle>
-                  <CardDescription
-                    className={
-                      plan.isCompleted
-                        ? 'line-through text-muted-foreground/80'
-                        : ''
-                    }
-                  >
-                    {plan.description}
-                  </CardDescription>
-                </div>
-                <div
-                  className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer"
-                  onClick={() =>
-                    toggleTaskCompletion(plan.id, plan.isCompleted)
-                  }
-                >
-                  <Checkbox
-                    id={`task-${plan.id}`}
-                    checked={plan.isCompleted}
-                  />
-                  <label
-                    htmlFor={`task-${plan.id}`}
-                    className="text-sm font-medium leading-none cursor-pointer"
-                  >
-                    Feito
-                  </label>
-                </div>
-              </CardHeader>
-            </Card>
-          ))}
-        </div>
+            {sortedCalendar.length > 0 && (
+                 <CardContent className="space-y-4">
+                    {sortedCalendar.map((plan) => (
+                      <div
+                        key={plan.id}
+                        className={`transition-all flex items-center justify-between p-4 rounded-lg ${
+                          plan.isCompleted ? 'bg-muted/50' : 'bg-muted/20'
+                        }`}
+                      >
+                        <div className="space-y-1.5">
+                           <span className="text-sm font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                              {plan.platform}
+                            </span>
+                          <p
+                            className={`font-medium ${
+                              plan.isCompleted
+                                ? 'line-through text-muted-foreground/80'
+                                : ''
+                            }`}
+                          >
+                            {plan.description}
+                          </p>
+                        </div>
+                        <div
+                          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer"
+                          onClick={() =>
+                            toggleTaskCompletion(plan.id, plan.isCompleted)
+                          }
+                        >
+                          <Checkbox
+                            id={`task-${plan.id}`}
+                            checked={plan.isCompleted}
+                          />
+                          <label
+                            htmlFor={`task-${plan.id}`}
+                            className="text-sm font-medium leading-none cursor-pointer select-none"
+                          >
+                            Feito
+                          </label>
+                        </div>
+                      </div>
+                    ))}
+                 </CardContent>
+            )}
+        </Card>
       </div>
     </div>
   );

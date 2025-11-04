@@ -119,11 +119,17 @@ export default function SponsoredContentIdeator() {
             </Card>
           )}
           {!isLoading && !result && (
-            <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
-                <Sparkles className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Suas ideias de conteúdo patrocinado aparecerão aqui</h3>
-                <p className="text-muted-foreground">Preencha o formulário para começar.</p>
-            </div>
+             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+                <CardHeader>
+                    <div className="mx-auto bg-secondary p-3 rounded-full">
+                        <Sparkles className="size-8 text-muted-foreground" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <h3 className="text-xl font-semibold mt-2">Suas ideias de conteúdo patrocinado aparecerão aqui</h3>
+                    <p className="text-muted-foreground mt-2">Preencha o formulário para começar.</p>
+                </CardContent>
+             </Card>
           )}
           {result && (
             <>
@@ -148,7 +154,7 @@ export default function SponsoredContentIdeator() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {result.formatSuggestions.map((format, index) => (
-                      <Badge key={index} variant="outline" className="text-base px-3 py-1">{format}</Badge>
+                      <Badge key={index} variant="secondary" appearance='light' className="text-base px-3 py-1">{format}</Badge>
                     ))}
                   </div>
                 </CardContent>

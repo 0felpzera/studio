@@ -113,21 +113,27 @@ export default function VideoIdeasGenerator() {
             ))
           )}
           {!isLoading && videoIdeas.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 text-center rounded-lg border-2 border-dashed">
-                <Wand2 className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Suas ideias de vídeo aparecerão aqui</h3>
-                <p className="text-muted-foreground">Preencha o formulário para ter um brainstorm com a IA!</p>
-            </div>
+             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+                <CardHeader>
+                    <div className="mx-auto bg-secondary p-3 rounded-full">
+                        <Wand2 className="size-8 text-muted-foreground" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <h3 className="text-xl font-semibold mt-2">Suas ideias de vídeo aparecerão aqui</h3>
+                    <p className="text-muted-foreground mt-2">Preencha o formulário para ter um brainstorm com a IA!</p>
+                </CardContent>
+             </Card>
           )}
           {videoIdeas.length > 0 && (
             <Accordion type="single" collapsible className="w-full space-y-4">
               {videoIdeas.map((idea, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg bg-card">
+                <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg bg-card/80">
                   <AccordionTrigger className="p-6 text-left hover:no-underline">
                     <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-lg">{idea.title}</h3>
-                            <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className={idea.type === 'Trending' ? 'bg-primary/10 text-primary' : ''}>
+                            <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
                                 {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
                             </Badge>
                         </div>
@@ -135,7 +141,7 @@ export default function VideoIdeasGenerator() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-6">
-                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted p-4 rounded-md">
+                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md">
                         <h4 className="font-semibold">Esboço do Roteiro:</h4>
                         <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
                     </div>

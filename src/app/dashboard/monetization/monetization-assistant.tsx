@@ -118,7 +118,7 @@ export default function MonetizationAssistant() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <Button type="submit" disabled={isLoading} className="w-full font-bold">
+                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
                   {isLoading ? <Loader2 className="animate-spin" /> : <> <DollarSign className="mr-2" />Gerar Mídia Kit</>}
                 </Button>
               </form>
@@ -140,11 +140,17 @@ export default function MonetizationAssistant() {
             </Card>
           )}
           {!isLoading && !result && (
-            <div className="flex flex-col items-center justify-center h-full text-center rounded-lg border-2 border-dashed">
-                <DollarSign className="size-12 text-muted-foreground" />
-                <h3 className="text-xl font-semibold mt-4">Seu mídia kit aparecerá aqui</h3>
-                <p className="text-muted-foreground">Preencha suas métricas para gerar seu kit.</p>
-            </div>
+            <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+                <CardHeader>
+                    <div className="mx-auto bg-secondary p-3 rounded-full">
+                        <DollarSign className="size-8 text-muted-foreground" />
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <h3 className="text-xl font-semibold mt-2">Seu mídia kit aparecerá aqui</h3>
+                    <p className="text-muted-foreground mt-2">Preencha suas métricas para gerar seu kit.</p>
+                </CardContent>
+            </Card>
           )}
           {result && (
             <>
@@ -165,7 +171,7 @@ export default function MonetizationAssistant() {
                   <CardDescription>Copie este conteúdo para o seu mídia kit profissional.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans bg-muted p-4 rounded-md">
+                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans bg-muted/50 p-4 rounded-md">
                      {result.mediaKitContent}
                    </div>
                 </CardContent>

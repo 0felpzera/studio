@@ -19,6 +19,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
@@ -37,11 +38,6 @@ function formatNumber(value: number | undefined | null): string {
         return (value / 1000).toFixed(1) + 'k';
     }
     return value.toString();
-}
-
-function formatPercentage(value: number): string {
-    if (value === 0) return 'N/A';
-    return (value * 100).toFixed(1) + '%';
 }
 
 const trendingTopics = [
@@ -172,20 +168,21 @@ export default function DashboardPage() {
             const Icon = card.icon;
             return (
               <Card key={i}>
-                <CardContent className="space-y-5">
-                  <div className="flex items-center gap-2">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base font-semibold">{card.title}</CardTitle>
                     <Icon className="size-5" style={{ color: card.color }} />
-                    <span className="text-base font-semibold">{card.title}</span>
                   </div>
-
+                </CardHeader>
+                <CardContent>
                   <div className="flex items-end gap-2.5 justify-between">
                     <div className="flex flex-col gap-1">
-                      <div className="text-sm text-muted-foreground whitespace-nowrap">{card.period}</div>
                        {card.isLoading ? (
                             <Loader2 className="size-8 animate-spin text-muted-foreground" />
                         ) : (
                             <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
                         )}
+                        <div className="text-sm text-muted-foreground whitespace-nowrap">{card.period}</div>
                     </div>
 
                     <div className="max-w-40 h-16 w-full relative">
@@ -252,7 +249,7 @@ export default function DashboardPage() {
             <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {sortedVideos.map((video) => (
+            {sortedVideos.slice(0, 5).map((video) => (
               <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
                  <Card className="overflow-hidden">
                     <div className="relative aspect-[9/16]">
@@ -272,6 +269,11 @@ export default function DashboardPage() {
               </Link>
             ))}
           </CardContent>
+           {sortedVideos.length > 5 && (
+            <CardFooter>
+                <Button variant="secondary" className="w-full">Ver todos os vídeos</Button>
+            </CardFooter>
+          )}
         </Card>
       )}
 
@@ -279,6 +281,7 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Próximos Posts</CardTitle>
+            <CardDescription>Suas próximas tarefas agendadas.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
              {isLoadingTasks && <p className="text-sm text-muted-foreground">Carregando tarefas...</p>}
@@ -300,7 +303,7 @@ export default function DashboardPage() {
             ))}
           </CardContent>
           <CardFooter>
-            <Button asChild variant="outline" className="w-full">
+            <Button asChild variant="secondary" className="w-full">
               <Link href="/dashboard/plan">Ver Calendário Completo</Link>
             </Button>
           </CardFooter>
@@ -311,6 +314,7 @@ export default function DashboardPage() {
             <CardTitle className="font-bold flex items-center gap-2">
               Tendências em Alta <Flame className="h-5 w-5 text-orange-400" />
             </CardTitle>
+            <CardDescription>Sons e formatos que estão bombando.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
@@ -327,7 +331,7 @@ export default function DashboardPage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button asChild variant="outline" className="w-full">
+            <Button asChild variant="secondary" className="w-full">
               <Link href="/dashboard/trends">Ver Todas as Tendências</Link>
             </Button>
           </CardFooter>
@@ -336,9 +340,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    
-
-

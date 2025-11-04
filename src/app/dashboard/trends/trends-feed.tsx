@@ -29,44 +29,45 @@ export default function TrendsFeed() {
 
   return (
     <div className="w-full">
-      <Tabs defaultValue="Todos" onValueChange={setSelectedNiche}>
+      <Tabs defaultValue="Todos" onValueChange={setSelectedNiche} className="w-full">
         <TabsList className="grid w-full grid-cols-2 sm:flex sm:flex-wrap sm:w-auto">
           {niches.map(niche => (
             <TabsTrigger key={niche} value={niche}>{niche}</TabsTrigger>
           ))}
         </TabsList>
-      </Tabs>
-      <div className="mt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredTrends.map(trend => {
-            const image = PlaceHolderImages.find(img => img.id === trend.imageId);
-            return (
-              <Card key={trend.id} className="overflow-hidden group relative">
-                <CardContent className="p-0">
-                  {image && (
-                    <Image
-                      src={image.imageUrl}
-                      alt={image.description}
-                      data-ai-hint={image.imageHint}
-                      width={300}
-                      height={400}
-                      className="object-cover aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-105"
-                    />
-                  )}
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                   <div className="absolute bottom-0 left-0 p-4">
-                        <h3 className="font-semibold text-white">{trend.title}</h3>
-                        <p className="text-sm text-white/80">{trend.views} visualizações</p>
-                   </div>
-                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <PlayCircle className="size-12 text-white/80" />
-                   </div>
-                </CardContent>
-              </Card>
-            );
-          })}
+      
+        <div className="mt-6">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {filteredTrends.map(trend => {
+                const image = PlaceHolderImages.find(img => img.id === trend.imageId);
+                return (
+                <Card key={trend.id} className="overflow-hidden group relative">
+                    <CardContent className="p-0">
+                    {image && (
+                        <Image
+                        src={image.imageUrl}
+                        alt={image.description}
+                        data-ai-hint={image.imageHint}
+                        width={300}
+                        height={400}
+                        className="object-cover aspect-[3/4] w-full transition-transform duration-300 group-hover:scale-105"
+                        />
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                    <div className="absolute bottom-0 left-0 p-4">
+                            <h3 className="font-semibold text-white">{trend.title}</h3>
+                            <p className="text-sm text-white/80">{trend.views} visualizações</p>
+                    </div>
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <PlayCircle className="size-12 text-white/80" />
+                    </div>
+                    </CardContent>
+                </Card>
+                );
+            })}
+            </div>
         </div>
-      </div>
+      </Tabs>
     </div>
   );
 }

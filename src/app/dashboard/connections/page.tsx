@@ -170,7 +170,7 @@ export default function ConnectionsPage() {
                             </>
                         )}
                     </CardContent>
-                    <CardContent>
+                    <CardFooter>
                         {isTiktokConnected ? (
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
@@ -200,7 +200,7 @@ export default function ConnectionsPage() {
                             </Button>
                         )}
                         
-                    </CardContent>
+                    </CardFooter>
                 </Card>
                 
                  <Card>
@@ -214,14 +214,13 @@ export default function ConnectionsPage() {
                            Conecte para importar dados via API da Meta.
                         </p>
                     </CardContent>
-                    <CardContent>
+                    <CardFooter>
                         <Button className="w-full" onClick={handleConnectInstagram}>
                             <Share2 className="mr-2" /> Conectar Instagram
                         </Button>
-                    </CardContent>
+                    </CardFooter>
                 </Card>
             </div>
         </div>
     );
 }
-

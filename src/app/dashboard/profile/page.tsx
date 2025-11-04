@@ -2,7 +2,7 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth, useUser, useFirestore } from "@/firebase";
@@ -116,12 +116,12 @@ export default function ProfilePage() {
                         </div>
                     </div>
                 </CardContent>
-                <CardContent>
+                <CardFooter>
                      <Button onClick={handleSaveChanges} disabled={isLoading}>
-                        {isLoading ? <Loader2 className="animate-spin" /> : null}
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         {isLoading ? 'Salvando...' : 'Salvar Alterações'}
                     </Button>
-                </CardContent>
+                </CardFooter>
             </Card>
         </div>
     );
