@@ -24,37 +24,9 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
-import type { TiktokAccount } from '@/lib/types';
+import type { TiktokAccount, TiktokVideo } from '@/lib/types';
 import { useMemo } from 'react';
 import Image from 'next/image';
-
-const revenueData = [
-  { value: 1000 }, { value: 4500 }, { value: 2000 }, { value: 5200 },
-  { value: 1500 }, { value: 6100 }, { value: 3000 }, { value: 6800 },
-  { value: 2000 }, { value: 1000 }, { value: 4000 }, { value: 2000 },
-  { value: 3000 }, { value: 2000 }, { value: 6238 },
-];
-
-const customersData = [
-  { value: 2000 }, { value: 4500 }, { value: 2000 }, { value: 5200 },
-  { value: 1500 }, { value: 5100 }, { value: 2500 }, { value: 6800 },
-  { value: 1800 }, { value: 1000 }, { value: 3000 }, { value: 2000 },
-  { value: 2700 }, { value: 2000 }, { value: 4238 },
-];
-
-const activeUsersData = [
-  { value: 2000 }, { value: 3500 }, { value: 2000 }, { value: 5200 },
-  { value: 1200 }, { value: 4100 }, { value: 3500 }, { value: 5800 },
-  { value: 2000 }, { value: 800 }, { value: 3000 }, { value: 1000 },
-  { value: 4000 }, { value: 2000 }, { value: 4238 },
-];
-
-
-const trendingTopics = [
-  { title: "Audio Viral: 'Summer Vibes'" },
-  { title: 'Transição de Maquiagem' },
-  { title: 'Desafio 30 Dias' },
-];
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
@@ -71,6 +43,12 @@ function formatPercentage(value: number): string {
     if (value === 0) return 'N/A';
     return (value * 100).toFixed(1) + '%';
 }
+
+const trendingTopics = [
+  { title: "Audio Viral: 'Summer Vibes'" },
+  { title: 'Transição de Maquiagem' },
+  { title: 'Desafio 30 Dias' },
+];
 
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
@@ -102,10 +80,31 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
+    const sortedVideos = useMemo(() => {
+        if (!tiktokAccount || !tiktokAccount.videos) return [];
+        return [...tiktokAccount.videos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+    }, [tiktokAccount]);
+
     const totalViews = useMemo(() => {
       if (!tiktokAccount || !tiktokAccount.videos) return 0;
       return tiktokAccount.videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
     }, [tiktokAccount]);
+
+    const followersData = useMemo(() => {
+        if (!tiktokAccount) return [{ value: 0 }];
+        // This is a simplified trend. A real implementation might store historical follower counts.
+        return sortedVideos.map((_, index) => ({
+            value: (tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * (tiktokAccount.followerCount || 0) * 0.01 
+        }));
+    }, [tiktokAccount, sortedVideos]);
+
+    const videoCountData = useMemo(() => {
+        return sortedVideos.map((_, index) => ({ value: index + 1 }));
+    }, [sortedVideos]);
+
+    const viewsData = useMemo(() => {
+        return sortedVideos.map(video => ({ value: video.view_count || 0 }));
+    }, [sortedVideos]);
 
     const businessCards = [
         {
@@ -114,7 +113,7 @@ export default function DashboardPage() {
             value: tiktokAccount ? formatNumber(tiktokAccount.followerCount) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: UserPlus,
-            data: revenueData,
+            data: followersData.length > 0 ? followersData : [{value: 0}],
             color: 'var(--color-emerald-500)',
             gradientId: 'revenueGradient',
         },
@@ -124,7 +123,7 @@ export default function DashboardPage() {
             value: tiktokAccount ? formatNumber(tiktokAccount.videoCount) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: Video,
-            data: customersData,
+            data: videoCountData.length > 0 ? videoCountData : [{value: 0}],
             color: 'var(--color-blue-500)',
             gradientId: 'customersGradient',
         },
@@ -134,7 +133,7 @@ export default function DashboardPage() {
             value: tiktokAccount ? formatNumber(totalViews) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: Film,
-            data: activeUsersData,
+            data: viewsData.length > 0 ? viewsData : [{value: 0}],
             color: 'var(--color-violet-500)',
             gradientId: 'usersGradient',
         },
@@ -237,7 +236,7 @@ export default function DashboardPage() {
             <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {tiktokAccount.videos.map((video) => (
+            {sortedVideos.map((video) => (
               <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
                  <Card className="overflow-hidden">
                     <div className="relative aspect-[9/16]">
@@ -321,3 +320,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
