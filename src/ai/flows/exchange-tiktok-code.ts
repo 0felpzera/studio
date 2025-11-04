@@ -90,7 +90,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             
             const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description } = tokenResponse.data;
             
-            if (error) { throw new Error(`TikTok API Error: ${error} - ${error_description}`); }
+            if (error && error.code !== 'ok') { throw new Error(`TikTok API Error: ${error.message || error_description}`); }
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
@@ -155,5 +155,3 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
-
-    

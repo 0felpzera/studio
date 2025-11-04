@@ -84,6 +84,9 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
 
         cursor = newCursor;
         hasMore = has_more;
+        
+        // If hasMore is false, but cursor is not 0, it means we reached the end.
+        if (!hasMore) break;
       }
       
       // Update status to 'success' after fetching all pages
@@ -108,5 +111,3 @@ async function updateDoc(docRef: any, data: any) {
     const { setDoc } = await import('firebase/firestore');
     return setDoc(docRef, data, { merge: true });
 }
-
-    
