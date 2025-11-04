@@ -49,7 +49,7 @@ export default function SignUpPage() {
 
     useEffect(() => {
         if (!isUserLoading && user) {
-            router.push('/dashboard');
+            router.push('/onboarding'); // Redirect to onboarding if user is detected
         }
     }, [user, isUserLoading, router]);
 
@@ -71,8 +71,9 @@ export default function SignUpPage() {
 
             toast({
                 title: "Cadastro realizado com sucesso!",
-                description: "Sua conta foi criada. Redirecionando...",
+                description: "Vamos configurar seu perfil.",
             });
+            // No automatic redirect here, useEffect will handle it
         } catch (error: any) {
              toast({
                 title: "Erro no Cadastro",

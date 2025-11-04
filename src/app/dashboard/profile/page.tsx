@@ -92,7 +92,7 @@ export default function ProfilePage() {
                     <div className="flex items-center gap-6">
                         <div className="relative">
                             {avatar && <Avatar className="size-20">
-                                <AvatarImage src={user?.photoURL || avatar.imageUrl} alt={avatar.description} />
+                                <AvatarImage src={user?.photoURL || avatar.imageUrl} alt={user?.displayName || "User Avatar"} />
                                 <AvatarFallback>{displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                             </Avatar>}
                             <Button variant="outline" size="icon" className="absolute -bottom-2 -right-2 rounded-full">
