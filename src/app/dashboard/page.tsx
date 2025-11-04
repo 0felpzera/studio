@@ -92,17 +92,26 @@ export default function DashboardPage() {
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
+        if (sortedVideos.length === 1) {
+            return [{ value: (tiktokAccount.followerCount || 0) * 0.95 }, { value: tiktokAccount.followerCount || 0 }];
+        }
         // This is a simplified trend. A real implementation might store historical follower counts.
         return sortedVideos.map((_, index) => ({
-            value: (tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * (tiktokAccount.followerCount || 0) * 0.01 
+            value: (tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * (tiktokAccount.followerCount || 0) * 0.01
         }));
     }, [tiktokAccount, sortedVideos]);
 
     const videoCountData = useMemo(() => {
+        if (sortedVideos.length === 1) {
+            return [{ value: 0 }, { value: 1 }];
+        }
         return sortedVideos.map((_, index) => ({ value: index + 1 }));
     }, [sortedVideos]);
 
     const viewsData = useMemo(() => {
+        if (sortedVideos.length === 1) {
+            return [{ value: 0 }, { value: sortedVideos[0].view_count || 0 }];
+        }
         return sortedVideos.map(video => ({ value: video.view_count || 0 }));
     }, [sortedVideos]);
 
@@ -320,5 +329,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
