@@ -4,11 +4,12 @@ import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc, setDoc, getDocs, query, collectionGroup, where } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 
 
 function TikTokCallback() {
@@ -64,23 +65,36 @@ function TikTokCallback() {
         setStatus("Trocando código por token de acesso...");
         const result = await exchangeTikTokCode({ code: authCode });
         setUserInfo(result);
-        setStatus("Informações do usuário recebidas com sucesso!");
+        setStatus("Informações do usuário recebidas com sucesso! Salvando...");
 
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
         
-        await setDoc(tiktokAccountRef, {
+        const accountData = {
             id: result.open_id,
             userId: user.uid,
-            openId: result.open_id,
+            openId: result.open_id, // DEPRECATED: use `id`
             username: result.display_name,
             avatarUrl: result.avatar_url,
             followerCount: result.follower_count,
             followingCount: result.following_count,
             likesCount: result.likes_count,
             videoCount: result.video_count,
-            videos: result.videos,
+            bioDescription: result.bio_description || '',
+            isVerified: result.is_verified || false,
+            profileDeepLink: result.profile_deep_link || '',
+            videos: result.videos || [],
             engagementRate: 0, 
-        }, { merge: true });
+        };
+
+        // Non-blocking update
+        setDoc(tiktokAccountRef, accountData, { merge: true }).catch(e => {
+            console.error("Firebase setDoc error:", e);
+            toast({
+                title: "Erro ao salvar dados",
+                description: "Não foi possível salvar os dados da sua conta TikTok. Tente novamente.",
+                variant: "destructive"
+            });
+        });
 
         toast({
             title: "Conta TikTok Conectada!",
@@ -88,7 +102,7 @@ function TikTokCallback() {
         });
 
         setTimeout(() => {
-            router.push('/dashboard/connections');
+            router.push('/dashboard');
         }, 3000);
 
       } catch (e: any) {
@@ -154,7 +168,7 @@ function TikTokCallback() {
                             </div>
                         </CardContent>
                          <CardContent>
-                             <p className="text-sm text-muted-foreground">Você será redirecionado em breve...</p>
+                             <p className="text-sm text-muted-foreground">Você será redirecionado para o dashboard em breve...</p>
                         </CardContent>
                     </Card>
                 )}
@@ -176,4 +190,3 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
-

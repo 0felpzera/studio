@@ -130,7 +130,7 @@ export default function DashboardPage() {
         },
         {
             title: 'Visualizações',
-            period: 'Últimos 10 vídeos',
+            period: 'Últimos vídeos',
             value: tiktokAccount ? formatNumber(totalViews) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: Film,
@@ -220,6 +220,17 @@ export default function DashboardPage() {
         </div>
       </div>
       
+      {isLoadingTiktok && (
+          <Card>
+              <CardHeader>
+                <CardTitle className="font-bold">Carregando seus vídeos...</CardTitle>
+              </CardHeader>
+              <CardContent className="flex justify-center items-center h-48">
+                  <Loader2 className="size-12 animate-spin text-primary" />
+              </CardContent>
+          </Card>
+      )}
+
       {tiktokAccount && tiktokAccount.videos && tiktokAccount.videos.length > 0 && (
         <Card>
           <CardHeader>
@@ -310,4 +321,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
