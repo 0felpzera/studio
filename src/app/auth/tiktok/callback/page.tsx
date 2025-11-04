@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
@@ -151,9 +152,9 @@ function TikTokCallback() {
                 <CardTitle className="flex items-center gap-2">
                     Processando Conexão TikTok
                 </CardTitle>
-                <CardDescription>
+                <div className="text-sm text-muted-foreground pt-2">
                    {renderStatus()}
-                </CardDescription>
+                </div>
             </CardHeader>
             <CardContent className="space-y-4">
                  {error && (
