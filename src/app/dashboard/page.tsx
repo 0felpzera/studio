@@ -47,7 +47,7 @@ const trendingTopics = [
   { title: 'Desafio 30 Dias' },
 ];
 
-type FilterPeriod = '7d' | '30d' | 'all';
+type FilterPeriod = 'today' | '7d' | '15d' | '30d' | 'all';
 
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
@@ -88,10 +88,29 @@ export default function DashboardPage() {
             return allVideos;
         }
 
-        const now = Date.now() / 1000; // in seconds
-        const periodInSeconds = filter === '7d' ? 7 * 24 * 60 * 60 : 30 * 24 * 60 * 60;
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const startOfTodayTimestamp = today.getTime() / 1000;
+
+        let periodInSeconds;
+        switch (filter) {
+            case 'today':
+                return allVideos.filter(video => video.create_time && video.create_time >= startOfTodayTimestamp);
+            case '7d':
+                periodInSeconds = 7 * 24 * 60 * 60;
+                break;
+            case '15d':
+                periodInSeconds = 15 * 24 * 60 * 60;
+                break;
+            case '30d':
+                periodInSeconds = 30 * 24 * 60 * 60;
+                break;
+            default:
+                return allVideos;
+        }
         
-        return allVideos.filter(video => video.create_time && (now - video.create_time) <= periodInSeconds);
+        const cutoffTimestamp = (Date.now() / 1000) - periodInSeconds;
+        return allVideos.filter(video => video.create_time && video.create_time >= cutoffTimestamp);
     }, [tiktokAccount, filter]);
 
     const totalViews = useMemo(() => {
@@ -135,10 +154,21 @@ export default function DashboardPage() {
     }
     
     const filterButtons: { label: string; value: FilterPeriod }[] = [
+        { label: 'Hoje', value: 'today' },
         { label: '7 Dias', value: '7d' },
+        { label: '15 Dias', value: '15d' },
         { label: '30 Dias', value: '30d' },
         { label: 'Todo Período', value: 'all' },
     ];
+
+    const getPeriodLabel = (filterValue: FilterPeriod) => {
+        const button = filterButtons.find(b => b.value === filterValue);
+        if (button) {
+            if (button.value === 'all' || button.value === 'today') return button.label;
+            return `Últimos ${button.label}`;
+        }
+        return 'Total';
+    };
 
     const businessCards = [
         {
@@ -153,7 +183,7 @@ export default function DashboardPage() {
         },
         {
             title: 'Vídeos no Período',
-            period: filter === '7d' ? 'Últimos 7 dias' : filter === '30d' ? 'Últimos 30 dias' : 'Total',
+            period: getPeriodLabel(filter),
             value: formatNumber(filteredVideos.length),
             isLoading: isLoadingTiktok,
             icon: Video,
@@ -163,7 +193,7 @@ export default function DashboardPage() {
         },
         {
             title: 'Visualizações no Período',
-            period: filter === '7d' ? 'Últimos 7 dias' : filter === '30d' ? 'Últimos 30 dias' : 'Total',
+            period: getPeriodLabel(filter),
             value: formatNumber(totalViews),
             isLoading: isLoadingTiktok,
             icon: Film,
@@ -184,14 +214,14 @@ export default function DashboardPage() {
             Seu painel de comando para dominar as redes sociais.
             </p>
         </div>
-        <div className="flex items-center gap-2 rounded-full bg-muted p-1">
+        <div className="flex items-center gap-1 rounded-full bg-muted p-1">
              {filterButtons.map(({label, value}) => (
                 <Button 
                     key={value}
                     variant={filter === value ? "secondary" : "ghost"}
                     size="sm"
                     className={cn(
-                        "rounded-full transition-colors", 
+                        "rounded-full transition-colors h-8 px-3", 
                         filter === value ? 'text-secondary-foreground shadow-sm' : 'text-muted-foreground'
                     )}
                     onClick={() => setFilter(value)}
@@ -390,3 +420,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
