@@ -26,8 +26,9 @@ import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebas
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
 import type { TiktokAccount, TiktokVideo } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
+import { cn } from '@/lib/utils';
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
@@ -46,9 +47,12 @@ const trendingTopics = [
   { title: 'Desafio 30 Dias' },
 ];
 
+type FilterPeriod = '7d' | '30d' | 'all';
+
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
+    const [filter, setFilter] = useState<FilterPeriod>('all');
 
     const upcomingTasksQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -76,40 +80,52 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
-    const sortedVideos = useMemo(() => {
+    const filteredVideos = useMemo(() => {
         if (!tiktokAccount || !tiktokAccount.videos) return [];
-        return [...tiktokAccount.videos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-    }, [tiktokAccount]);
+        const allVideos = [...tiktokAccount.videos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+
+        if (filter === 'all') {
+            return allVideos;
+        }
+
+        const now = Date.now() / 1000; // in seconds
+        const periodInSeconds = filter === '7d' ? 7 * 24 * 60 * 60 : 30 * 24 * 60 * 60;
+        
+        return allVideos.filter(video => video.create_time && (now - video.create_time) <= periodInSeconds);
+    }, [tiktokAccount, filter]);
 
     const totalViews = useMemo(() => {
-      if (!tiktokAccount || !tiktokAccount.videos) return 0;
-      return tiktokAccount.videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
-    }, [tiktokAccount]);
+      if (!filteredVideos) return 0;
+      return filteredVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    }, [filteredVideos]);
 
+    // Follower data should show the overall trend, not just filtered period's followers
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
-        if (sortedVideos.length === 1) {
+        const allVideos = [...(tiktokAccount.videos || [])].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+        
+        if (allVideos.length < 2) {
             return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
         // This is a simplified trend. A real implementation might store historical follower counts.
-        return sortedVideos.map((_, index) => ({
-            value: Math.round((tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
+        return allVideos.map((_, index) => ({
+            value: Math.round((tiktokAccount.followerCount || 0) - (allVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
-    }, [tiktokAccount, sortedVideos]);
+    }, [tiktokAccount]);
 
     const videoCountData = useMemo(() => {
-        if (sortedVideos.length === 1) {
+        if (filteredVideos.length === 1) {
             return [{ value: 0 }, { value: 1 }];
         }
-        return sortedVideos.map((_, index) => ({ value: index + 1 }));
-    }, [sortedVideos]);
+        return filteredVideos.map((_, index) => ({ value: index + 1 }));
+    }, [filteredVideos]);
 
     const viewsData = useMemo(() => {
-        if (sortedVideos.length === 1) {
-            return [{ value: 0 }, { value: sortedVideos[0].view_count || 0 }];
+        if (filteredVideos.length === 1) {
+            return [{ value: 0 }, { value: filteredVideos[0].view_count || 0 }];
         }
-        return sortedVideos.map(video => ({ value: video.view_count || 0 }));
-    }, [sortedVideos]);
+        return filteredVideos.map(video => ({ value: video.view_count || 0 }));
+    }, [filteredVideos]);
 
     const getTrendColor = (data: { value: number }[]) => {
       if (data.length < 2) return 'hsl(var(--chart-1))'; // Neutral blue color
@@ -117,6 +133,12 @@ export default function DashboardPage() {
       const last = data[data.length - 1]?.value ?? 0;
       return last >= first ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'; // Green for up, Red for down
     }
+    
+    const filterButtons: { label: string; value: FilterPeriod }[] = [
+        { label: '7 Dias', value: '7d' },
+        { label: '30 Dias', value: '30d' },
+        { label: 'Todo Período', value: 'all' },
+    ];
 
     const businessCards = [
         {
@@ -130,9 +152,9 @@ export default function DashboardPage() {
             gradientId: 'followersGradient',
         },
         {
-            title: 'Total de Vídeos',
-            period: 'Total',
-            value: tiktokAccount ? formatNumber(tiktokAccount.videoCount) : 'N/A',
+            title: 'Vídeos no Período',
+            period: filter === '7d' ? 'Últimos 7 dias' : filter === '30d' ? 'Últimos 30 dias' : 'Total',
+            value: formatNumber(filteredVideos.length),
             isLoading: isLoadingTiktok,
             icon: Video,
             data: videoCountData.length > 0 ? videoCountData : [{value: 0}],
@@ -140,9 +162,9 @@ export default function DashboardPage() {
             gradientId: 'videoCountGradient',
         },
         {
-            title: 'Visualizações',
-            period: 'Últimos vídeos',
-            value: tiktokAccount ? formatNumber(totalViews) : 'N/A',
+            title: 'Visualizações no Período',
+            period: filter === '7d' ? 'Últimos 7 dias' : filter === '30d' ? 'Últimos 30 dias' : 'Total',
+            value: formatNumber(totalViews),
             isLoading: isLoadingTiktok,
             icon: Film,
             data: viewsData.length > 0 ? viewsData : [{value: 0}],
@@ -153,13 +175,31 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-1.5">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
-        </h1>
-        <p className="text-muted-foreground">
-          Seu painel de comando para dominar as redes sociais.
-        </p>
+      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className='space-y-1.5'>
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
+            </h1>
+            <p className="text-muted-foreground">
+            Seu painel de comando para dominar as redes sociais.
+            </p>
+        </div>
+        <div className="flex items-center gap-2 rounded-full bg-muted p-1">
+             {filterButtons.map(({label, value}) => (
+                <Button 
+                    key={value}
+                    variant={filter === value ? "secondary" : "ghost"}
+                    size="sm"
+                    className={cn(
+                        "rounded-full transition-colors", 
+                        filter === value ? 'text-secondary-foreground shadow-sm' : 'text-muted-foreground'
+                    )}
+                    onClick={() => setFilter(value)}
+                >
+                    {label}
+                </Button>
+            ))}
+        </div>
       </header>
 
       <div className="w-full">
@@ -243,13 +283,14 @@ export default function DashboardPage() {
           </Card>
       )}
 
-      {tiktokAccount && tiktokAccount.videos && tiktokAccount.videos.length > 0 && (
+      {tiktokAccount && filteredVideos && filteredVideos.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
+             <CardDescription>Mostrando vídeos do período selecionado.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {sortedVideos.slice(0, 5).map((video) => (
+            {filteredVideos.slice(-10).reverse().map((video) => (
               <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
                  <Card className="overflow-hidden">
                     <div className="relative aspect-[9/16]">
@@ -269,12 +310,21 @@ export default function DashboardPage() {
               </Link>
             ))}
           </CardContent>
-           {sortedVideos.length > 5 && (
+           {filteredVideos.length > 10 && (
             <CardFooter>
-                <Button variant="secondary" className="w-full">Ver todos os vídeos</Button>
+                <Button variant="secondary" className="w-full">Ver todos os vídeos do período</Button>
             </CardFooter>
           )}
         </Card>
+      )}
+       {tiktokAccount && filteredVideos.length === 0 && !isLoadingTiktok && (
+         <Card>
+             <CardContent className="flex flex-col items-center justify-center h-48 text-center">
+                 <Video className="size-12 text-muted-foreground mb-4" />
+                <h3 className="text-xl font-semibold">Nenhum vídeo encontrado</h3>
+                <p className="text-muted-foreground">Não há vídeos para o período selecionado.</p>
+             </CardContent>
+         </Card>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
