@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Fetches the entire video history for a TikTok account in the background.
@@ -47,7 +48,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         "like_count", "comment_count", "share_count", "create_time"
       ];
       
-      let cursor: string | undefined = undefined;
+      let cursor: number | undefined = 0; // Cursor is a number (unix timestamp)
       let hasMore = true;
       let totalFetched = 0;
 
@@ -59,11 +60,11 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
             max_count: 20, // Max allowed by TikTok API
             cursor: cursor,
           },
-          { headers: { 'Authorization': `Bearer ${accessToken}` } }
+          { headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
         );
 
         if (response.data.error.code !== 'ok') {
-          throw new Error(`Failed to fetch video list page: ${response.data.error.message}`);
+          throw new Error(`Failed to fetch video list page: ${response.data.error.message} - ${JSON.stringify(response.data)}`);
         }
 
         const { videos, cursor: newCursor, has_more } = response.data.data;
@@ -107,3 +108,5 @@ async function updateDoc(docRef: any, data: any) {
     const { setDoc } = await import('firebase/firestore');
     return setDoc(docRef, data, { merge: true });
 }
+
+    
