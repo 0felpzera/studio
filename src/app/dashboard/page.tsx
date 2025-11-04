@@ -97,7 +97,7 @@ export default function DashboardPage() {
         }
         // This is a simplified trend. A real implementation might store historical follower counts.
         return sortedVideos.map((_, index) => ({
-            value: Math.round((tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * (tiktokAccount.followerCount || 0) * 0.01)
+            value: Math.round((tiktokAccount.followerCount || 0) - (sortedVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
     }, [tiktokAccount, sortedVideos]);
 
@@ -116,10 +116,10 @@ export default function DashboardPage() {
     }, [sortedVideos]);
 
     const getTrendColor = (data: { value: number }[]) => {
-      if (data.length < 2) return 'var(--color-blue-500)'; // Neutral color for single data point
+      if (data.length < 2) return 'hsl(var(--chart-1))'; // Neutral blue color
       const first = data[0]?.value ?? 0;
       const last = data[data.length - 1]?.value ?? 0;
-      return last >= first ? 'var(--color-emerald-500)' : 'var(--color-red-500)';
+      return last >= first ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'; // Green for up, Red for down
     }
 
     const businessCards = [
@@ -340,4 +340,5 @@ export default function DashboardPage() {
     
 
     
+
 
