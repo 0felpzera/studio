@@ -1,0 +1,327 @@
+{
+  "entities": {
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user of the ViralBoost AI platform.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "User's email address.",
+          "format": "email"
+        },
+        "name": {
+          "type": "string",
+          "description": "User's full name."
+        },
+        "instagramAccountId": {
+          "type": "string",
+          "description": "Reference to InstagramAccount. (Relationship: User 1:1 InstagramAccount)"
+        },
+        "tiktokAccountId": {
+          "type": "string",
+          "description": "Reference to TiktokAccount. (Relationship: User 1:1 TiktokAccount)"
+        }
+      },
+      "required": [
+        "id",
+        "email",
+        "name"
+      ]
+    },
+    "InstagramAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InstagramAccount",
+      "type": "object",
+      "description": "Represents a user's connected Instagram account.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Instagram account."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 InstagramAccount)"
+        },
+        "followerCount": {
+          "type": "number",
+          "description": "Number of followers on the Instagram account."
+        },
+        "engagementRate": {
+          "type": "number",
+          "description": "Engagement rate of the Instagram account."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ]
+    },
+    "TiktokVideo": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TiktokVideo",
+      "type": "object",
+      "description": "Represents a single TikTok video.",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "cover_image_url": { "type": "string", "format": "uri" },
+        "share_url": { "type": "string", "format": "uri" },
+        "view_count": { "type": "number" },
+        "like_count": { "type": "number" },
+        "comment_count": { "type": "number" },
+        "share_count": { "type": "number" },
+        "create_time": { "type": "number" }
+      },
+      "required": ["id", "share_url"]
+    },
+    "TiktokAccount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "TiktokAccount",
+      "type": "object",
+      "description": "Represents a user's connected TikTok account.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the TikTok account."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:1 TiktokAccount)"
+        },
+        "followerCount": {
+          "type": "number",
+          "description": "Number of followers on the TikTok account."
+        },
+        "engagementRate": {
+          "type": "number",
+          "description": "Engagement rate of the TikTok account."
+        },
+        "followingCount": {
+          "type": "number",
+          "description": "Number of accounts the user is following."
+        },
+        "likesCount": {
+          "type": "number",
+          "description": "Total number of likes the user has received."
+        },
+        "videoCount": {
+          "type": "number",
+          "description": "Total number of videos the user has posted."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ]
+    },
+    "Goal": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Goal",
+      "type": "object",
+      "description": "Represents a user's defined goals.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Goal."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N Goal)"
+        },
+        "followerGoal": {
+          "type": "number",
+          "description": "Target number of followers."
+        },
+        "postingFrequency": {
+          "type": "string",
+          "description": "Desired posting frequency (e.g., '3-5 videos per week')."
+        },
+        "niche": {
+          "type": "string",
+          "description": "User's primary niche (e.g., 'Sustainable Fashion')."
+        }
+      },
+      "required": [
+        "id",
+        "userId"
+      ]
+    },
+    "ContentTask": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ContentTask",
+      "type": "object",
+      "description": "Represents a content creation task generated for the user's content calendar.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the content task."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N ContentTask)"
+        },
+        "date": {
+          "type": "string",
+          "description": "Date for the content task.",
+          "format": "date-time"
+        },
+        "platform": {
+          "type": "string",
+          "description": "Suggested platform for the task (e.g., 'TikTok', 'Reels')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Brief description of the content task."
+        },
+        "isCompleted": {
+          "type": "boolean",
+          "description": "Indicates if the task has been completed."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "date",
+        "platform",
+        "description"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. Path-based ownership ensures only the user can access their profile.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/instagramAccounts/{instagramAccountId}",
+        "definition": {
+          "entityName": "InstagramAccount",
+          "schema": {
+            "$ref": "#/backend/entities/InstagramAccount"
+          },
+          "description": "Stores Instagram account details linked to the user. Path-based ownership ensures only the user can access their connected accounts.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "instagramAccountId",
+              "description": "The unique identifier of the Instagram account."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/tiktokAccounts/{tiktokAccountId}",
+        "definition": {
+          "entityName": "TiktokAccount",
+          "schema": {
+            "$ref": "#/backend/entities/TiktokAccount"
+          },
+          "description": "Stores TikTok account details linked to the user. Path-based ownership ensures only the user can access their connected accounts.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "tiktokAccountId",
+              "description": "The unique identifier of the Tiktok account."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/tiktokAccounts/{tiktokAccountId}/videos/{videoId}",
+        "definition": {
+          "entityName": "TiktokVideo",
+          "schema": {
+            "$ref": "#/backend/entities/TiktokVideo"
+          },
+          "description": "Stores individual TikTok videos for a user's account. This allows for scalable storage and retrieval of video data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "tiktokAccountId",
+              "description": "The unique identifier of the Tiktok account."
+            },
+            {
+              "name": "videoId",
+              "description": "The unique identifier of the TikTok video."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/goals/{goalId}",
+        "definition": {
+          "entityName": "Goal",
+          "schema": {
+            "$ref": "#/backend/entities/Goal"
+          },
+          "description": "Stores user-defined goals. Path-based ownership ensures only the user can access their goals.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "goalId",
+              "description": "The unique identifier of the goal."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/contentTasks/{contentTaskId}",
+        "definition": {
+          "entityName": "ContentTask",
+          "schema": {
+            "$ref": "#/backend/entities/ContentTask"
+          },
+          "description": "Stores content creation tasks generated for the user. Path-based ownership ensures only the user can access their content tasks.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "contentTaskId",
+              "description": "The unique identifier of the content task."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\n\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\n*   The `goals` and `contentTasks` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\n\nThis structure supports the required QAPs by:\n\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks or goals is restricted to the authenticated user associated with the `/users/{userId}` path.\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
+  }
+}

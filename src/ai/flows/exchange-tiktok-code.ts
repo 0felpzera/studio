@@ -1,6 +1,8 @@
 'use server';
 /**
- * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info and videos.
+ * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info.
+ * This flow is designed to be fast, fetching only the essential user profile data and the most recent batch of videos.
+ * A separate flow (`fetch-tiktok-history`) is responsible for fetching the complete video history asynchronously.
  * 
  * - exchangeTikTokCode - The main flow function.
  * - ExchangeTikTokCodeInput - Input schema for the flow.
@@ -32,6 +34,10 @@ const TiktokVideoSchema = z.object({
 const ExchangeTikTokCodeOutputSchema = z.object({
     open_id: z.string().describe("The user's unique identifier on TikTok."),
     union_id: z.string().describe("The user's unique identifier across TikTok platforms."),
+    access_token: z.string().describe("The access token for subsequent API calls."),
+    refresh_token: z.string().describe("The refresh token to obtain new access tokens."),
+    expires_in: z.number().describe("The time in seconds until the access token expires."),
+    refresh_expires_in: z.number().describe("The time in seconds until the refresh token expires."),
     avatar_url: z.string().url().describe("URL for the user's profile picture."),
     display_name: z.string().describe("The user's public display name."),
     bio_description: z.string().optional().describe("User's profile bio description"),
@@ -41,7 +47,7 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
     video_count: z.number().describe("The total number of videos the user has uploaded."),
-    videos: z.array(TiktokVideoSchema).describe("A list of the user's public videos.")
+    videos: z.array(TiktokVideoSchema).describe("A list of the user's most recent public videos (first page).")
 });
 
 export type ExchangeTikTokCodeOutput = z.infer<typeof ExchangeTikTokCodeOutputSchema>;
@@ -81,7 +87,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
             
-            const { access_token, error, error_description } = tokenResponse.data;
+            const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description } = tokenResponse.data;
             
             if (error) { throw new Error(`TikTok API Error: ${error} - ${error_description}`); }
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
@@ -99,7 +105,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             const userInfo = userInfoResponse.data.data.user;
 
-            // Step 3: Use access token to fetch video list
+            // Step 3: Use access token to fetch THE FIRST PAGE of the video list
             const videoFields = [
                 "id", "title", "cover_image_url", "share_url", "view_count",
                 "like_count", "comment_count", "share_count", "create_time"
@@ -107,7 +113,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             
             const videoListResponse = await axios.post(
                 TIKTOK_VIDEOLIST_URL,
-                { fields: videoFields }, // Correctly send fields in the POST body
+                { fields: videoFields, max_count: 20 },
                 { headers: { 'Authorization': `Bearer ${access_token}` } }
             );
 
@@ -119,6 +125,10 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             return {
                 open_id: userInfo.open_id,
                 union_id: userInfo.union_id,
+                access_token,
+                refresh_token,
+                expires_in,
+                refresh_expires_in,
                 avatar_url: userInfo.avatar_url,
                 display_name: userInfo.display_name,
                 bio_description: userInfo.bio_description,

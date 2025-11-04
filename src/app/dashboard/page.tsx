@@ -11,6 +11,7 @@ import {
   UserPlus,
   Loader2,
   Video,
+  AlertTriangle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -68,24 +69,34 @@ export default function DashboardPage() {
         if (!user || !firestore) return null;
         return collection(firestore, 'users', user.uid, 'tiktokAccounts');
     }, [user, firestore]);
-
+    
+    const tiktokAccount = useMemo(() => {
+        if (tiktokAccountsQuery && tiktokAccountsQuery.length > 0) {
+            return tiktokAccountsQuery[0];
+        }
+        return null;
+    }, [tiktokAccountsQuery]);
+    
+    // New query for videos subcollection
+    const videosQuery = useMemoFirebase(() => {
+        if (!user || !firestore || !tiktokAccount) return null;
+        return query(
+            collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
+            orderBy('create_time', 'desc')
+        );
+    }, [user, firestore, tiktokAccount]);
 
     const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
     const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+    const { data: allVideos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
 
-    const tiktokAccount = useMemo(() => {
-        if (tiktokAccounts && tiktokAccounts.length > 0) {
-            return tiktokAccounts[0];
-        }
-        return null;
-    }, [tiktokAccounts]);
-    
+
     const filteredVideos = useMemo(() => {
-        if (!tiktokAccount || !tiktokAccount.videos) return [];
-        const allVideos = [...tiktokAccount.videos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+        if (!allVideos) return [];
+        const sortedVideos = [...allVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
 
         if (filter === 'all') {
-            return allVideos;
+            return sortedVideos;
         }
 
         const now = new Date();
@@ -95,7 +106,7 @@ export default function DashboardPage() {
         let periodInSeconds;
         switch (filter) {
             case 'today':
-                return allVideos.filter(video => video.create_time && video.create_time >= startOfTodayTimestamp);
+                return sortedVideos.filter(video => video.create_time && video.create_time >= startOfTodayTimestamp);
             case '7d':
                 periodInSeconds = 7 * 24 * 60 * 60;
                 break;
@@ -106,12 +117,12 @@ export default function DashboardPage() {
                 periodInSeconds = 30 * 24 * 60 * 60;
                 break;
             default:
-                return allVideos;
+                return sortedVideos;
         }
         
         const cutoffTimestamp = (Date.now() / 1000) - periodInSeconds;
-        return allVideos.filter(video => video.create_time && video.create_time >= cutoffTimestamp);
-    }, [tiktokAccount, filter]);
+        return sortedVideos.filter(video => video.create_time && video.create_time >= cutoffTimestamp);
+    }, [allVideos, filter]);
 
     const totalViews = useMemo(() => {
       if (!filteredVideos) return 0;
@@ -121,16 +132,14 @@ export default function DashboardPage() {
     // Follower data should show the overall trend, not just filtered period's followers
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
-        const allVideos = [...(tiktokAccount.videos || [])].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-        
-        if (allVideos.length < 2) {
-            return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
+         if (!allVideos || allVideos.length < 2) {
+             return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
         // This is a simplified trend. A real implementation might store historical follower counts.
         return allVideos.map((_, index) => ({
             value: Math.round((tiktokAccount.followerCount || 0) - (allVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
-    }, [tiktokAccount]);
+    }, [tiktokAccount, allVideos]);
 
     const videoCountData = useMemo(() => {
         if (filteredVideos.length === 1) {
@@ -170,6 +179,8 @@ export default function DashboardPage() {
         return 'Total';
     };
 
+    const isLoading = isUserLoading || isLoadingTiktok || isLoadingVideos;
+
     const businessCards = [
         {
             title: 'Seguidores',
@@ -185,7 +196,7 @@ export default function DashboardPage() {
             title: 'Vídeos no Período',
             period: getPeriodLabel(filter),
             value: formatNumber(filteredVideos.length),
-            isLoading: isLoadingTiktok,
+            isLoading: isLoadingVideos,
             icon: Video,
             data: videoCountData.length > 0 ? videoCountData : [{value: 0}],
             color: getTrendColor(videoCountData),
@@ -195,7 +206,7 @@ export default function DashboardPage() {
             title: 'Visualizações no Período',
             period: getPeriodLabel(filter),
             value: formatNumber(totalViews),
-            isLoading: isLoadingTiktok,
+            isLoading: isLoadingVideos,
             icon: Film,
             data: viewsData.length > 0 ? viewsData : [{value: 0}],
             color: getTrendColor(viewsData),
@@ -225,6 +236,7 @@ export default function DashboardPage() {
                         filter === value ? 'text-secondary-foreground shadow-sm' : 'text-muted-foreground'
                     )}
                     onClick={() => setFilter(value)}
+                    disabled={!tiktokAccount}
                 >
                     {label}
                 </Button>
@@ -302,7 +314,7 @@ export default function DashboardPage() {
         </div>
       </div>
       
-      {isLoadingTiktok && (
+       {isLoading && (
           <Card>
               <CardHeader>
                 <CardTitle className="font-bold">Carregando seus vídeos...</CardTitle>
@@ -313,6 +325,23 @@ export default function DashboardPage() {
           </Card>
       )}
 
+       {!isLoading && !tiktokAccount && (
+        <Card className="bg-amber-50 border-amber-200 text-amber-900">
+          <CardHeader className="flex-row gap-4 items-center">
+            <AlertTriangle className="size-8" />
+            <div>
+              <CardTitle>Conecte sua conta TikTok</CardTitle>
+              <CardDescription className="text-amber-800">Para ver seu dashboard completo, você precisa conectar sua conta do TikTok.</CardDescription>
+            </div>
+          </CardHeader>
+          <CardFooter>
+            <Button asChild variant="default" className="bg-amber-900 hover:bg-amber-950 text-white">
+              <Link href="/dashboard/connections">Conectar Agora</Link>
+            </Button>
+          </CardFooter>
+        </Card>
+       )}
+
       {tiktokAccount && filteredVideos && filteredVideos.length > 0 && (
         <Card>
           <CardHeader>
@@ -320,7 +349,7 @@ export default function DashboardPage() {
              <CardDescription>Mostrando vídeos do período selecionado.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredVideos.slice(-10).reverse().map((video) => (
+            {filteredVideos.slice(0, 10).map((video) => (
               <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
                  <Card className="overflow-hidden">
                     <div className="relative aspect-[9/16]">
@@ -347,7 +376,7 @@ export default function DashboardPage() {
           )}
         </Card>
       )}
-       {tiktokAccount && filteredVideos.length === 0 && !isLoadingTiktok && (
+       {tiktokAccount && filteredVideos.length === 0 && !isLoading && (
          <Card>
              <CardContent className="flex flex-col items-center justify-center h-48 text-center">
                  <Video className="size-12 text-muted-foreground mb-4" />
@@ -420,5 +449,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

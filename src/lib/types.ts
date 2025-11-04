@@ -14,14 +14,19 @@ export type TiktokVideo = {
 export type TiktokAccount = {
     id: string;
     userId: string;
-    openId: string;
     username: string;
     avatarUrl: string;
     followerCount: number;
     followingCount: number;
     likesCount: number;
     videoCount: number;
-    engagementRate: number;
-    videos: TiktokVideo[];
+    bioDescription: string;
+    isVerified: boolean;
+    profileDeepLink: string;
+    accessToken: string;
+    refreshToken: string;
+    tokenExpiresAt: number;
+    refreshTokenExpiresAt: number;
+    lastSyncStatus: 'pending' | 'syncing' | 'success' | 'error';
+    lastSyncError?: string;
 };
-

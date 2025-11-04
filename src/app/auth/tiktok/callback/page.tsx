@@ -10,6 +10,7 @@ import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { fetchTikTokHistory } from '@/ai/flows/fetch-tiktok-history';
 
 
 function TikTokCallback() {
@@ -65,14 +66,13 @@ function TikTokCallback() {
         setStatus("Trocando código por token de acesso...");
         const result = await exchangeTikTokCode({ code: authCode });
         setUserInfo(result);
-        setStatus("Informações do usuário recebidas com sucesso! Salvando...");
+        setStatus("Informações do usuário recebidas! Salvando perfil...");
 
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
         
         const accountData = {
             id: result.open_id,
             userId: user.uid,
-            openId: result.open_id, // DEPRECATED: use `id`
             username: result.display_name,
             avatarUrl: result.avatar_url,
             followerCount: result.follower_count,
@@ -82,23 +82,36 @@ function TikTokCallback() {
             bioDescription: result.bio_description || '',
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
-            videos: result.videos || [],
-            engagementRate: 0, 
+            // Do not save videos here. They will be saved in a subcollection.
+            // Save tokens for background processing
+            accessToken: result.access_token,
+            refreshToken: result.refresh_token,
+            tokenExpiresAt: Date.now() + result.expires_in * 1000,
+            refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
+            lastSyncStatus: 'pending',
         };
 
-        // Non-blocking update
-        setDoc(tiktokAccountRef, accountData, { merge: true }).catch(e => {
-            console.error("Firebase setDoc error:", e);
-            toast({
-                title: "Erro ao salvar dados",
-                description: "Não foi possível salvar os dados da sua conta TikTok. Tente novamente.",
-                variant: "destructive"
-            });
+        // Save the main account data. This is a blocking operation on the callback page.
+        await setDoc(tiktokAccountRef, accountData, { merge: true });
+        
+        setStatus("Perfil salvo. Iniciando sincronização do histórico de vídeos em segundo plano...");
+
+        // Trigger the background history fetch, but DO NOT await it.
+        fetchTikTokHistory({
+            userId: user.uid,
+            tiktokAccountId: result.open_id,
+            accessToken: result.access_token,
+        }).catch(e => {
+            // This error happens in the background, so we can't show it directly to the user
+            // on this page. We should log it or update the sync status in Firestore.
+            console.error("Erro na sincronização de histórico em segundo plano:", e);
+            const accountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
+            setDoc(accountRef, { lastSyncStatus: 'error', lastSyncError: e.message }, { merge: true });
         });
 
         toast({
             title: "Conta TikTok Conectada!",
-            description: `Bem-vindo, ${result.display_name}!`,
+            description: `Bem-vindo, ${result.display_name}! Estamos sincronizando seu histórico de vídeos.`,
         });
 
         setTimeout(() => {

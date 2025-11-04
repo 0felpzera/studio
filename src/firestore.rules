@@ -1,0 +1,157 @@
+/**
+ * @fileoverview Firestore Security Rules for ViralBoost AI.
+ *
+ * Core Philosophy:
+ * This ruleset enforces a strict user-ownership model for all data, ensuring that only the authenticated user can access their own information.
+ *
+ * Data Structure:
+ * All data is nested under /users/{userId}, creating a hierarchical structure that simplifies authorization logic. Each user "owns" their profile, goals, content tasks, and social media account links.
+ *
+ * Key Security Decisions:
+ * - User listing is explicitly disallowed to prevent unauthorized data enumeration.
+ * - All writes are strictly validated against user ownership.
+ * - Data consistency between paths and document fields is enforced on creation and updates to prevent privilege escalation.
+ *
+ * Denormalization for Authorization:
+ * The data model uses path-based ownership to avoid costly `get()` calls within the security rules. Each document's parent path inherently defines its owner.
+ *
+ * Structural Segregation:
+ * User-specific data is stored in private subcollections under `/users/{userId}`, ensuring that data is never unintentionally exposed.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Protects against unauthorized access to the root of the database. No direct reads or writes are allowed at the root level.
+     * @path /
+     * @allow get: if false;
+     * @deny get: Always denies direct access to the root.
+     * @allow list: if false;
+     * @deny list: Always denies direct listing of the root.
+     * @allow create: if false;
+     * @deny create: Always denies direct creation at the root.
+     * @allow update: if false;
+     * @deny update: Always denies direct updates at the root.
+     * @allow delete: if false;
+     * @deny delete: Always denies direct deletion at the root.
+     * @principle Protects the root of the database, preventing unintended access and modifications.
+     */
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    /**
+     * @description Enforces access control for user profiles. Only the authenticated user can read, create, update, or delete their own profile.
+     * @path /users/{userId}
+     * @allow get: if isSignedIn() && isOwner(userId);
+     * @allow list: if false;
+     * @deny list: Listing all users is not permitted.
+     * @allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+     * @allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+     * @allow delete: if isSignedIn() && isExistingOwner(userId);
+     * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn() && isOwner(userId);
+      allow list: if false;
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Enforces access control for Instagram accounts linked to a user. Only the authenticated user can read, create, update, or delete their linked Instagram accounts.
+     * @path /users/{userId}/instagramAccounts/{instagramAccountId}
+     * @allow get: if isSignedIn() && isOwner(userId);
+     * @allow list: if isSignedIn() && isOwner(userId);
+     * @allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+     * @allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+     * @allow delete: if isSignedIn() && isExistingOwner(userId);
+     * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
+     */
+    match /users/{userId}/instagramAccounts/{instagramAccountId} {
+      allow read, list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Enforces access control for TikTok accounts linked to a user. Only the authenticated user can read, create, update, or delete their linked TikTok accounts.
+     * @path /users/{userId}/tiktokAccounts/{tiktokAccountId}
+     * @allow get: if isSignedIn() && isOwner(userId);
+     * @allow list: if isSignedIn() && isOwner(userId);
+     * @allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+     * @allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+     * @allow delete: if isSignedIn() && isExistingOwner(userId);
+     * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
+     */
+    match /users/{userId}/tiktokAccounts/{tiktokAccountId} {
+      allow read, list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+    
+    /**
+     * @description Enforces access control for TikTok videos. Only the owner can manage their videos.
+     * @path /users/{userId}/tiktokAccounts/{tiktokAccountId}/videos/{videoId}
+     * @allow get: if isSignedIn() && isOwner(userId);
+     * @allow list: if isSignedIn() && isOwner(userId);
+     * @allow create: if isSignedIn() && isOwner(userId);
+     * @allow update: if isSignedIn() && isExistingOwner(userId);
+     * @allow delete: if isSignedIn() && isExistingOwner(userId);
+     * @principle Ensures video data is only accessible and manageable by the account owner.
+     */
+    match /users/{userId}/tiktokAccounts/{tiktokAccountId}/videos/{videoId} {
+        allow read, write: if isSignedIn() && isOwner(userId);
+    }
+
+    /**
+     * @description Enforces access control for user-defined goals. Only the authenticated user can read, create, update, or delete their goals.
+     * @path /users/{userId}/goals/{goalId}
+     * @allow get: if isSignedIn() && isOwner(userId);
+     * @allow list: if isSignedIn() && isOwner(userId);
+     * @allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+     * @allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+     * @allow delete: if isSignedIn() && isExistingOwner(userId);
+     * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
+     */
+    match /users/{userId}/goals/{goalId} {
+      allow read, list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    /**
+     * @description Enforces access control for content creation tasks. Only the authenticated user can read, create, update, or delete their content tasks.
+     * @path /users/{userId}/contentTasks/{contentTaskId}
+     * @allow get: if isSignedIn() && isOwner(userId);
+     * @allow list: if isSignedIn() && isOwner(userId);
+     * @allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+     * @allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+     * @allow delete: if isSignedIn() && isExistingOwner(userId);
+     * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
+     */
+    match /users/{userId}/contentTasks/{contentTaskId} {
+      allow read, list: if isSignedIn() && isOwner(userId);
+      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
+      allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+      allow delete: if isSignedIn() && isExistingOwner(userId);
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function isExistingOwner(userId) {
+      return isSignedIn() && isOwner(userId) && resource != null;
+    }
+  }
+}
