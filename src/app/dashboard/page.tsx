@@ -92,7 +92,8 @@ export default function DashboardPage() {
         if (!user || !firestore || !tiktokAccount) return null;
         return query(
             collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
-            orderBy('create_time', 'desc')
+            orderBy('create_time', 'desc'),
+            limit(10)
         );
     }, [user, firestore, tiktokAccount]);
 
@@ -354,7 +355,7 @@ export default function DashboardPage() {
              <CardDescription>Mostrando vídeos do período selecionado.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredVideos.slice(0, 10).map((video) => (
+            {filteredVideos.map((video) => (
               <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
                  <Card className="overflow-hidden">
                     <div className="relative aspect-[9/16]">
