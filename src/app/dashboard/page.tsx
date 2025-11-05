@@ -12,6 +12,8 @@ import {
   Loader2,
   Video,
   AlertTriangle,
+  Lightbulb,
+  Heart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,7 +28,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
-import type { TiktokAccount, TiktokVideo } from '@/lib/types';
+import type { TiktokAccount, TiktokVideo, SavedVideoIdea } from '@/lib/types';
 import { useMemo } from 'react';
 import Image from 'next/image';
 
@@ -60,6 +62,15 @@ export default function DashboardPage() {
             limit(2)
         );
     }, [user, firestore]);
+
+    const savedIdeasQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(
+            collection(firestore, 'users', user.uid, 'savedVideoIdeas'),
+            orderBy('savedAt', 'desc'),
+            limit(2)
+        );
+    }, [user, firestore]);
     
     const tiktokAccountsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -75,28 +86,21 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
-    /*
-    const videosQuery = useMemoFirebase(() => {
-        if (!user || !firestore || !tiktokAccount || !tiktokAccount.videoCount || tiktokAccount.videoCount === 0) return null;
+    const { data: videos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(
+      useMemoFirebase(() => {
+        if (!tiktokAccount || !tiktokAccount.videoCount || tiktokAccount.videoCount === 0) return null;
         return query(
-            collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
-            orderBy('create_time', 'desc'),
-            limit(10)
+          collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
+          orderBy('create_time', 'desc'),
+          limit(10)
         );
-    }, [user, firestore, tiktokAccount]);
-
-    const { data: videos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
-
+      }, [user, firestore, tiktokAccount])
+    );
 
     const totalViews = useMemo(() => {
       if (!videos) return 0;
       return videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
     }, [videos]);
-    */
-   const videos: TiktokVideo[] = [];
-   const isLoadingVideos = false;
-   const totalViews = 0;
-
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
@@ -107,6 +111,23 @@ export default function DashboardPage() {
             value: Math.round((tiktokAccount.followerCount || 0) - (videos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
     }, [tiktokAccount, videos]);
+
+    const likesData = useMemo(() => {
+      if (!tiktokAccount) return [{ value: 0 }];
+      if (!videos || videos.length < 2) {
+        return [{ value: Math.round((tiktokAccount.likesCount || 0) * 0.95) }, { value: tiktokAccount.likesCount || 0 }];
+      }
+      // This is a mock trend, in a real scenario you would have historical likes data
+      return videos.map((v, index) => ({
+        value: (v.like_count || 0) + (index * 100), // simulate a growing trend
+      }));
+    }, [tiktokAccount, videos]);
+
+    const viewsData = useMemo(() => {
+      if (!videos || videos.length < 2) return [{ value: 0 }];
+      return videos.map(v => ({ value: v.view_count || 0 })).reverse();
+    }, [videos]);
+
 
     const getTrendColor = (data: { value: number }[]) => {
       if (data.length < 2) return 'hsl(var(--chart-1))'; // Neutral blue color
@@ -128,26 +149,27 @@ export default function DashboardPage() {
             gradientId: 'followersGradient',
         },
         {
-            title: 'Vídeos',
-            value: formatNumber(tiktokAccount?.videoCount),
+            title: 'Total de Curtidas',
+            value: tiktokAccount ? formatNumber(tiktokAccount.likesCount) : 'N/A',
             isLoading: isLoadingTiktok,
-            icon: Video,
-            data: videos ? videos.map((_, index) => ({ value: index })) : [{value: 0}],
-            color: getTrendColor(videos ? videos.map((_, index) => ({ value: index })) : []),
-            gradientId: 'videoCountGradient',
+            icon: Heart,
+            data: likesData.length > 0 ? likesData : [{value: 0}],
+            color: getTrendColor(likesData),
+            gradientId: 'likesGradient',
         },
         {
-            title: 'Total de Views',
+            title: 'Total de Views (Últimos Vídeos)',
             value: formatNumber(totalViews),
             isLoading: isLoadingVideos,
             icon: Film,
-            data: videos ? videos.map(v => ({ value: v.view_count || 0 })) : [{value: 0}],
-            color: getTrendColor(videos ? videos.map(v => ({ value: v.view_count || 0 })) : []),
+            data: viewsData.length > 0 ? viewsData : [{value: 0}],
+            color: getTrendColor(viewsData),
             gradientId: 'viewsGradient',
         },
     ];
 
     const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
+    const { data: savedIdeas, isLoading: isLoadingIdeas } = useCollection<SavedVideoIdea>(savedIdeasQuery);
 
   return (
     <div className="space-y-6">
@@ -282,18 +304,20 @@ export default function DashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="font-bold flex items-center gap-2">
-              Tendências em Alta <Flame className="h-5 w-5 text-orange-400" />
+              Ideias Salvas <Lightbulb className="h-5 w-5 text-yellow-400" />
             </CardTitle>
-            <CardDescription>Sons e formatos que estão bombando.</CardDescription>
+            <CardDescription>Suas próximas grandes ideias de vídeo.</CardDescription>
           </CardHeader>
           <CardContent>
+             {isLoadingIdeas && <p className="text-sm text-muted-foreground">Carregando ideias...</p>}
+             {!isLoadingIdeas && savedIdeas?.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma ideia salva. Gere novas ideias!</p>}
             <div className="space-y-2">
-              {trendingTopics.map((trend) => (
-                <Link key={trend.title} href="/dashboard/trends">
+              {savedIdeas?.map((idea) => (
+                <Link key={idea.id} href="/dashboard/ideas">
                   <div
                     className="flex items-center justify-between rounded-md p-3 hover:bg-muted cursor-pointer"
                   >
-                    <p className="font-medium">{trend.title}</p>
+                    <p className="font-medium">{idea.title}</p>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                   </div>
                 </Link>
@@ -302,7 +326,7 @@ export default function DashboardPage() {
           </CardContent>
           <CardFooter>
             <Button asChild variant="secondary" className="w-full">
-              <Link href="/dashboard/trends">Ver Todas as Tendências</Link>
+              <Link href="/dashboard/ideas">Ver Todas as Ideias</Link>
             </Button>
           </CardFooter>
         </Card>

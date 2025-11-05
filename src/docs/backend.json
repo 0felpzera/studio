@@ -191,6 +191,51 @@
         "platform",
         "description"
       ]
+    },
+    "SavedVideoIdea": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SavedVideoIdea",
+      "type": "object",
+      "description": "Represents a video idea saved by the user from the generator.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the saved idea."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to User. (Relationship: User 1:N SavedVideoIdea)"
+        },
+        "title": {
+          "type": "string",
+          "description": "The title of the video idea."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the video idea."
+        },
+        "scriptOutline": {
+          "type": "string",
+          "description": "A basic script outline including Hook, Development, and CTA."
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Evergreen", "Trending"],
+          "description": "The type of video idea."
+        },
+        "savedAt": {
+          "type": "string",
+          "description": "Timestamp when the idea was saved.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "title",
+        "description",
+        "type"
+      ]
     }
   },
   "auth": {
@@ -296,8 +341,28 @@
             }
           ]
         }
+      },
+      {
+        "path": "/users/{userId}/savedVideoIdeas/{ideaId}",
+        "definition": {
+          "entityName": "SavedVideoIdea",
+          "schema": {
+            "$ref": "#/backend/entities/SavedVideoIdea"
+          },
+          "description": "Stores video ideas saved by the user. Path-based ownership ensures only the user can access their saved ideas.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "ideaId",
+              "description": "The unique identifier of the saved idea."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\n\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\n*   The `goals` and `contentTasks` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\n\nThis structure supports the required QAPs by:\n\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks or goals is restricted to the authenticated user associated with the `/users/{userId}` path.\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
+    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\n\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount, SavedVideoIdea) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\n*   The `goals`, `contentTasks`, and `savedVideoIdeas` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\n\nThis structure supports the required QAPs by:\n\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks, goals, or saved ideas is restricted to the authenticated user associated with the `/users/{userId}` path.\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
   }
 }

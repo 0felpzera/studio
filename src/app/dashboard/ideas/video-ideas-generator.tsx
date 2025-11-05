@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Wand2 } from "lucide-react";
+import { Loader2, Wand2, Save } from "lucide-react";
 import { suggestRelevantVideoIdeas, VideoIdeasOutput } from "@/ai/flows/suggest-relevant-video-ideas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,16 +14,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
+import { useUser, useFirestore } from "@/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
   currentTrends: z.string().min(10, "Por favor, descreva algumas tendências atuais."),
 });
 
+type VideoIdea = VideoIdeasOutput['videoIdeas'][0];
+
 export default function VideoIdeasGenerator() {
   const [isLoading, setIsLoading] = useState(false);
-  const [videoIdeas, setVideoIdeas] = useState<VideoIdeasOutput['videoIdeas']>([]);
+  const [videoIdeas, setVideoIdeas] = useState<VideoIdea[]>([]);
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+  const [savingId, setSavingId] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -54,6 +61,35 @@ export default function VideoIdeasGenerator() {
       setIsLoading(false);
     }
   }
+
+  const handleSaveIdea = async (idea: VideoIdea) => {
+    if (!user || !firestore) {
+        toast({ title: "Erro", description: "Você precisa estar logado para salvar ideias.", variant: "destructive" });
+        return;
+    }
+    setSavingId(idea.title); // Use title as a temporary unique ID for loading state
+    try {
+        const ideasCollection = collection(firestore, 'users', user.uid, 'savedVideoIdeas');
+        await addDoc(ideasCollection, {
+            ...idea,
+            userId: user.uid,
+            savedAt: serverTimestamp(),
+        });
+        toast({
+            title: "Ideia Salva!",
+            description: `"${idea.title}" foi adicionada ao seu banco de ideias.`,
+        });
+    } catch (error) {
+        console.error("Erro ao salvar ideia:", error);
+        toast({
+            title: "Erro ao Salvar",
+            description: "Não foi possível salvar a ideia. Tente novamente.",
+            variant: "destructive",
+        });
+    } finally {
+        setSavingId(null);
+    }
+  };
 
   return (
     <div className="grid gap-8 md:grid-cols-3">
@@ -144,6 +180,20 @@ export default function VideoIdeasGenerator() {
                     <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md">
                         <h4 className="font-semibold">Esboço do Roteiro:</h4>
                         <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
+                    </div>
+                    <div className="mt-4 text-right">
+                        <Button
+                            size="sm"
+                            onClick={() => handleSaveIdea(idea)}
+                            disabled={savingId === idea.title}
+                        >
+                            {savingId === idea.title ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Save className="mr-2 h-4 w-4" />
+                            )}
+                            Salvar Ideia
+                        </Button>
                     </div>
                   </AccordionContent>
                 </AccordionItem>

@@ -31,4 +31,13 @@ export type TiktokAccount = {
     lastSyncError?: string;
 };
 
+export type SavedVideoIdea = {
+    id: string;
+    userId: string;
+    title: string;
+    description: string;
+    scriptOutline: string;
+    type: 'Evergreen' | 'Trending';
+    savedAt: any; // Using `any` for Firestore Timestamp compatibility
+};
     
