@@ -19,7 +19,7 @@ function TikTokCallback() {
 
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("Analisando a resposta do TikTok...");
-  const [userInfo, setUserInfo] = useState<ExchangeTikTokCodeOutput | null>(null);
+  const [apiResponse, setApiResponse] = useState<ExchangeTikTokCodeOutput | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
@@ -63,68 +63,70 @@ function TikTokCallback() {
       try {
         setStatus("Trocando código por token de acesso...");
         const result = await exchangeTikTokCode({ code: authCode });
-        setUserInfo(result);
-        setStatus("Informações do usuário recebidas! Salvando perfil...");
+        setApiResponse(result);
+        setStatus("Resposta da API do TikTok recebida!");
 
-        const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
+        // All processing and redirection is paused for debugging.
         
-        const accountData = {
-            id: result.open_id,
-            userId: user.uid,
-            username: result.display_name,
-            avatarUrl: result.avatar_url,
-            followerCount: result.follower_count,
-            followingCount: result.following_count,
-            likesCount: result.likes_count,
-            videoCount: result.video_count,
-            bioDescription: result.bio_description || '',
-            isVerified: result.is_verified || false,
-            profileDeepLink: result.profile_deep_link || '',
-            profileWebLink: result.profile_web_link || '',
-            accessToken: result.access_token,
-            refreshToken: result.refresh_token,
-            tokenExpiresAt: Date.now() + result.expires_in * 1000,
-            refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-            lastSyncStatus: 'pending',
-        };
-
-        await setDoc(tiktokAccountRef, accountData, { merge: true });
+        // const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
         
-        setStatus("Perfil salvo. Sincronizando vídeos...");
+        // const accountData = {
+        //     id: result.open_id,
+        //     userId: user.uid,
+        //     username: result.display_name,
+        //     avatarUrl: result.avatar_url,
+        //     followerCount: result.follower_count,
+        //     followingCount: result.following_count,
+        //     likesCount: result.likes_count,
+        //     videoCount: result.video_count,
+        //     bioDescription: result.bio_description || '',
+        //     isVerified: result.is_verified || false,
+        //     profileDeepLink: result.profile_deep_link || '',
+        //     profileWebLink: result.profile_web_link || '',
+        //     accessToken: result.access_token,
+        //     refreshToken: result.refresh_token,
+        //     tokenExpiresAt: Date.now() + result.expires_in * 1000,
+        //     refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
+        //     lastSyncStatus: 'pending',
+        // };
 
-        // Save the initial batch of videos fetched during the exchange code flow
-        if (result.videos && result.videos.length > 0) {
-            const batch = writeBatch(firestore);
-            const videosCollectionRef = collection(tiktokAccountRef, 'videos');
-            result.videos.forEach((video: any) => {
-                const videoDocRef = doc(videosCollectionRef, video.id);
-                batch.set(videoDocRef, video);
-            });
-            await batch.commit();
-        }
+        // await setDoc(tiktokAccountRef, accountData, { merge: true });
         
-        // Start the full history fetch in the background (non-blocking)
-        if (result.video_count > (result.videos?.length || 0)) {
-            fetchTikTokHistory({
-                userId: user.uid,
-                tiktokAccountId: result.open_id,
-                accessToken: result.access_token,
-            });
-             setStatus("Sincronização inicial concluída. O restante será buscado em segundo plano.");
-        } else {
-             setStatus("Sincronização de vídeos concluída!");
-             await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
-        }
+        // setStatus("Perfil salvo. Sincronizando vídeos...");
+
+        // // Save the initial batch of videos fetched during the exchange code flow
+        // if (result.videos && result.videos.length > 0) {
+        //     const batch = writeBatch(firestore);
+        //     const videosCollectionRef = collection(tiktokAccountRef, 'videos');
+        //     result.videos.forEach((video: any) => {
+        //         const videoDocRef = doc(videosCollectionRef, video.id);
+        //         batch.set(videoDocRef, video);
+        //     });
+        //     await batch.commit();
+        // }
+        
+        // // Start the full history fetch in the background (non-blocking)
+        // if (result.video_count > (result.videos?.length || 0)) {
+        //     fetchTikTokHistory({
+        //         userId: user.uid,
+        //         tiktokAccountId: result.open_id,
+        //         accessToken: result.access_token,
+        //     });
+        //      setStatus("Sincronização inicial concluída. O restante será buscado em segundo plano.");
+        // } else {
+        //      setStatus("Sincronização de vídeos concluída!");
+        //      await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
+        // }
 
 
-        toast({
-            title: "Conta TikTok Conectada!",
-            description: `Bem-vindo, ${result.display_name}! Seus vídeos mais recentes foram sincronizados.`,
-        });
+        // toast({
+        //     title: "Conta TikTok Conectada!",
+        //     description: `Bem-vindo, ${result.display_name}! Seus vídeos mais recentes foram sincronizados.`,
+        // });
 
-        setTimeout(() => {
-            router.push('/dashboard');
-        }, 3000);
+        // setTimeout(() => {
+        //     router.push('/dashboard');
+        // }, 3000);
 
       } catch (e: any) {
         console.error("Erro ao trocar o código do TikTok:", e);
@@ -146,7 +148,7 @@ function TikTokCallback() {
       if (error) {
           return <div className="flex items-center gap-2 text-destructive"><AlertTriangle className="h-5 w-5"/> {status}</div>;
       }
-      if (userInfo) {
+      if (apiResponse) {
            return <div className="flex items-center gap-2 text-green-500"><CheckCircle className="h-5 w-5"/> {status}</div>;
       }
       return null;
@@ -154,7 +156,7 @@ function TikTokCallback() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <Card className="w-full max-w-md">
+        <Card className="w-full max-w-2xl">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     Processando Conexão TikTok
@@ -173,23 +175,16 @@ function TikTokCallback() {
                         </div>
                     </div>
                 )}
-                {userInfo && (
+                {apiResponse && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className='text-lg'>Usuário Conectado</CardTitle>
+                            <CardTitle className='text-lg'>Resposta da API do TikTok</CardTitle>
+                             <CardDescription>Estes são os dados brutos recebidos do TikTok.</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16">
-                                <AvatarImage src={userInfo.avatar_url} alt={userInfo.display_name} />
-                                <AvatarFallback>{userInfo.display_name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className="font-bold text-xl">{userInfo.display_name}</p>
-                                <p className="text-sm text-muted-foreground">Seguidores: {userInfo.follower_count.toLocaleString('pt-BR')}</p>
-                            </div>
-                        </CardContent>
-                         <CardContent>
-                             <p className="text-sm text-muted-foreground">Você será redirecionado para o dashboard em breve...</p>
+                        <CardContent>
+                           <pre className="mt-2 w-full overflow-auto text-sm bg-muted p-4 rounded-lg">
+                                {JSON.stringify(apiResponse, null, 2)}
+                           </pre>
                         </CardContent>
                     </Card>
                 )}
