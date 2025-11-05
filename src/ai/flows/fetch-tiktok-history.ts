@@ -25,7 +25,9 @@ export type FetchTikTokHistoryInput = z.infer<typeof FetchTikTokHistoryInputSche
 const TIKTOK_VIDEOLIST_URL = 'https://open.tiktokapis.com/v2/video/list/';
 
 export async function fetchTikTokHistory(input: FetchTikTokHistoryInput): Promise<void> {
-  await fetchTikTokHistoryFlow(input);
+  // This is a background flow, so we don't return the flow directly.
+  // We just invoke it and let it run.
+  fetchTikTokHistoryFlow(input);
 }
 
 const fetchTikTokHistoryFlow = ai.defineFlow(
@@ -36,6 +38,8 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
   },
   async ({ userId, tiktokAccountId, accessToken }) => {
     
+    // Initialize the admin app right at the start.
+    // This function is idempotent and safe to call.
     initializeAdminApp();
     const firestore = getFirestore();
     const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
@@ -48,20 +52,24 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         "like_count", "comment_count", "share_count", "create_time"
       ].join(',');
       
-      let cursor: string | number | undefined = 0; // Start with cursor 0
+      let cursor: string | number | undefined = undefined; // Start with no cursor for the first request
       let hasMore = true;
-      let allVideos: any[] = [];
+      const allVideos: any[] = [];
       let page = 0;
 
       while (hasMore) {
         page++;
         console.log(`Fetching page ${page} of TikTok videos for user ${userId}...`);
         
-        const requestBody = {
+        const requestBody: { fields: string; max_count: number; cursor?: string | number } = {
             fields: videoFields,
             max_count: 20,
-            cursor: cursor,
         };
+
+        // Only add the cursor if it's not undefined
+        if (cursor) {
+            requestBody.cursor = cursor;
+        }
 
         const response = await fetch(TIKTOK_VIDEOLIST_URL, {
             method: 'POST',
@@ -84,10 +92,11 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         if (videos && videos.length > 0) {
             allVideos.push(...videos);
             const batch = firestore.batch();
-            const videosCollectionRef = firestore.collection(`users/${userId}/tiktokAccounts/${tiktokAccountId}/videos`);
+            const videosCollectionRef = tiktokAccountRef.collection('videos');
+            
             videos.forEach((video: any) => {
                 const videoDocRef = videosCollectionRef.doc(video.id);
-                batch.set(videoDocRef, video, { merge: true }); // Use merge to be safe
+                batch.set(videoDocRef, video, { merge: true });
             });
             await batch.commit();
             console.log(`Saved ${videos.length} videos to Firestore for user ${userId}.`);
@@ -99,11 +108,10 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       
       console.log(`Successfully fetched and saved ${allVideos.length} videos for user ${userId}.`);
       
-      // Update the sync status and video count on the main document
       await tiktokAccountRef.update({
           lastSyncStatus: 'success',
           lastSyncTime: new Date().toISOString(),
-          videoCount: allVideos.length, // Update with the final count
+          videoCount: allVideos.length,
       });
 
     } catch (err: any) {
@@ -114,7 +122,6 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
           lastSyncTime: new Date().toISOString()
       });
       // Do not re-throw, as we've logged the error and updated the status.
-      // Re-throwing would cause the Genkit flow to show as failed in logs.
     }
   }
 );
