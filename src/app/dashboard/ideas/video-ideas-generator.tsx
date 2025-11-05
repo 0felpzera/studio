@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Wand2, Save } from "lucide-react";
+import { Loader2, Wand2, Save, Bookmark, Trash2 } from "lucide-react";
 import { suggestRelevantVideoIdeas, VideoIdeasOutput } from "@/ai/flows/suggest-relevant-video-ideas";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,8 +14,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
-import { useUser, useFirestore } from "@/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, addDoc, serverTimestamp, doc, deleteDoc, query, orderBy } from "firebase/firestore";
+import type { SavedVideoIdea } from "@/lib/types";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
@@ -39,6 +48,15 @@ export default function VideoIdeasGenerator() {
       currentTrends: "Unboxing ASMR, rotinas matinais 'arrume-se comigo', áudios em alta com cortes rápidos.",
     },
   });
+
+  const savedIdeasQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'savedVideoIdeas'), orderBy('savedAt', 'desc'));
+  }, [user, firestore]);
+
+  const { data: savedIdeas, isLoading: isLoadingSaved } = useCollection<SavedVideoIdea>(savedIdeasQuery);
+  
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -67,7 +85,7 @@ export default function VideoIdeasGenerator() {
         toast({ title: "Erro", description: "Você precisa estar logado para salvar ideias.", variant: "destructive" });
         return;
     }
-    setSavingId(idea.title); // Use title as a temporary unique ID for loading state
+    setSavingId(idea.title); 
     try {
         const ideasCollection = collection(firestore, 'users', user.uid, 'savedVideoIdeas');
         await addDoc(ideasCollection, {
@@ -91,13 +109,98 @@ export default function VideoIdeasGenerator() {
     }
   };
 
+  const handleDeleteIdea = async (ideaId: string) => {
+    if (!user || !firestore) return;
+    setIsDeleting(ideaId);
+    try {
+      const ideaRef = doc(firestore, 'users', user.uid, 'savedVideoIdeas', ideaId);
+      await deleteDoc(ideaRef);
+      toast({
+        title: "Ideia Removida",
+        description: "A ideia foi removida do seu banco de ideias."
+      });
+    } catch (error) {
+      console.error("Erro ao remover ideia:", error);
+      toast({
+        title: "Erro ao Remover",
+        description: "Não foi possível remover a ideia. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(null);
+    }
+  };
+
+
   return (
     <div className="grid gap-8 md:grid-cols-3">
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-bold">Inspire-se</CardTitle>
-            <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
+            <div className="flex justify-between items-center">
+              <div>
+                <CardTitle className="font-bold">Inspire-se</CardTitle>
+                <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
+              </div>
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Bookmark className="mr-2 h-4 w-4" />
+                    Salvos
+                  </Button>
+                </SheetTrigger>
+                <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
+                  <SheetHeader>
+                    <SheetTitle>Suas Ideias Salvas</SheetTitle>
+                    <SheetDescription>
+                      Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="flex-1 overflow-y-auto pr-4">
+                    {isLoadingSaved && (
+                       <div className="space-y-4 mt-4">
+                         {Array.from({ length: 5 }).map((_, i) => (
+                           <div key={i} className="p-4 rounded-lg border bg-muted/50 space-y-2 animate-pulse">
+                             <div className="h-4 w-3/4 bg-muted-foreground/20 rounded"></div>
+                             <div className="h-3 w-full bg-muted-foreground/20 rounded"></div>
+                           </div>
+                         ))}
+                       </div>
+                    )}
+                    {!isLoadingSaved && savedIdeas && savedIdeas.length > 0 ? (
+                      <div className="space-y-4 mt-4">
+                        {savedIdeas.map((idea) => (
+                          <div key={idea.id} className="p-4 rounded-lg border bg-muted/50 group">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-semibold text-foreground">{idea.title}</h4>
+                                <p className="text-sm text-muted-foreground">{idea.description}</p>
+                              </div>
+                               <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="size-7 opacity-0 group-hover:opacity-100"
+                                  onClick={() => handleDeleteIdea(idea.id)}
+                                  disabled={isDeleting === idea.id}
+                                >
+                                  {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : <Trash2 className="size-4 text-destructive" />}
+                                </Button>
+                            </div>
+                           <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap font-sans bg-background/50 p-2 rounded-md">{idea.scriptOutline}</pre>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center h-full text-center">
+                        <Bookmark className="size-12 text-muted-foreground/50" />
+                        <h3 className="text-lg font-semibold mt-4">Nenhuma Ideia Salva</h3>
+                        <p className="text-sm text-muted-foreground mt-1">Clique em "Salvar Ideia" para começar a construir seu banco.</p>
+                      </div>
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
+            </div>
           </CardHeader>
           <CardContent>
             <Form {...form}>
