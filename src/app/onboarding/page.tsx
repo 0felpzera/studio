@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, UserPlus, Goal, Check, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -25,10 +26,10 @@ export default function OnboardingPage() {
   const [postingFrequency, setPostingFrequency] = useState('');
 
   const handleConnectTikTok = () => {
-    const clientKey = 'sbaw8kkl7ahscrla44'; // TikTok Client Key
-    const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
+    const clientKey = 'awtd3a36mb4wlafs'; // TikTok Client Key
+    const redirectUri = 'https://viralboost-ai.web.app/auth/tiktok/callback';
     const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
-    const scope = 'user.info.basic,user.info.stats,video.list';
+    const scope = 'user.info.basic,user.info.profile,user.info.stats,video.list';
 
     const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
     tiktokAuthUrl.searchParams.append('client_key', clientKey);
