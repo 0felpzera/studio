@@ -1,13 +1,10 @@
 
 import { initializeApp, getApps, App, cert } from 'firebase-admin/app';
 
-const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-  ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-  : undefined;
-
 /**
  * Initializes the Firebase Admin SDK, reusing the existing app if one exists.
- * This function is safe to call multiple times.
+ * This function is safe to call multiple times. It attempts to use Google
+ * Application Default Credentials, which is the standard for managed environments.
  * @returns The initialized Firebase Admin App.
  */
 export function initializeAdminApp(): App {
@@ -16,10 +13,9 @@ export function initializeAdminApp(): App {
     return getApps()[0];
   }
 
-  // Initialize the app with credentials.
-  const app = initializeApp({
-    credential: serviceAccount ? cert(serviceAccount) : undefined,
-  });
+  // Initialize the app. In a managed environment like App Hosting,
+  // the SDK will automatically discover credentials. No need to pass them.
+  const app = initializeApp();
 
   return app;
 }
