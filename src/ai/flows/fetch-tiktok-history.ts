@@ -117,5 +117,3 @@ async function updateDoc(docRef: any, data: any) {
     const { setDoc } = await import('firebase/firestore');
     return setDoc(docRef, data, { merge: true });
 }
-
-    
