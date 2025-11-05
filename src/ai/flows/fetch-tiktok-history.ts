@@ -61,11 +61,11 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
 
         const response = await axios.post(
           TIKTOK_VIDEOLIST_URL,
-          JSON.stringify(body),
+          body,
           { 
               headers: { 
                   'Authorization': `Bearer ${accessToken}`, 
-                  'Content-Type': 'application/json; charset=utf-8',
+                  'Content-Type': 'application/json',
               } 
           }
         );
