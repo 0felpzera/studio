@@ -232,7 +232,7 @@ export default function DashboardPage() {
         
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto" disabled={!tiktokAccount}>
+                <Button variant="outline" className="w-full sm:w-auto">
                     <Filter className="mr-2 h-4 w-4" />
                     {getPeriodLabel(filter)}
                 </Button>
@@ -454,5 +454,4 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-
-    
+}
