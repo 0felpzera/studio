@@ -1,5 +1,4 @@
-
-import { initializeApp, getApps, App, cert } from 'firebase-admin/app';
+import { initializeApp, getApps, App } from 'firebase-admin/app';
 
 /**
  * Initializes the Firebase Admin SDK, reusing the existing app if one exists.

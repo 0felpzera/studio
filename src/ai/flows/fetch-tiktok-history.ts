@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Fetches the entire video history for a TikTok account in the background.
@@ -66,9 +65,14 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
             max_count: 20,
         };
 
-        // Only add the cursor if it's not undefined
+        // On the first request, we don't send the cursor. On subsequent ones, we do.
         if (cursor) {
             requestBody.cursor = cursor;
+        } else {
+            // For the very first request, some TikTok apps require cursor to be 0
+             if(page === 1) {
+                requestBody.cursor = 0;
+            }
         }
 
         const response = await fetch(TIKTOK_VIDEOLIST_URL, {
@@ -108,10 +112,11 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       
       console.log(`Successfully fetched and saved ${allVideos.length} videos for user ${userId}.`);
       
+      // Update final status on the main account document
       await tiktokAccountRef.update({
           lastSyncStatus: 'success',
           lastSyncTime: new Date().toISOString(),
-          videoCount: allVideos.length,
+          videoCount: allVideos.length, // Update the video count to the accurate number
       });
 
     } catch (err: any) {
