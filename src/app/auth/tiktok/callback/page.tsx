@@ -64,76 +64,75 @@ function TikTokCallback() {
         setStatus("Trocando código por token de acesso...");
         const result = await exchangeTikTokCode({ code: authCode });
         setApiResponse(result);
-        setStatus("Resposta da API do TikTok recebida!");
+        setStatus("Resposta da API do TikTok recebida! Salvando dados...");
 
-        // All processing and redirection is paused for debugging.
+        const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
         
-        // const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
+        const accountData = {
+            id: result.open_id,
+            userId: user.uid,
+            username: result.display_name,
+            avatarUrl: result.avatar_url,
+            followerCount: result.follower_count,
+            followingCount: result.following_count,
+            likesCount: result.likes_count,
+            videoCount: result.video_count,
+            bioDescription: result.bio_description || '',
+            isVerified: result.is_verified || false,
+            profileDeepLink: result.profile_deep_link || '',
+            profileWebLink: result.profile_web_link || '',
+            accessToken: result.access_token,
+            refreshToken: result.refresh_token,
+            tokenExpiresAt: Date.now() + result.expires_in * 1000,
+            refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
+            lastSyncStatus: 'pending',
+        };
+
+        await setDoc(tiktokAccountRef, accountData, { merge: true });
         
-        // const accountData = {
-        //     id: result.open_id,
-        //     userId: user.uid,
-        //     username: result.display_name,
-        //     avatarUrl: result.avatar_url,
-        //     followerCount: result.follower_count,
-        //     followingCount: result.following_count,
-        //     likesCount: result.likes_count,
-        //     videoCount: result.video_count,
-        //     bioDescription: result.bio_description || '',
-        //     isVerified: result.is_verified || false,
-        //     profileDeepLink: result.profile_deep_link || '',
-        //     profileWebLink: result.profile_web_link || '',
-        //     accessToken: result.access_token,
-        //     refreshToken: result.refresh_token,
-        //     tokenExpiresAt: Date.now() + result.expires_in * 1000,
-        //     refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-        //     lastSyncStatus: 'pending',
-        // };
+        setStatus("Perfil salvo. Sincronizando vídeos...");
 
-        // await setDoc(tiktokAccountRef, accountData, { merge: true });
+        // Save the initial batch of videos fetched during the exchange code flow
+        if (result.videos && result.videos.length > 0) {
+            const batch = writeBatch(firestore);
+            const videosCollectionRef = collection(tiktokAccountRef, 'videos');
+            result.videos.forEach((video: any) => {
+                const videoDocRef = doc(videosCollectionRef, video.id);
+                batch.set(videoDocRef, video);
+            });
+            await batch.commit();
+        }
         
-        // setStatus("Perfil salvo. Sincronizando vídeos...");
-
-        // // Save the initial batch of videos fetched during the exchange code flow
-        // if (result.videos && result.videos.length > 0) {
-        //     const batch = writeBatch(firestore);
-        //     const videosCollectionRef = collection(tiktokAccountRef, 'videos');
-        //     result.videos.forEach((video: any) => {
-        //         const videoDocRef = doc(videosCollectionRef, video.id);
-        //         batch.set(videoDocRef, video);
-        //     });
-        //     await batch.commit();
-        // }
-        
-        // // Start the full history fetch in the background (non-blocking)
-        // if (result.video_count > (result.videos?.length || 0)) {
-        //     fetchTikTokHistory({
-        //         userId: user.uid,
-        //         tiktokAccountId: result.open_id,
-        //         accessToken: result.access_token,
-        //     });
-        //      setStatus("Sincronização inicial concluída. O restante será buscado em segundo plano.");
-        // } else {
-        //      setStatus("Sincronização de vídeos concluída!");
-        //      await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
-        // }
+        // Start the full history fetch in the background (non-blocking)
+        if (result.video_count > (result.videos?.length || 0)) {
+            fetchTikTokHistory({
+                userId: user.uid,
+                tiktokAccountId: result.open_id,
+                accessToken: result.access_token,
+            });
+             setStatus("Sincronização inicial concluída. O restante será buscado em segundo plano.");
+        } else {
+             setStatus("Sincronização de vídeos concluída!");
+             await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
+        }
 
 
-        // toast({
-        //     title: "Conta TikTok Conectada!",
-        //     description: `Bem-vindo, ${result.display_name}! Seus vídeos mais recentes foram sincronizados.`,
-        // });
+        toast({
+            title: "Conta TikTok Conectada!",
+            description: `Bem-vindo, ${result.display_name}! Seus vídeos mais recentes foram sincronizados.`,
+        });
 
-        // setTimeout(() => {
-        //     router.push('/dashboard');
-        // }, 3000);
+        setTimeout(() => {
+            router.push('/dashboard');
+        }, 3000);
 
       } catch (e: any) {
         console.error("Erro ao trocar o código do TikTok:", e);
         setError(e.message || "Falha ao obter o token de acesso do TikTok.");
         setStatus("Erro ao processar a autenticação.");
       } finally {
-        setIsProcessing(false);
+        // We don't set isProcessing to false here because we want the user to be redirected.
+        // If there's an error, it will be set to false in the catch block.
       }
     };
     
@@ -179,7 +178,7 @@ function TikTokCallback() {
                     <Card>
                         <CardHeader>
                             <CardTitle className='text-lg'>Resposta da API do TikTok</CardTitle>
-                             <CardDescription>Estes são os dados brutos recebidos do TikTok.</CardDescription>
+                             <CardDescription>Redirecionando para o dashboard em 3 segundos...</CardDescription>
                         </CardHeader>
                         <CardContent>
                            <pre className="mt-2 w-full overflow-auto text-sm bg-muted p-4 rounded-lg">
