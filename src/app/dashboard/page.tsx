@@ -89,7 +89,8 @@ export default function DashboardPage() {
     }, [tiktokAccounts]);
     
     const videosQuery = useMemoFirebase(() => {
-        if (!user || !firestore || !tiktokAccount) return null;
+        // Condition to prevent query if videoCount is 0 or account doesn't exist
+        if (!user || !firestore || !tiktokAccount || (tiktokAccount.videoCount ?? 0) === 0) return null;
         return query(
             collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
             orderBy('create_time', 'desc'),
@@ -382,12 +383,12 @@ export default function DashboardPage() {
           )}
         </Card>
       )}
-       {tiktokAccount && !isLoadingVideos && filteredVideos.length === 0 && (
+       {tiktokAccount && !isLoadingVideos && (!filteredVideos || filteredVideos.length === 0) && (
          <Card>
              <CardContent className="flex flex-col items-center justify-center h-48 text-center">
                  <Video className="size-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">Nenhum vídeo encontrado</h3>
-                <p className="text-muted-foreground">Não há vídeos para o período selecionado ou eles ainda estão sincronizando.</p>
+                <p className="text-muted-foreground">Não há vídeos para o período selecionado ou seu perfil não possui vídeos.</p>
              </CardContent>
          </Card>
       )}

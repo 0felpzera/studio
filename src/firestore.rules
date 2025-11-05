@@ -24,18 +24,6 @@ service cloud.firestore {
 
     /**
      * @description Protects against unauthorized access to the root of the database. No direct reads or writes are allowed at the root level.
-     * @path /
-     * @allow get: if false;
-     * @deny get: Always denies direct access to the root.
-     * @allow list: if false;
-     * @deny list: Always denies direct listing of the root.
-     * @allow create: if false;
-     * @deny create: Always denies direct creation at the root.
-     * @allow update: if false;
-     * @deny update: Always denies direct updates at the root.
-     * @allow delete: if false;
-     * @deny delete: Always denies direct deletion at the root.
-     * @principle Protects the root of the database, preventing unintended access and modifications.
      */
     match /{document=**} {
       allow read, write: if false;
@@ -69,13 +57,13 @@ service cloud.firestore {
        * @description Enforces access control for TikTok accounts and their nested videos.
        */
       match /tiktokAccounts/{tiktokAccountId} {
-        allow get, list: if isSignedIn() && isOwner(userId);
+        allow read, list: if isSignedIn() && isOwner(userId);
         allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
         allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
         allow delete: if isSignedIn() && isExistingOwner(userId);
 
         /**
-         * @description Enforces access control for TikTok videos. The `read` permission allows both `get` (single doc) and `list` (collection) for the owner.
+         * @description Enforces access control for TikTok videos. The owner can read and write their own videos. `read` includes `get` and `list`.
          */
         match /videos/{videoId} {
           allow read, write: if isSignedIn() && isOwner(userId);
