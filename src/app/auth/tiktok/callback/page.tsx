@@ -83,6 +83,7 @@ function TikTokCallback() {
             bioDescription: result.bio_description || '',
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
+            profileWebLink: result.profile_web_link || '',
             // Do not save videos here. They will be saved in a subcollection.
             // Save tokens for background processing
             accessToken: result.access_token,
@@ -204,3 +205,5 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
+
+    

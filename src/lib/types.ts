@@ -23,6 +23,7 @@ export type TiktokAccount = {
     bioDescription: string;
     isVerified: boolean;
     profileDeepLink: string;
+    profileWebLink?: string;
     accessToken: string;
     refreshToken: string;
     tokenExpiresAt: number;
@@ -30,3 +31,5 @@ export type TiktokAccount = {
     lastSyncStatus: 'pending' | 'syncing' | 'success' | 'error';
     lastSyncError?: string;
 };
+
+    
