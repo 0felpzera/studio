@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -46,8 +47,8 @@ import {
   serverTimestamp,
   Timestamp,
   query,
+  updateDoc,
 } from 'firebase/firestore';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
 import { Progress } from '@/components/ui/progress';
 
 const formSchema = z.object({
@@ -167,7 +168,7 @@ export default function ContentCalendar() {
   const toggleTaskCompletion = (taskId: string, currentStatus: boolean) => {
     if (!user || !firestore) return;
     const taskRef = doc(firestore, 'users', user.uid, 'contentTasks', taskId);
-    updateDocumentNonBlocking(taskRef, { isCompleted: !currentStatus });
+    updateDoc(taskRef, { isCompleted: !currentStatus });
   };
   
   const sortedCalendar = useMemo(() => {

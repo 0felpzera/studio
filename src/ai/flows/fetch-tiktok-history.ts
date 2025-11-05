@@ -11,8 +11,8 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import { collection, doc, writeBatch } from 'firebase/firestore';
-import { initializeFirebase } from '@/firebase';
+import { getFirestore } from 'firebase-admin/firestore';
+import { initializeAdminApp } from '@/firebase/admin';
 
 const FetchTikTokHistoryInputSchema = z.object({
   userId: z.string().describe('The Firebase User ID.'),
@@ -36,10 +36,8 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
   },
   async ({ userId, tiktokAccountId, accessToken }) => {
     
-    // This flow runs on the server. We need a server-side way to interact with Firestore.
-    // The user's code previously had client-side SDK here, which is incorrect.
-    // Let's assume for now this flow is meant to run in an environment where client SDK can be initialized.
-    const { firestore } = initializeFirebase();
+    initializeAdminApp();
+    const firestore = getFirestore();
 
     try {
       const videoFields = [
@@ -55,6 +53,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       while (hasMore) {
         page++;
         console.log(`Fetching page ${page} of TikTok videos...`);
+        
         const requestBody: { fields: string; max_count: number; cursor?: string | number } = {
             fields: videoFields,
             max_count: 20,
@@ -64,21 +63,19 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
             requestBody.cursor = cursor;
         }
 
-        const response = await fetch(
-          TIKTOK_VIDEOLIST_URL,
-          {
+        const response = await fetch(TIKTOK_VIDEOLIST_URL, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
             },
             body: JSON.stringify(requestBody),
-          }
-        );
+        });
         
         const responseData = await response.json();
 
         if (responseData.error.code !== 'ok') {
+          console.error('TikTok API Error on page fetch:', responseData.error);
           throw new Error(`Failed to fetch video list page: ${responseData.error.message}`);
         }
 
@@ -86,11 +83,10 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         
         if (videos && videos.length > 0) {
             allVideos.push(...videos);
-            // Save each batch to Firestore
-            const batch = writeBatch(firestore);
-            const videosCollectionRef = collection(firestore, 'users', userId, 'tiktokAccounts', tiktokAccountId, 'videos');
+            const batch = firestore.batch();
+            const videosCollectionRef = firestore.collection(`users/${userId}/tiktokAccounts/${tiktokAccountId}/videos`);
             videos.forEach((video: any) => {
-                const videoDocRef = doc(videosCollectionRef, video.id);
+                const videoDocRef = videosCollectionRef.doc(video.id);
                 batch.set(videoDocRef, video);
             });
             await batch.commit();
@@ -104,17 +100,17 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       console.log(`Successfully fetched and saved ${allVideos.length} videos for user ${userId}.`);
       
       // Update the sync status
-      const tiktokAccountRef = doc(firestore, 'users', userId, 'tiktokAccounts', tiktokAccountId);
-      await writeBatch(firestore).update(tiktokAccountRef, {
+      const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
+      await firestore.batch().update(tiktokAccountRef, {
           lastSyncStatus: 'success',
           lastSyncTime: new Date().toISOString(),
-          videoCount: allVideos.length // Update video count to the fetched number
+          videoCount: allVideos.length
       }).commit();
 
     } catch (err: any) {
       console.error("Error during TikTok history fetch:", err.message);
-       const tiktokAccountRef = doc(firestore, 'users', userId, 'tiktokAccounts', tiktokAccountId);
-       await writeBatch(firestore).update(tiktokAccountRef, {
+       const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
+       await firestore.batch().update(tiktokAccountRef, {
           lastSyncStatus: 'error',
           lastSyncError: err.message,
           lastSyncTime: new Date().toISOString()
