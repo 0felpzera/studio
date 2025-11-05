@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
@@ -101,6 +102,7 @@ function TikTokCallback() {
                 batch.set(videoDocRef, video);
             });
             await batch.commit();
+            setStatus("Vídeos iniciais sincronizados.");
         }
         
         // Start the full history fetch in the background (non-blocking)
@@ -108,9 +110,9 @@ function TikTokCallback() {
             fetchTikTokHistory({
                 userId: user.uid,
                 tiktokAccountId: result.open_id,
-                accessToken: result.access_token,
+                accessToken: result.access_token, // Pass access token
             });
-             setStatus("Sincronização inicial concluída. O restante será buscado em segundo plano.");
+             setStatus("Sincronização completa iniciada em segundo plano.");
         } else {
              setStatus("Sincronização de vídeos concluída!");
              await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
@@ -119,7 +121,7 @@ function TikTokCallback() {
 
         toast({
             title: "Conta TikTok Conectada!",
-            description: `Bem-vindo, ${result.display_name}! Seus vídeos mais recentes foram sincronizados.`,
+            description: `Bem-vindo, ${result.display_name}! Seus vídeos foram sincronizados.`,
         });
 
         setTimeout(() => {
@@ -130,9 +132,7 @@ function TikTokCallback() {
         console.error("Erro ao trocar o código do TikTok:", e);
         setError(e.message || "Falha ao obter o token de acesso do TikTok.");
         setStatus("Erro ao processar a autenticação.");
-      } finally {
-        // We don't set isProcessing to false here because we want the user to be redirected.
-        // If there's an error, it will be set to false in the catch block.
+        setIsProcessing(false);
       }
     };
     

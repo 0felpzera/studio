@@ -52,7 +52,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
 
       while (hasMore) {
         page++;
-        console.log(`Fetching page ${page} of TikTok videos...`);
+        console.log(`Fetching page ${page} of TikTok videos for user ${userId}...`);
         
         const requestBody: { fields: string; max_count: number; cursor?: string | number } = {
             fields: videoFields,
@@ -90,7 +90,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
                 batch.set(videoDocRef, video);
             });
             await batch.commit();
-            console.log(`Saved ${videos.length} videos to Firestore.`);
+            console.log(`Saved ${videos.length} videos to Firestore for user ${userId}.`);
         }
 
         cursor = newCursor;
