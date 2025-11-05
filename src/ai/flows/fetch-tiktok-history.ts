@@ -84,20 +84,22 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
 
       while (hasMore) {
         
-        const videoListUrlWithParams = new URL(TIKTOK_VIDEOLIST_URL);
-        videoListUrlWithParams.searchParams.append('fields', videoFields);
-        if (cursor) {
-            videoListUrlWithParams.searchParams.append('cursor', String(cursor));
-        }
-        videoListUrlWithParams.searchParams.append('max_count', '20');
+        const params: { fields: string; max_count: number; cursor?: string | number } = {
+            fields: videoFields,
+            max_count: 20,
+        };
 
+        if (cursor) {
+            params.cursor = cursor;
+        }
 
         const response = await axios.get(
-          videoListUrlWithParams.toString(),
+          TIKTOK_VIDEOLIST_URL,
           {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
             },
+            params,
           }
         );
 
@@ -138,3 +140,4 @@ async function updateDoc(docRef: any, data: any) {
     // The flow itself is what's being called, so the logic inside the flow is what matters.
     // I've removed the firestore logic from the flow.
 }
+

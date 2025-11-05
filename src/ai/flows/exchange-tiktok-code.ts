@@ -118,23 +118,18 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                     const videoFields = [
                         "id", "title", "cover_image_url", "share_url", "view_count",
                         "like_count", "comment_count", "share_count", "create_time"
-                    ];
+                    ].join(',');
                     
-                    const videoListBody = {
-                        max_count: 20,
-                        fields: videoFields
-                    };
-                    
-                    // The video list API requires a POST request with the access token in the header
-                    // and the open_id in the body.
-                    const videoListResponse = await axios.post(
+                    const videoListResponse = await axios.get(
                         TIKTOK_VIDEOLIST_URL,
-                        videoListBody,
                         { 
                             headers: { 
                                 'Authorization': `Bearer ${access_token}`,
-                                'Content-Type': 'application/json',
                              },
+                             params: {
+                                fields: videoFields,
+                                max_count: 20
+                             }
                         }
                     );
 
@@ -179,4 +174,5 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
 
