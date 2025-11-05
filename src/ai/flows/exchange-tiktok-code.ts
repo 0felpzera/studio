@@ -120,14 +120,12 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                         "like_count", "comment_count", "share_count", "create_time"
                     ].join(',');
                     
-                    const videoListUrlWithParams = new URL(TIKTOK_VIDEOLIST_URL);
-                    videoListUrlWithParams.searchParams.append('fields', videoFields);
+                    const videoListUrlWithParams = `${TIKTOK_VIDEOLIST_URL}?fields=${encodeURIComponent(videoFields)}&max_count=20`;
 
                     const videoListResponse = await axios.get(
-                        videoListUrlWithParams.toString(),
+                        videoListUrlWithParams,
                         { 
                             headers: { 'Authorization': `Bearer ${access_token}` },
-                            data: { max_count: 20 } // The body for GET is often ignored, but just in case
                         }
                     );
 
