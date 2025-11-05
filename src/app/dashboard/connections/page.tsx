@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Button } from "@/components/ui/button";
@@ -146,19 +145,19 @@ export default function ConnectionsPage() {
     return (
         <div className="space-y-6">
             <header className="space-y-1.5">
-                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Conexões</h1>
-                <p className="text-muted-foreground">
-                    Conecte suas contas de redes sociais para acompanhar seus dados reais e otimizar sua estratégia.
+                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Conexões de API</h1>
+                <p className="text-muted-foreground max-w-3xl">
+                    Conecte suas contas de redes sociais para alimentar nosso sistema de IA com dados reais. Isso nos permite fornecer análises de performance precisas, gerar projeções de crescimento personalizadas e sugerir conteúdo que ressoa com seu público.
                 </p>
             </header>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <Card>
+                <Card className="flex flex-col">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">TikTok</CardTitle>
                         <TiktokIcon className="h-6 w-6 text-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-grow">
                         {isLoadingTiktok ? (
                             <div className="flex items-center gap-2">
                                 <Loader2 className="h-5 w-5 animate-spin"/>
@@ -166,16 +165,16 @@ export default function ConnectionsPage() {
                             </div>
                         ) : isTiktokConnected ? (
                             <>
-                                <div className="text-lg font-bold text-green-500">Conectado</div>
-                                <p className="text-xs text-muted-foreground">
+                                <div className="text-lg font-bold text-green-500 flex items-center gap-2"><CheckCircle className="h-5 w-5"/>Conectado</div>
+                                <p className="text-xs text-muted-foreground mt-1">
                                     Sua conta <span className='font-bold'>{tiktokAccounts?.[0].username}</span> está sincronizada.
                                 </p>
                             </>
                         ) : (
                             <>
                                 <div className="text-lg font-bold">Não conectado</div>
-                                <p className="text-xs text-muted-foreground">
-                                    Conecte sua conta para importar métricas de engajamento e seguidores.
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Importe vídeos, métricas de seguidores e engajamento para uma análise completa.
                                 </p>
                             </>
                         )}
@@ -213,15 +212,15 @@ export default function ConnectionsPage() {
                     </CardFooter>
                 </Card>
                 
-                 <Card>
+                 <Card className="flex flex-col">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Instagram</CardTitle>
                         <InstagramIcon className="h-6 w-6 text-foreground" />
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="flex-grow">
                         <div className="text-lg font-bold">Não conectado</div>
-                        <p className="text-xs text-muted-foreground">
-                           Conecte para importar dados via API da Meta.
+                        <p className="text-xs text-muted-foreground mt-1">
+                           Importe Reels e Stories, e analise a performance via API da Meta.
                         </p>
                     </CardContent>
                     <CardFooter>
