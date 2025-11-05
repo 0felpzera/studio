@@ -95,6 +95,11 @@ function TikTokCallback() {
             description: `Bem-vindo, ${result.display_name}! Seus vídeos foram sincronizados.`,
         });
 
+        // Don't trigger background fetch for now, as initial fetch gets videos
+        // if (result.video_count > (result.videos?.length || 0)) {
+        //     await fetchTikTokHistory({ userId: user.uid, tiktokAccountId: result.open_id, accessToken: result.access_token });
+        // }
+
         setTimeout(() => {
             router.push('/dashboard');
         }, 3000);
