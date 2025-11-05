@@ -11,7 +11,6 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
-import axios from 'axios';
 import { collection, doc, writeBatch } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
@@ -38,9 +37,6 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
   async ({ userId, tiktokAccountId, accessToken }) => {
     
     // This flow runs on the server. We need a server-side way to interact with Firestore.
-    // Since this project doesn't use Firebase Admin SDK, we'll need to handle DB
-    // operations differently or assume this flow can't write to DB.
-    // For now, let's fetch the data. The saving part will be tricky.
     // The user's code previously had client-side SDK here, which is incorrect.
     // Let's assume for now this flow is meant to run in an environment where client SDK can be initialized.
     const { firestore } = initializeFirebase();
@@ -68,22 +64,25 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
             requestBody.cursor = cursor;
         }
 
-        const response = await axios.post(
+        const response = await fetch(
           TIKTOK_VIDEOLIST_URL,
-          requestBody,
           {
+            method: 'POST',
             headers: {
               'Authorization': `Bearer ${accessToken}`,
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify(requestBody),
           }
         );
+        
+        const responseData = await response.json();
 
-        if (response.data.error.code !== 'ok') {
-          throw new Error(`Failed to fetch video list page: ${response.data.error.message}`);
+        if (responseData.error.code !== 'ok') {
+          throw new Error(`Failed to fetch video list page: ${responseData.error.message}`);
         }
 
-        const { videos, cursor: newCursor, has_more } = response.data.data;
+        const { videos, cursor: newCursor, has_more } = responseData.data;
         
         if (videos && videos.length > 0) {
             allVideos.push(...videos);
@@ -113,17 +112,14 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       }).commit();
 
     } catch (err: any) {
-      console.error("Error during TikTok history fetch:", err.response?.data || err.message);
+      console.error("Error during TikTok history fetch:", err.message);
        const tiktokAccountRef = doc(firestore, 'users', userId, 'tiktokAccounts', tiktokAccountId);
        await writeBatch(firestore).update(tiktokAccountRef, {
           lastSyncStatus: 'error',
-          lastSyncError: err.response?.data?.error?.message || err.message,
+          lastSyncError: err.message,
           lastSyncTime: new Date().toISOString()
       }).commit();
       
-      if (axios.isAxiosError(err) && err.response) {
-        throw new Error(`API Request Failed: ${err.response.status} ${err.response.statusText} - ${JSON.stringify(err.response.data)}`);
-      }
       throw err;
     }
   }
