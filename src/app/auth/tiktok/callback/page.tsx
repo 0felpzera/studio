@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
@@ -15,6 +16,7 @@ function TikTokCallback() {
   const router = useRouter();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
 
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string>("Analisando a resposta do TikTok...");
@@ -119,7 +121,7 @@ function TikTokCallback() {
     
     processCode();
 
-  }, [searchParams, user, isUserLoading, firestore, router]);
+  }, [searchParams, user, isUserLoading, firestore, router, toast]);
 
   const renderStatus = () => {
       if (isProcessing) {
