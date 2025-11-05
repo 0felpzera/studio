@@ -92,7 +92,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description, open_id } = tokenResponse.data;
             
             if (error && error.code !== 'ok') { throw new Error(`TikTok API Error: ${error.message || error_description}`); }
-            if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
+            if (!access_token || !open_id) { throw new Error('Failed to retrieve access token or open_id from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
             const userFields = [
@@ -118,14 +118,23 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                     const videoFields = [
                         "id", "title", "cover_image_url", "share_url", "view_count",
                         "like_count", "comment_count", "share_count", "create_time"
-                    ].join(',');
+                    ];
                     
-                    const videoListUrlWithParams = `${TIKTOK_VIDEOLIST_URL}?fields=${encodeURIComponent(videoFields)}&max_count=20`;
-
-                    const videoListResponse = await axios.get(
-                        videoListUrlWithParams,
+                    const videoListBody = {
+                        max_count: 20,
+                        fields: videoFields
+                    };
+                    
+                    // The video list API requires a POST request with the access token in the header
+                    // and the open_id in the body.
+                    const videoListResponse = await axios.post(
+                        TIKTOK_VIDEOLIST_URL,
+                        videoListBody,
                         { 
-                            headers: { 'Authorization': `Bearer ${access_token}` },
+                            headers: { 
+                                'Authorization': `Bearer ${access_token}`,
+                                'Content-Type': 'application/json',
+                             },
                         }
                     );
 
@@ -136,6 +145,9 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                     }
                 } catch (videoError) {
                     console.warn("An error occurred while fetching the initial video list. Continuing without it.", videoError);
+                     if (axios.isAxiosError(videoError) && videoError.response) {
+                        console.error("Video Fetch Axios Error Details:", videoError.response.data);
+                    }
                 }
             }
 
@@ -167,3 +179,4 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
