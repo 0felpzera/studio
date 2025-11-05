@@ -12,6 +12,7 @@ import {
   Loader2,
   Video,
   AlertTriangle,
+  Filter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,14 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
@@ -70,14 +79,15 @@ export default function DashboardPage() {
         return collection(firestore, 'users', user.uid, 'tiktokAccounts');
     }, [user, firestore]);
     
+    const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+
     const tiktokAccount = useMemo(() => {
-        if (tiktokAccountsQuery && tiktokAccountsQuery.length > 0) {
-            return tiktokAccountsQuery[0];
+        if (tiktokAccounts && tiktokAccounts.length > 0) {
+            return tiktokAccounts[0];
         }
         return null;
-    }, [tiktokAccountsQuery]);
+    }, [tiktokAccounts]);
     
-    // New query for videos subcollection
     const videosQuery = useMemoFirebase(() => {
         if (!user || !firestore || !tiktokAccount) return null;
         return query(
@@ -87,7 +97,6 @@ export default function DashboardPage() {
     }, [user, firestore, tiktokAccount]);
 
     const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
-    const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
     const { data: allVideos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
 
 
@@ -129,13 +138,11 @@ export default function DashboardPage() {
       return filteredVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
     }, [filteredVideos]);
 
-    // Follower data should show the overall trend, not just filtered period's followers
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
          if (!allVideos || allVideos.length < 2) {
              return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
-        // This is a simplified trend. A real implementation might store historical follower counts.
         return allVideos.map((_, index) => ({
             value: Math.round((tiktokAccount.followerCount || 0) - (allVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
@@ -164,19 +171,15 @@ export default function DashboardPage() {
     
     const filterButtons: { label: string; value: FilterPeriod }[] = [
         { label: 'Hoje', value: 'today' },
-        { label: '7 Dias', value: '7d' },
-        { label: '15 Dias', value: '15d' },
-        { label: '30 Dias', value: '30d' },
-        { label: 'Todo Período', value: 'all' },
+        { label: 'Últimos 7 dias', value: '7d' },
+        { label: 'Últimos 15 dias', value: '15d' },
+        { label: 'Últimos 30 dias', value: '30d' },
+        { label: 'Todo o Período', value: 'all' },
     ];
 
     const getPeriodLabel = (filterValue: FilterPeriod) => {
         const button = filterButtons.find(b => b.value === filterValue);
-        if (button) {
-            if (button.value === 'all' || button.value === 'today') return button.label;
-            return `Últimos ${button.label}`;
-        }
-        return 'Total';
+        return button ? button.label : 'Total';
     };
 
     const isLoading = isUserLoading || isLoadingTiktok || isLoadingVideos;
@@ -225,23 +228,25 @@ export default function DashboardPage() {
             Seu painel de comando para dominar as redes sociais.
             </p>
         </div>
-        <div className="flex items-center gap-1 rounded-full bg-muted p-1">
-             {filterButtons.map(({label, value}) => (
-                <Button 
-                    key={value}
-                    variant={filter === value ? "secondary" : "ghost"}
-                    size="sm"
-                    className={cn(
-                        "rounded-full transition-colors h-8 px-3", 
-                        filter === value ? 'text-secondary-foreground shadow-sm' : 'text-muted-foreground'
-                    )}
-                    onClick={() => setFilter(value)}
-                    disabled={!tiktokAccount}
-                >
-                    {label}
+        
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full sm:w-auto" disabled={!tiktokAccount}>
+                    <Filter className="mr-2 h-4 w-4" />
+                    {getPeriodLabel(filter)}
                 </Button>
-            ))}
-        </div>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="end">
+                <DropdownMenuRadioGroup value={filter} onValueChange={(value) => setFilter(value as FilterPeriod)}>
+                    {filterButtons.map(({label, value}) => (
+                        <DropdownMenuRadioItem key={value} value={value}>
+                            {label}
+                        </DropdownMenuRadioItem>
+                    ))}
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
       </header>
 
       <div className="w-full">
@@ -448,4 +453,5 @@ export default function DashboardPage() {
       </div>
     </div>
   );
-}
+
+    
