@@ -44,7 +44,6 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     bio_description: z.string().optional().describe("User's profile bio description"),
     is_verified: z.boolean().optional().describe("Indicates if the user is a verified account"),
     profile_deep_link: z.string().url().optional().describe("Deep link to the user's profile"),
-    profile_web_link: z.string().url().optional().describe("Web link to the user's profile"),
     follower_count: z.number().describe("The number of followers the user has."),
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
@@ -95,7 +94,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
-            const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,profile_deep_link,profile_web_link,is_verified,follower_count,following_count,likes_count,video_count';
+            const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,profile_deep_link,is_verified,follower_count,following_count,likes_count,video_count';
             const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${userFields}`;
 
             const userInfoResponse = await axios.get(userInfoUrlWithParams, {
@@ -152,7 +151,6 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 bio_description: userInfo.bio_description,
                 is_verified: userInfo.is_verified,
                 profile_deep_link: userInfo.profile_deep_link,
-                profile_web_link: userInfo.profile_web_link,
                 follower_count: userInfo.follower_count,
                 following_count: userInfo.following_count,
                 likes_count: userInfo.likes_count,
@@ -168,3 +166,5 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
+    

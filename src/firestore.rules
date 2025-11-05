@@ -23,7 +23,7 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Protects against unauthorized access to the root of the database. No direct reads or writes are allowed at the root level.
+     * @description Protects against unauthorized access to the root of the database.
      */
     match /{document=**} {
       allow read, write: if false;
@@ -104,3 +104,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

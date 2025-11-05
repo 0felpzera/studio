@@ -12,7 +12,6 @@ import {
   Loader2,
   Video,
   AlertTriangle,
-  Filter,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,22 +22,13 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
 import type { TiktokAccount, TiktokVideo } from '@/lib/types';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import Image from 'next/image';
-import { cn } from '@/lib/utils';
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
@@ -57,12 +47,9 @@ const trendingTopics = [
   { title: 'Desafio 30 Dias' },
 ];
 
-type FilterPeriod = 'today' | '7d' | '15d' | '30d' | 'all';
-
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
-    const [filter, setFilter] = useState<FilterPeriod>('all');
 
     const upcomingTasksQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -89,8 +76,7 @@ export default function DashboardPage() {
     }, [tiktokAccounts]);
     
     const videosQuery = useMemoFirebase(() => {
-        // Condition to prevent query if videoCount is 0 or account doesn't exist
-        if (!user || !firestore || !tiktokAccount || (tiktokAccount.videoCount ?? 0) === 0) return null;
+        if (!user || !firestore || !tiktokAccount) return null;
         return query(
             collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
             orderBy('create_time', 'desc'),
@@ -99,70 +85,23 @@ export default function DashboardPage() {
     }, [user, firestore, tiktokAccount]);
 
     const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
-    const { data: allVideos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
+    const { data: videos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
 
-
-    const filteredVideos = useMemo(() => {
-        if (!allVideos) return [];
-        const sortedVideos = [...allVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-
-        if (filter === 'all') {
-            return sortedVideos;
-        }
-
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        const startOfTodayTimestamp = today.getTime() / 1000;
-
-        let periodInSeconds;
-        switch (filter) {
-            case 'today':
-                return sortedVideos.filter(video => video.create_time && video.create_time >= startOfTodayTimestamp);
-            case '7d':
-                periodInSeconds = 7 * 24 * 60 * 60;
-                break;
-            case '15d':
-                periodInSeconds = 15 * 24 * 60 * 60;
-                break;
-            case '30d':
-                periodInSeconds = 30 * 24 * 60 * 60;
-                break;
-            default:
-                return sortedVideos;
-        }
-        
-        const cutoffTimestamp = (Date.now() / 1000) - periodInSeconds;
-        return sortedVideos.filter(video => video.create_time && video.create_time >= cutoffTimestamp);
-    }, [allVideos, filter]);
 
     const totalViews = useMemo(() => {
-      if (!filteredVideos) return 0;
-      return filteredVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
-    }, [filteredVideos]);
+      if (!videos) return 0;
+      return videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    }, [videos]);
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
-         if (!allVideos || allVideos.length < 2) {
+         if (!videos || videos.length < 2) {
              return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
-        return allVideos.map((_, index) => ({
-            value: Math.round((tiktokAccount.followerCount || 0) - (allVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
+        return videos.map((_, index) => ({
+            value: Math.round((tiktokAccount.followerCount || 0) - (videos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
-    }, [tiktokAccount, allVideos]);
-
-    const videoCountData = useMemo(() => {
-        if (filteredVideos.length === 1) {
-            return [{ value: 0 }, { value: 1 }];
-        }
-        return filteredVideos.map((_, index) => ({ value: index + 1 }));
-    }, [filteredVideos]);
-
-    const viewsData = useMemo(() => {
-        if (filteredVideos.length === 1) {
-            return [{ value: 0 }, { value: filteredVideos[0].view_count || 0 }];
-        }
-        return filteredVideos.map(video => ({ value: video.view_count || 0 }));
-    }, [filteredVideos]);
+    }, [tiktokAccount, videos]);
 
     const getTrendColor = (data: { value: number }[]) => {
       if (data.length < 2) return 'hsl(var(--chart-1))'; // Neutral blue color
@@ -170,26 +109,12 @@ export default function DashboardPage() {
       const last = data[data.length - 1]?.value ?? 0;
       return last >= first ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'; // Green for up, Red for down
     }
-    
-    const filterButtons: { label: string; value: FilterPeriod }[] = [
-        { label: 'Hoje', value: 'today' },
-        { label: 'Últimos 7 dias', value: '7d' },
-        { label: 'Últimos 15 dias', value: '15d' },
-        { label: 'Últimos 30 dias', value: '30d' },
-        { label: 'Todo o Período', value: 'all' },
-    ];
-
-    const getPeriodLabel = (filterValue: FilterPeriod) => {
-        const button = filterButtons.find(b => b.value === filterValue);
-        return button ? button.label : 'Total';
-    };
 
     const isLoading = isUserLoading || isLoadingTiktok;
 
     const businessCards = [
         {
             title: 'Seguidores',
-            period: 'Total',
             value: tiktokAccount ? formatNumber(tiktokAccount.followerCount) : 'N/A',
             isLoading: isLoadingTiktok,
             icon: UserPlus,
@@ -198,57 +123,34 @@ export default function DashboardPage() {
             gradientId: 'followersGradient',
         },
         {
-            title: 'Vídeos no Período',
-            period: getPeriodLabel(filter),
-            value: formatNumber(filteredVideos.length),
-            isLoading: isLoadingVideos,
+            title: 'Vídeos',
+            value: formatNumber(tiktokAccount?.videoCount),
+            isLoading: isLoadingTiktok,
             icon: Video,
-            data: videoCountData.length > 0 ? videoCountData : [{value: 0}],
-            color: getTrendColor(videoCountData),
+            data: videos ? videos.map((_, index) => ({ value: index })) : [{value: 0}],
+            color: getTrendColor(videos ? videos.map((_, index) => ({ value: index })) : []),
             gradientId: 'videoCountGradient',
         },
         {
-            title: 'Visualizações no Período',
-            period: getPeriodLabel(filter),
+            title: 'Total de Views',
             value: formatNumber(totalViews),
             isLoading: isLoadingVideos,
             icon: Film,
-            data: viewsData.length > 0 ? viewsData : [{value: 0}],
-            color: getTrendColor(viewsData),
+            data: videos ? videos.map(v => ({ value: v.view_count || 0 })) : [{value: 0}],
+            color: getTrendColor(videos ? videos.map(v => ({ value: v.view_count || 0 })) : []),
             gradientId: 'viewsGradient',
         },
     ];
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className='space-y-1.5'>
-            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
-            </h1>
-            <p className="text-muted-foreground">
-            Seu painel de comando para dominar as redes sociais.
-            </p>
-        </div>
-        
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full sm:w-auto">
-                    <Filter className="mr-2 h-4 w-4" />
-                    {getPeriodLabel(filter)}
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56" align="end">
-                <DropdownMenuRadioGroup value={filter} onValueChange={(value) => setFilter(value as FilterPeriod)}>
-                    {filterButtons.map(({label, value}) => (
-                        <DropdownMenuRadioItem key={value} value={value}>
-                            {label}
-                        </DropdownMenuRadioItem>
-                    ))}
-                </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-        </DropdownMenu>
-
+      <header>
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
+        </h1>
+        <p className="text-muted-foreground">
+          Seu painel de comando para dominar as redes sociais.
+        </p>
       </header>
 
       <div className="w-full">
@@ -271,7 +173,7 @@ export default function DashboardPage() {
                         ) : (
                             <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
                         )}
-                        <div className="text-sm text-muted-foreground whitespace-nowrap">{card.period}</div>
+                      <div className="text-sm text-muted-foreground whitespace-nowrap">Total</div>
                     </div>
 
                     <div className="max-w-40 h-16 w-full relative">
@@ -349,14 +251,13 @@ export default function DashboardPage() {
         </Card>
        )}
 
-      {tiktokAccount && !isLoadingVideos && filteredVideos && filteredVideos.length > 0 && (
+      {tiktokAccount && !isLoadingVideos && videos && videos.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
-             <CardDescription>Mostrando vídeos do período selecionado.</CardDescription>
           </CardHeader>
           <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredVideos.map((video) => (
+            {videos.map((video) => (
               <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
                  <Card className="overflow-hidden">
                     <div className="relative aspect-[9/16]">
@@ -376,21 +277,12 @@ export default function DashboardPage() {
               </Link>
             ))}
           </CardContent>
-           {filteredVideos.length > 10 && (
+          {tiktokAccount.videoCount > 10 && (
             <CardFooter>
-                <Button variant="secondary" className="w-full">Ver todos os vídeos do período</Button>
+                <Button variant="secondary" className="w-full">Ver todos os vídeos</Button>
             </CardFooter>
           )}
         </Card>
-      )}
-       {tiktokAccount && !isLoadingVideos && (!filteredVideos || filteredVideos.length === 0) && (
-         <Card>
-             <CardContent className="flex flex-col items-center justify-center h-48 text-center">
-                 <Video className="size-12 text-muted-foreground mb-4" />
-                <h3 className="text-xl font-semibold">Nenhum vídeo encontrado</h3>
-                <p className="text-muted-foreground">Não há vídeos para o período selecionado ou seu perfil não possui vídeos.</p>
-             </CardContent>
-         </Card>
       )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -456,3 +348,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

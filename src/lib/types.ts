@@ -1,4 +1,3 @@
-
 export type TiktokVideo = {
     id: string;
     title?: string;
@@ -23,7 +22,6 @@ export type TiktokAccount = {
     bioDescription: string;
     isVerified: boolean;
     profileDeepLink: string;
-    profileWebLink?: string;
     accessToken: string;
     refreshToken: string;
     tokenExpiresAt: number;

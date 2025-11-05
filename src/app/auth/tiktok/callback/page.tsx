@@ -10,6 +10,7 @@ import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { fetchTikTokHistory } from '@/ai/flows/fetch-tiktok-history';
 
 function TikTokCallback() {
   const searchParams = useSearchParams();
@@ -80,7 +81,6 @@ function TikTokCallback() {
             bioDescription: result.bio_description || '',
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
-            profileWebLink: result.profile_web_link || '',
             accessToken: result.access_token,
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
@@ -90,7 +90,7 @@ function TikTokCallback() {
 
         await setDoc(tiktokAccountRef, accountData, { merge: true });
         
-        setStatus("Perfil salvo. Sincronizando vídeos em segundo plano...");
+        setStatus("Perfil salvo. Sincronizando vídeos...");
 
         // Save the initial batch of videos fetched during the exchange code flow
         if (result.videos && result.videos.length > 0) {
@@ -102,14 +102,20 @@ function TikTokCallback() {
             });
             await batch.commit();
         }
+        
+        // Start the full history fetch in the background (non-blocking)
+        if (result.video_count > (result.videos?.length || 0)) {
+            fetchTikTokHistory({
+                userId: user.uid,
+                tiktokAccountId: result.open_id,
+                accessToken: result.access_token,
+            });
+             setStatus("Sincronização inicial concluída. O restante será buscado em segundo plano.");
+        } else {
+             setStatus("Sincronização de vídeos concluída!");
+             await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
+        }
 
-        // The background fetch flow (`fetchTikTokHistory`) no longer handles DB writes.
-        // It's now the client's responsibility. A more robust solution would involve
-        // a server-side admin SDK, but given the constraints, we'll keep it simple.
-        // We can trigger a separate, longer-running client-side process if needed,
-        // but for now, the initial sync is what we have.
-        // We will mark sync as 'success' as the initial batch is saved.
-        await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
 
         toast({
             title: "Conta TikTok Conectada!",
@@ -205,3 +211,5 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
+
+    
