@@ -10,7 +10,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import axios from 'axios';
 import { initializeFirebase } from '@/firebase';
 import { collection, doc, writeBatch } from 'firebase/firestore';
@@ -48,7 +48,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         "like_count", "comment_count", "share_count", "create_time"
       ].join(',');
       
-      let cursor: string | undefined = undefined; // Cursor is a string
+      let cursor: string | undefined = undefined;
       let hasMore = true;
       let totalFetched = 0;
 

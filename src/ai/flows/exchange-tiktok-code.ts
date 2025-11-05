@@ -108,29 +108,37 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             const userInfo = userInfoResponse.data.data.user;
             
             // Step 3: Use access token to fetch THE FIRST PAGE of the video list
-            const videoFields = [
-                "id", "title", "cover_image_url", "share_url", "view_count",
-                "like_count", "comment_count", "share_count", "create_time"
-            ].join(',');
-            
-            const videoListResponse = await axios.post(
-                TIKTOK_VIDEOLIST_URL,
-                {
-                    fields: videoFields,
-                    max_count: 20,
-                },
-                {
-                    headers: { 
-                        'Authorization': `Bearer ${access_token}`, 
-                        'Content-Type': 'application/json',
+            let videos = [];
+            try {
+                const videoFields = [
+                    "id", "title", "cover_image_url", "share_url", "view_count",
+                    "like_count", "comment_count", "share_count", "create_time"
+                ].join(',');
+                
+                const videoListResponse = await axios.post(
+                    TIKTOK_VIDEOLIST_URL,
+                    {
+                        fields: videoFields,
+                        max_count: 20,
                     },
+                    {
+                        headers: { 
+                            'Authorization': `Bearer ${access_token}`, 
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+                
+                if (videoListResponse.data.error.code === 'ok') {
+                    videos = videoListResponse.data.data.videos || [];
+                } else {
+                    // Log the error but don't block the main flow
+                    console.error(`Failed to fetch initial video list: ${videoListResponse.data.error.message}`);
                 }
-            );
-            
-            if (videoListResponse.data.error.code !== 'ok') {
-                 throw new Error(`Failed to fetch video list: ${videoListResponse.data.error.message} - ${JSON.stringify(videoListResponse.data)}`);
+            } catch (videoError) {
+                 // Log the error but don't block the main flow
+                console.error("An error occurred during the initial video fetch:", videoError);
             }
-            const videos = videoListResponse.data.data.videos || [];
             
             return {
                 open_id: userInfo.open_id,
