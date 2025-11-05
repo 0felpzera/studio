@@ -119,11 +119,16 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                         "id", "title", "cover_image_url", "share_url", "view_count",
                         "like_count", "comment_count", "share_count", "create_time"
                     ].join(',');
+                    
+                    const videoListUrlWithParams = new URL(TIKTOK_VIDEOLIST_URL);
+                    videoListUrlWithParams.searchParams.append('fields', videoFields);
 
-                    const videoListResponse = await axios.post(
-                        TIKTOK_VIDEOLIST_URL,
-                        { fields: videoFields, max_count: 20 },
-                        { headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' } }
+                    const videoListResponse = await axios.get(
+                        videoListUrlWithParams.toString(),
+                        { 
+                            headers: { 'Authorization': `Bearer ${access_token}` },
+                            data: { max_count: 20 } // The body for GET is often ignored, but just in case
+                        }
                     );
 
                     if (videoListResponse.data.error.code === 'ok' && videoListResponse.data.data.videos) {

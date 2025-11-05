@@ -78,22 +78,25 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         "like_count", "comment_count", "share_count", "create_time"
       ].join(',');
       
-      let cursor: string | undefined = undefined;
+      let cursor: string | number | undefined = undefined;
       let hasMore = true;
       let allVideos: any[] = [];
 
       while (hasMore) {
-        const response = await axios.post(
-          TIKTOK_VIDEOLIST_URL,
-          {
-            fields: videoFields,
-            max_count: 20,
-            cursor: cursor,
-          },
+        
+        const videoListUrlWithParams = new URL(TIKTOK_VIDEOLIST_URL);
+        videoListUrlWithParams.searchParams.append('fields', videoFields);
+        if (cursor) {
+            videoListUrlWithParams.searchParams.append('cursor', String(cursor));
+        }
+        videoListUrlWithParams.searchParams.append('max_count', '20');
+
+
+        const response = await axios.get(
+          videoListUrlWithParams.toString(),
           {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
             },
           }
         );
