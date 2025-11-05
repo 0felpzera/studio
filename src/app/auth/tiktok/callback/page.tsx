@@ -4,10 +4,11 @@ import { useEffect, Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
+import { useUser, useFirestore } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
+import { fetchTikTokHistory } from '@/ai/flows/fetch-tiktok-history';
 
 function TikTokCallback() {
   const searchParams = useSearchParams();
@@ -95,10 +96,11 @@ function TikTokCallback() {
             description: `Bem-vindo, ${result.display_name}! Seus vídeos foram sincronizados.`,
         });
 
-        // Don't trigger background fetch for now, as initial fetch gets videos
-        // if (result.video_count > (result.videos?.length || 0)) {
-        //     await fetchTikTokHistory({ userId: user.uid, tiktokAccountId: result.open_id, accessToken: result.access_token });
-        // }
+        // Trigger background fetch if there are more videos than initially fetched.
+        if (result.video_count > (result.videos?.length || 0)) {
+            // Do not await this, let it run in the background
+            fetchTikTokHistory({ userId: user.uid, tiktokAccountId: result.open_id, accessToken: result.access_token });
+        }
 
         setTimeout(() => {
             router.push('/dashboard');

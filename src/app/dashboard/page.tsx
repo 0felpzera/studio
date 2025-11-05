@@ -379,7 +379,7 @@ export default function DashboardPage() {
           </div>
       )}
 
-      {tiktokAccount && (!filteredVideos || filteredVideos.length === 0) && (
+      {tiktokAccount && (!tiktokAccount.videos || tiktokAccount.videos.length === 0) && (
           <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
               <Video className="mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">Nenhum vídeo encontrado</h3>
