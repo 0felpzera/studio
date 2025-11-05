@@ -88,7 +88,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
             
-            const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description } = tokenResponse.data;
+            const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description, open_id } = tokenResponse.data;
             
             if (error && error.code !== 'ok') { throw new Error(`TikTok API Error: ${error.message || error_description}`); }
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
@@ -105,16 +105,19 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 throw new Error(`Failed to fetch user info: ${userInfoResponse.data.error.message}`);
             }
             const userInfo = userInfoResponse.data.data.user;
-
+            
             // Step 3: Use access token to fetch THE FIRST PAGE of the video list
             const videoFields = [
                 "id", "title", "cover_image_url", "share_url", "view_count",
                 "like_count", "comment_count", "share_count", "create_time"
-            ].join(",");
+            ];
             
             const videoListResponse = await axios.post(
                 TIKTOK_VIDEOLIST_URL,
-                { fields: videoFields, max_count: 20 },
+                {
+                    fields: videoFields,
+                    max_count: 20,
+                },
                 {
                     headers: { 
                         'Authorization': `Bearer ${access_token}`, 
@@ -155,3 +158,5 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
+    

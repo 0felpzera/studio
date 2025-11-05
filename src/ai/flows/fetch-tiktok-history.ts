@@ -46,7 +46,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       const videoFields = [
         "id", "title", "cover_image_url", "share_url", "view_count",
         "like_count", "comment_count", "share_count", "create_time"
-      ].join(",");
+      ];
       
       let cursor: number | undefined = 0; // Cursor is a number (unix timestamp)
       let hasMore = true;
@@ -111,3 +111,5 @@ async function updateDoc(docRef: any, data: any) {
     const { setDoc } = await import('firebase/firestore');
     return setDoc(docRef, data, { merge: true });
 }
+
+    
