@@ -183,7 +183,7 @@ export default function DashboardPage() {
         return button ? button.label : 'Total';
     };
 
-    const isLoading = isUserLoading || isLoadingTiktok || isLoadingVideos;
+    const isLoading = isUserLoading || isLoadingTiktok;
 
     const businessCards = [
         {
@@ -320,7 +320,7 @@ export default function DashboardPage() {
         </div>
       </div>
       
-       {isLoading && (
+       {isLoadingVideos && (
           <Card>
               <CardHeader>
                 <CardTitle className="font-bold">Carregando seus vídeos...</CardTitle>
@@ -348,7 +348,7 @@ export default function DashboardPage() {
         </Card>
        )}
 
-      {tiktokAccount && filteredVideos && filteredVideos.length > 0 && (
+      {tiktokAccount && !isLoadingVideos && filteredVideos && filteredVideos.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
@@ -382,12 +382,12 @@ export default function DashboardPage() {
           )}
         </Card>
       )}
-       {tiktokAccount && filteredVideos.length === 0 && !isLoading && (
+       {tiktokAccount && !isLoadingVideos && filteredVideos.length === 0 && (
          <Card>
              <CardContent className="flex flex-col items-center justify-center h-48 text-center">
                  <Video className="size-12 text-muted-foreground mb-4" />
                 <h3 className="text-xl font-semibold">Nenhum vídeo encontrado</h3>
-                <p className="text-muted-foreground">Não há vídeos para o período selecionado.</p>
+                <p className="text-muted-foreground">Não há vídeos para o período selecionado ou eles ainda estão sincronizando.</p>
              </CardContent>
          </Card>
       )}
