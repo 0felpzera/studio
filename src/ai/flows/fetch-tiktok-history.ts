@@ -84,22 +84,23 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
 
       while (hasMore) {
         
-        const params: { fields: string; max_count: number; cursor?: string | number } = {
+        const requestBody: { fields: string; max_count: number; cursor?: string | number } = {
             fields: videoFields,
             max_count: 20,
         };
 
         if (cursor) {
-            params.cursor = cursor;
+            requestBody.cursor = cursor;
         }
 
-        const response = await axios.get(
+        const response = await axios.post(
           TIKTOK_VIDEOLIST_URL,
+          requestBody,
           {
             headers: {
               'Authorization': `Bearer ${accessToken}`,
+              'Content-Type': 'application/json',
             },
-            params,
           }
         );
 
@@ -123,7 +124,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       console.log(`Successfully fetched ${allVideos.length} videos for user ${userId}. Saving must be handled by the client.`);
 
     } catch (err: any) {
-      console.error("Error during TikTok history fetch:", err);
+      console.error("Error during TikTok history fetch:", err.response?.data || err.message);
       if (axios.isAxiosError(err) && err.response) {
         throw new Error(`API Request Failed: ${err.response.status} ${err.response.statusText} - ${JSON.stringify(err.response.data)}`);
       }
@@ -141,3 +142,6 @@ async function updateDoc(docRef: any, data: any) {
     // I've removed the firestore logic from the flow.
 }
 
+
+
+    

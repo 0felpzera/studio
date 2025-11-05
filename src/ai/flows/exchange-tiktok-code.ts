@@ -115,13 +115,17 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             if (userInfo.video_count > 0) {
                  try {
                     const videoFields = 'id,title,cover_image_url,share_url,view_count,like_count,comment_count,share_count,create_time';
-                    const videoListUrlWithParams = `${TIKTOK_VIDEOLIST_URL}?fields=${videoFields}&max_count=20`;
                     
-                    const videoListResponse = await axios.get(
-                        videoListUrlWithParams,
+                    const videoListResponse = await axios.post(
+                        TIKTOK_VIDEOLIST_URL,
+                        {
+                            fields: videoFields,
+                            max_count: 20
+                        },
                         { 
                             headers: { 
                                 'Authorization': `Bearer ${access_token}`,
+                                'Content-Type': 'application/json',
                              }
                         }
                     );
@@ -131,11 +135,8 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                     } else {
                         console.warn("Could not fetch initial video list:", videoListResponse.data.error.message);
                     }
-                } catch (videoError) {
-                    console.warn("An error occurred while fetching the initial video list. Continuing without it.", videoError);
-                     if (axios.isAxiosError(videoError) && videoError.response) {
-                        console.error("Video Fetch Axios Error Details:", videoError.response.data);
-                    }
+                } catch (videoError: any) {
+                    console.error("TikTok video fetch failed:", videoError.response?.data || videoError.message);
                 }
             }
 
@@ -167,3 +168,5 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
+    
