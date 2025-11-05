@@ -335,24 +335,24 @@ export default function DashboardPage() {
                   {videos.map(video => (
                       <Card key={video.id} className="overflow-hidden group">
                            <a href={video.share_url} target="_blank" rel="noopener noreferrer">
-                              <div className="relative aspect-video">
+                              <div className="relative aspect-[9/16]">
                                   <Image 
                                       src={video.cover_image_url || '/placeholder.png'} 
                                       alt={video.title || 'TikTok video cover'} 
                                       fill
                                       className="object-cover transition-transform duration-300 group-hover:scale-110"
                                   />
-                                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                                    <div className="absolute bottom-2 left-2 right-2">
                                        <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                    </div>
                               </div>
                            </a>
-                          <CardContent className="p-3 text-xs text-muted-foreground flex justify-around">
-                              <div className="flex items-center gap-1"><Heart className="size-3" /> {formatNumber(video.like_count)}</div>
-                              <div className="flex items-center gap-1"><MessageCircle className="size-3" /> {formatNumber(video.comment_count)}</div>
-                              <div className="flex items-center gap-1"><Share className="size-3" /> {formatNumber(video.share_count)}</div>
-                               <div className="flex items-center gap-1"><TrendingUp className="size-3" /> {formatNumber(video.view_count)}</div>
+                          <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2">
+                              <div className="flex items-center gap-1" title="Curtidas"><Heart className="size-3" /> {formatNumber(video.like_count)}</div>
+                              <div className="flex items-center gap-1" title="Comentários"><MessageCircle className="size-3" /> {formatNumber(video.comment_count)}</div>
+                              <div className="flex items-center gap-1" title="Compartilhamentos"><Share className="size-3" /> {formatNumber(video.share_count)}</div>
+                               <div className="flex items-center gap-1" title="Visualizações"><TrendingUp className="size-3" /> {formatNumber(video.view_count)}</div>
                           </CardContent>
                       </Card>
                   ))}
@@ -360,10 +360,10 @@ export default function DashboardPage() {
           </div>
        )}
 
-      {tiktokAccount && (isLoadingVideos && (tiktokAccount.videoCount ?? 0 > 0)) && (
-          <div className="text-center text-muted-foreground">
+      {tiktokAccount && (isLoadingVideos && (tiktokAccount.videoCount ?? 0) > 0) && (
+          <div className="text-center text-muted-foreground py-10">
               <Loader2 className="mx-auto animate-spin h-8 w-8" />
-              <p>Carregando seus vídeos do TikTok...</p>
+              <p className="mt-2">Carregando seus vídeos do TikTok...</p>
           </div>
       )}
 
