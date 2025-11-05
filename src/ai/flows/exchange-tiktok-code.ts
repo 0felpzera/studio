@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info.
@@ -115,20 +114,14 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             let videos: any[] = [];
             if (userInfo.video_count > 0) {
                  try {
-                    const videoFields = [
-                        "id", "title", "cover_image_url", "share_url", "view_count",
-                        "like_count", "comment_count", "share_count", "create_time"
-                    ].join(',');
+                    const videoFields = 'id,title,cover_image_url,share_url,view_count,like_count,comment_count,share_count,create_time';
+                    const videoListUrlWithParams = `${TIKTOK_VIDEOLIST_URL}?fields=${videoFields}&max_count=20`;
                     
                     const videoListResponse = await axios.get(
-                        TIKTOK_VIDEOLIST_URL,
+                        videoListUrlWithParams,
                         { 
                             headers: { 
                                 'Authorization': `Bearer ${access_token}`,
-                             },
-                             params: {
-                                fields: videoFields,
-                                max_count: 20
                              }
                         }
                     );
@@ -174,5 +167,3 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
-
-
