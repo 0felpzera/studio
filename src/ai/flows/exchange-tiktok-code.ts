@@ -110,7 +110,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             const userInfo = userInfoResponse.data.data.user;
             
-            // Step 3: Use access token to fetch THE FIRST PAGE of the video list (but don't fail if it doesn't work)
+            // Step 3: Use access token to fetch THE FIRST PAGE of the video list
             let videos: any[] = [];
             if (userInfo.video_count > 0) {
                  try {
@@ -118,10 +118,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                     
                     const videoListResponse = await axios.post(
                         TIKTOK_VIDEOLIST_URL,
-                        {
-                            fields: videoFields,
-                            max_count: 20
-                        },
+                        { fields: videoFields, max_count: 20 },
                         { 
                             headers: { 
                                 'Authorization': `Bearer ${access_token}`,
@@ -168,5 +165,3 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
-
-    
