@@ -48,19 +48,26 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         "like_count", "comment_count", "share_count", "create_time"
       ];
       
-      let cursor: number | undefined = 0; // Cursor is a number (unix timestamp)
+      let cursor: string | undefined = undefined; // Cursor is a string
       let hasMore = true;
       let totalFetched = 0;
 
       while (hasMore) {
-        const response = await axios.post(
-          TIKTOK_VIDEOLIST_URL,
-          {
+        const body = {
             fields: videoFields,
             max_count: 20, // Max allowed by TikTok API
             cursor: cursor,
-          },
-          { headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' } }
+        };
+
+        const response = await axios.post(
+          TIKTOK_VIDEOLIST_URL,
+          JSON.stringify(body),
+          { 
+              headers: { 
+                  'Authorization': `Bearer ${accessToken}`, 
+                  'Content-Type': 'application/json; charset=utf-8',
+              } 
+          }
         );
 
         if (response.data.error.code !== 'ok') {
@@ -85,7 +92,6 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         cursor = newCursor;
         hasMore = has_more;
         
-        // If hasMore is false, but cursor is not 0, it means we reached the end.
         if (!hasMore) break;
       }
       
