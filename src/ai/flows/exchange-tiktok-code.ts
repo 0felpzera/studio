@@ -113,41 +113,49 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             const userInfo = userInfoData.data.user;
             
-            // Step 3: Use access token to fetch THE FIRST PAGE of the video list
+            // Step 3: Fetch user's most recent videos
             let videos: any[] = [];
             if (userInfo.video_count > 0) {
-                 try {
-                    const videoFields = [
-                        'id', 'title', 'cover_image_url', 'share_url', 'view_count',
-                        'like_count', 'comment_count', 'share_count', 'create_time'
-                    ];
-                    
-                    const videoListResponse = await fetch(
-                        TIKTOK_VIDEOLIST_URL,
-                        {
-                            method: 'POST',
-                            headers: { 
-                                'Authorization': `Bearer ${access_token}`,
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                fields: videoFields, // Correctly passing an array of strings
-                                max_count: 20,
-                            }),
-                        }
-                    );
-                    
-                    const videoListData = await videoListResponse.json();
-                    
-                    if (videoListData.error.code === 'ok' && videoListData.data.videos) {
-                        videos = videoListData.data.videos;
-                    } else {
-                        // Log a warning but don't fail the whole flow if videos can't be fetched initially.
-                        console.warn("Could not fetch initial video list:", videoListData.error.message);
-                    }
-                } catch (videoError: any) {
-                     console.error('TikTok video fetch failed:', videoError.message);
+              try {
+                const videoFields = [
+                  'id',
+                  'title',
+                  'cover_image_url',
+                  'share_url',
+                  'view_count',
+                  'like_count',
+                  'comment_count',
+                  'share_count',
+                  'create_time'
+                ].join(',');
+
+                const videoListResponse = await fetch(
+                  TIKTOK_VIDEOLIST_URL,
+                  {
+                    method: 'POST',
+                    headers: { 
+                      'Authorization': `Bearer ${access_token}`,
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      fields: videoFields,
+                      max_count: 20,
+                      cursor: 0,
+                    }),
+                  }
+                );
+
+                const videoListData = await videoListResponse.json();
+                console.log('TikTok video list response:', videoListData);
+
+                if (videoListData.error.code === 'ok' && videoListData.data?.videos) {
+                  videos = videoListData.data.videos;
+                } else {
+                  console.warn('Could not fetch video list:', videoListData.error?.message || videoListData);
                 }
+              } catch (videoError: any) {
+                console.error('TikTok video fetch failed:', videoError.response?.data || videoError.message);
+              }
             }
 
             return {
