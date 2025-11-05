@@ -32,7 +32,6 @@ export type TiktokAccount = {
     lastSyncStatus: 'pending' | 'syncing' | 'success' | 'error';
     lastSyncTime?: string;
     lastSyncError?: string;
-    videos?: TiktokVideo[];
 };
 
 export type SavedVideoIdea = {

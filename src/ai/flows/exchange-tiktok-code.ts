@@ -1,6 +1,8 @@
 'use server';
 /**
- * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info and videos.
+ * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info.
+ * This flow is designed to be fast and only handles the initial connection. Video fetching is
+ * handled by the `fetchTikTokHistory` flow.
  * 
  * - exchangeTikTokCode - The main flow function.
  * - ExchangeTikTokCodeInput - Input schema for the flow.
@@ -16,18 +18,7 @@ const ExchangeTikTokCodeInputSchema = z.object({
 
 export type ExchangeTikTokCodeInput = z.infer<typeof ExchangeTikTokCodeInputSchema>;
 
-const TiktokVideoSchema = z.object({
-    id: z.string(),
-    title: z.string().optional(),
-    cover_image_url: z.string().url().optional(),
-    share_url: z.string().url(),
-    view_count: z.number().optional(),
-    like_count: z.number().optional(),
-    comment_count: z.number().optional(),
-    share_count: z.number().optional(),
-    create_time: z.number().optional(),
-});
-
+// Output now excludes the video list, which is handled by a separate flow.
 const ExchangeTikTokCodeOutputSchema = z.object({
     open_id: z.string().describe("The user's unique identifier on TikTok."),
     union_id: z.string().describe("The user's unique identifier across TikTok platforms."),
@@ -45,14 +36,12 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
     video_count: z.number().describe("The total number of videos the user has uploaded."),
-    videos: z.array(TiktokVideoSchema).describe("A list of the user's most recent public videos.")
 });
 
 export type ExchangeTikTokCodeOutput = z.infer<typeof ExchangeTikTokCodeOutputSchema>;
 
 const TIKTOK_TOKEN_URL = 'https://open.tiktokapis.com/v2/oauth/token/';
 const TIKTOK_USERINFO_URL = 'https://open.tiktokapis.com/v2/user/info/';
-const TIKTOK_VIDEOLIST_URL = 'https://open.tiktokapis.com/v2/video/list/';
 
 export async function exchangeTikTokCode(input: ExchangeTikTokCodeInput): Promise<ExchangeTikTokCodeOutput> {
     return exchangeTikTokCodeFlow(input);
@@ -88,12 +77,12 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             });
             
             const tokenData = await tokenResponse.json();
-            const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description, open_id } = tokenData;
+            const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description } = tokenData;
 
             if (error || !tokenResponse.ok) { 
                 throw new Error(`TikTok Token API Error: ${error} - ${error_description || tokenData.error?.message}`); 
             }
-            if (!access_token || !open_id) { throw new Error('Failed to retrieve access token or open_id from TikTok.'); }
+            if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
             const userFields = [
@@ -112,52 +101,9 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 throw new Error(`Failed to fetch user info: ${userInfoData.error.message}`);
             }
             const userInfo = userInfoData.data.user;
+
+            // Step 3 (Video fetching) is now removed from this flow.
             
-            // Step 3: Fetch user's most recent videos
-            let videos: any[] = [];
-            if (userInfo.video_count > 0) {
-              try {
-                const videoFields = [
-                  'id',
-                  'title',
-                  'cover_image_url',
-                  'share_url',
-                  'view_count',
-                  'like_count',
-                  'comment_count',
-                  'share_count',
-                  'create_time'
-                ].join(',');
-
-                const videoListResponse = await fetch(
-                  TIKTOK_VIDEOLIST_URL,
-                  {
-                    method: 'POST',
-                    headers: { 
-                      'Authorization': `Bearer ${access_token}`,
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      fields: videoFields,
-                      max_count: 20,
-                      cursor: 0,
-                    }),
-                  }
-                );
-
-                const videoListData = await videoListResponse.json();
-                console.log('TikTok video list response:', videoListData);
-
-                if (videoListData.error.code === 'ok' && videoListData.data?.videos) {
-                  videos = videoListData.data.videos;
-                } else {
-                  console.warn('Could not fetch video list:', videoListData.error?.message || videoListData);
-                }
-              } catch (videoError: any) {
-                console.error('TikTok video fetch failed:', videoError.response?.data || videoError.message);
-              }
-            }
-
             return {
                 open_id: userInfo.open_id,
                 union_id: userInfo.union_id,
@@ -175,7 +121,6 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 following_count: userInfo.following_count,
                 likes_count: userInfo.likes_count,
                 video_count: userInfo.video_count,
-                videos: videos,
             };
         } catch (err: any) {
             console.error("Full error in exchangeTikTokCodeFlow:", err);

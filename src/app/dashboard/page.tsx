@@ -50,6 +50,33 @@ export default function DashboardPage() {
     const firestore = useFirestore();
     const [timeRange, setTimeRange] = useState('total');
 
+    // Query for the main TikTok account document
+    const tiktokAccountsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(collection(firestore, 'users', user.uid, 'tiktokAccounts'), limit(1));
+    }, [user, firestore]);
+
+    const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+
+    const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
+
+    // Query for the videos sub-collection, dependent on the account ID
+    const videosQuery = useMemoFirebase(() => {
+        if (!firestore || !user || !tiktokAccount) return null;
+        return query(collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'), orderBy('create_time', 'desc'));
+    }, [firestore, user, tiktokAccount]);
+
+    const { data: allVideos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
+
+    const filteredVideos = useMemo(() => {
+        if (!allVideos) return [];
+        if (timeRange === '30d') {
+            const thirtyDaysAgo = (Date.now() / 1000) - (30 * 24 * 60 * 60);
+            return allVideos.filter(video => (video.create_time || 0) > thirtyDaysAgo);
+        }
+        return allVideos;
+    }, [allVideos, timeRange]);
+
     const upcomingTasksQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return query(
@@ -68,30 +95,6 @@ export default function DashboardPage() {
             limit(2)
         );
     }, [user, firestore]);
-    
-    const tiktokAccountsQuery = useMemoFirebase(() => {
-        if (!user || !firestore) return null;
-        return collection(firestore, 'users', user.uid, 'tiktokAccounts');
-    }, [user, firestore]);
-    
-    const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
-
-    const tiktokAccount = useMemo(() => {
-        if (tiktokAccounts && tiktokAccounts.length > 0) {
-            return tiktokAccounts[0];
-        }
-        return null;
-    }, [tiktokAccounts]);
-    
-    const filteredVideos = useMemo(() => {
-        if (!tiktokAccount || !tiktokAccount.videos) return [];
-        if (timeRange === '30d') {
-            const thirtyDaysAgo = (Date.now() / 1000) - (30 * 24 * 60 * 60);
-            return tiktokAccount.videos.filter(video => (video.create_time || 0) > thirtyDaysAgo);
-        }
-        return tiktokAccount.videos;
-    }, [tiktokAccount, timeRange]);
-
 
     const totalViews = useMemo(() => {
       return filteredVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
@@ -106,14 +109,14 @@ export default function DashboardPage() {
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
-         if (!tiktokAccount.videos || tiktokAccount.videos.length < 2) {
+         if (!allVideos || allVideos.length < 2) {
              return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
         // This is a mock trend as we don't have historical follower data.
-        return tiktokAccount.videos.map((_, index) => ({
-            value: Math.round((tiktokAccount.followerCount || 0) - (tiktokAccount.videos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
+        return allVideos.map((_, index) => ({
+            value: Math.round((tiktokAccount.followerCount || 0) - (allVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
-    }, [tiktokAccount]);
+    }, [tiktokAccount, allVideos]);
 
     const likesData = useMemo(() => {
       if (filteredVideos.length < 2) return [{ value: 0 }, { value: totalLikes }];
@@ -150,7 +153,7 @@ export default function DashboardPage() {
             title: 'Curtidas',
             value: formatNumber(totalLikes),
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de curtidas',
-            isLoading: isLoadingTiktok,
+            isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Heart,
             data: likesData.length > 0 ? likesData : [{value: 0}],
             color: getTrendColor(likesData),
@@ -160,7 +163,7 @@ export default function DashboardPage() {
             title: 'Visualizações',
             value: formatNumber(totalViews),
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de visualizações',
-            isLoading: isLoadingTiktok,
+            isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Film,
             data: viewsData.length > 0 ? viewsData : [{value: 0}],
             color: getTrendColor(viewsData),
@@ -372,18 +375,20 @@ export default function DashboardPage() {
           </div>
        )}
 
-      {isLoadingTiktok && (
+      {(isLoadingTiktok || isLoadingVideos) && (
           <div className="text-center text-muted-foreground py-10">
               <Loader2 className="mx-auto animate-spin h-8 w-8" />
               <p className="mt-2">Carregando seus vídeos do TikTok...</p>
           </div>
       )}
 
-      {tiktokAccount && (!tiktokAccount.videos || tiktokAccount.videos.length === 0) && (
+      {tiktokAccount && !isLoadingVideos && (!allVideos || allVideos.length === 0) && (
           <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
               <Video className="mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">Nenhum vídeo encontrado</h3>
-              <p>Não encontramos vídeos para o período selecionado ou a sincronização ainda está em andamento.</p>
+               {tiktokAccount.lastSyncStatus === 'syncing' && <p>A sincronização inicial dos seus vídeos está em andamento. Isso pode levar alguns minutos.</p>}
+               {tiktokAccount.lastSyncStatus === 'success' && <p>Não encontramos nenhum vídeo público na sua conta.</p>}
+               {tiktokAccount.lastSyncStatus === 'error' && <p>Ocorreu um erro ao sincronizar seus vídeos. Tente reconectar sua conta.</p>}
           </div>
       )}
 

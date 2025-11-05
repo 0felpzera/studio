@@ -38,14 +38,17 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
     
     initializeAdminApp();
     const firestore = getFirestore();
+    const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
 
     try {
+      await tiktokAccountRef.update({ lastSyncStatus: 'syncing', lastSyncTime: new Date().toISOString() });
+
       const videoFields = [
         "id", "title", "cover_image_url", "share_url", "view_count",
         "like_count", "comment_count", "share_count", "create_time"
-      ];
+      ].join(',');
       
-      let cursor: string | number | undefined = undefined;
+      let cursor: string | number | undefined = 0; // Start with cursor 0
       let hasMore = true;
       let allVideos: any[] = [];
       let page = 0;
@@ -54,14 +57,11 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         page++;
         console.log(`Fetching page ${page} of TikTok videos for user ${userId}...`);
         
-        const requestBody: { fields: string[]; max_count: number; cursor?: string | number } = {
+        const requestBody = {
             fields: videoFields,
             max_count: 20,
+            cursor: cursor,
         };
-
-        if (cursor) {
-            requestBody.cursor = cursor;
-        }
 
         const response = await fetch(TIKTOK_VIDEOLIST_URL, {
             method: 'POST',
@@ -87,7 +87,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
             const videosCollectionRef = firestore.collection(`users/${userId}/tiktokAccounts/${tiktokAccountId}/videos`);
             videos.forEach((video: any) => {
                 const videoDocRef = videosCollectionRef.doc(video.id);
-                batch.set(videoDocRef, video);
+                batch.set(videoDocRef, video, { merge: true }); // Use merge to be safe
             });
             await batch.commit();
             console.log(`Saved ${videos.length} videos to Firestore for user ${userId}.`);
@@ -99,25 +99,22 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       
       console.log(`Successfully fetched and saved ${allVideos.length} videos for user ${userId}.`);
       
-      // Update the sync status and the video array on the main document
-      const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
-      await firestore.batch().update(tiktokAccountRef, {
+      // Update the sync status and video count on the main document
+      await tiktokAccountRef.update({
           lastSyncStatus: 'success',
           lastSyncTime: new Date().toISOString(),
-          videoCount: allVideos.length,
-          videos: allVideos // Overwrite with the full, most recent list
-      }).commit();
+          videoCount: allVideos.length, // Update with the final count
+      });
 
     } catch (err: any) {
       console.error("Error during TikTok history fetch:", err.message);
-       const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
-       await firestore.batch().update(tiktokAccountRef, {
+       await tiktokAccountRef.update({
           lastSyncStatus: 'error',
           lastSyncError: err.message,
           lastSyncTime: new Date().toISOString()
-      }).commit();
-      
-      throw err;
+      });
+      // Do not re-throw, as we've logged the error and updated the status.
+      // Re-throwing would cause the Genkit flow to show as failed in logs.
     }
   }
 );

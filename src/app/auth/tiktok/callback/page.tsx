@@ -63,18 +63,8 @@ function TikTokCallback() {
         setStatus("Trocando código por token de acesso...");
         const result = await exchangeTikTokCode({ code: authCode });
         
-        // ** User Requested Error Check **
-        if (result.video_count > 0 && (!result.videos || result.videos.length === 0)) {
-          const errorMessage = "A API do TikTok indicou que você tem vídeos (" + result.video_count + "), mas não retornou a lista. Isso geralmente ocorre por um problema na requisição dos dados de vídeo no fluxo `exchangeTikTokCode`.";
-          setError(errorMessage);
-          setStatus("Falha ao obter a lista de vídeos.");
-          setIsProcessing(false);
-          setApiResponse(result); // Show the problematic response
-          return;
-        }
-
         setApiResponse(result);
-        setStatus("Resposta da API do TikTok recebida! Salvando dados...");
+        setStatus("Informações da conta recebidas! Salvando dados...");
 
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
         
@@ -87,7 +77,6 @@ function TikTokCallback() {
             followingCount: result.following_count,
             likesCount: result.likes_count,
             videoCount: result.video_count,
-            videos: result.videos || [], // Ensure videos is at least an empty array
             bioDescription: result.bio_description || '',
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
@@ -96,22 +85,22 @@ function TikTokCallback() {
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
             refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-            lastSyncStatus: 'success',
-            lastSyncTime: new Date().toISOString(),
+            lastSyncStatus: 'pending', // Set initial sync status
         };
 
         await setDoc(tiktokAccountRef, accountData, { merge: true });
 
         toast({
             title: "Conta TikTok Conectada!",
-            description: `Bem-vindo, ${result.display_name}! Seus vídeos foram sincronizados.`,
+            description: `Bem-vindo, ${result.display_name}! Iniciando a sincronização dos seus vídeos em segundo plano.`,
         });
 
-        // Trigger background fetch if there are more videos than initially fetched.
-        if (result.video_count > (result.videos?.length || 0)) {
-            // Do not await this, let it run in the background
-            fetchTikTokHistory({ userId: user.uid, tiktokAccountId: result.open_id, accessToken: result.access_token });
-        }
+        // Trigger background fetch. Do not await this, let it run in the background.
+        fetchTikTokHistory({ 
+            userId: user.uid, 
+            tiktokAccountId: result.open_id, 
+            accessToken: result.access_token 
+        });
 
         setStatus("Conexão bem-sucedida! Redirecionando...");
         setIsProcessing(false);
@@ -170,7 +159,7 @@ function TikTokCallback() {
                     <Card>
                         <CardHeader>
                             <CardTitle className='text-lg'>Resposta da API do TikTok</CardTitle>
-                            {!error && <CardDescription>Redirecionando para o dashboard em 3 segundos...</CardDescription>}
+                            {!error && <CardDescription>Sincronização iniciada. Redirecionando para o dashboard em 3 segundos...</CardDescription>}
                         </CardHeader>
                         <CardContent>
                            <pre className="mt-2 w-full overflow-auto text-sm bg-muted p-4 rounded-lg">

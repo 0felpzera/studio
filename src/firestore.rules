@@ -66,7 +66,7 @@ service cloud.firestore {
          * @description Enforces access control for TikTok videos. The owner can read and write their own videos.
          */
         match /videos/{videoId} {
-          allow read, write: if isSignedIn() && isOwner(userId);
+          allow read, list, write: if isSignedIn() && isOwner(userId);
         }
       }
 
@@ -84,16 +84,6 @@ service cloud.firestore {
        * @description Enforces access control for content creation tasks.
        */
       match /contentTasks/{contentTaskId} {
-        allow read, list: if isSignedIn() && isOwner(userId);
-        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isSignedIn() && isExistingOwner(userId);
-      }
-
-      /**
-       * @description Enforces access control for saved video ideas.
-       */
-      match /savedVideoIdeas/{ideaId} {
         allow read, list: if isSignedIn() && isOwner(userId);
         allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
         allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
