@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
@@ -81,6 +80,7 @@ function TikTokCallback() {
             bioDescription: result.bio_description || '',
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
+            profileWebLink: result.profile_web_link || '',
             accessToken: result.access_token,
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
@@ -211,5 +211,3 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
-
-    

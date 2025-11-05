@@ -14,6 +14,8 @@ import {
   AlertTriangle,
   Lightbulb,
   Heart,
+  MessageCircle,
+  Share,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,12 +44,6 @@ function formatNumber(value: number | undefined | null): string {
     }
     return value.toString();
 }
-
-const trendingTopics = [
-  { title: "Audio Viral: 'Summer Vibes'" },
-  { title: 'Transição de Maquiagem' },
-  { title: 'Desafio 30 Dias' },
-];
 
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
@@ -88,7 +84,7 @@ export default function DashboardPage() {
     
     const { data: videos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(
       useMemoFirebase(() => {
-        if (!tiktokAccount || !tiktokAccount.videoCount || tiktokAccount.videoCount === 0) return null;
+        if (!user || !firestore || !tiktokAccount || !tiktokAccount.id || (tiktokAccount.videoCount ?? 0) === 0) return null;
         return query(
           collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
           orderBy('create_time', 'desc'),
@@ -331,6 +327,54 @@ export default function DashboardPage() {
           </CardFooter>
         </Card>
       </div>
+
+       {videos && videos.length > 0 && (
+          <div className="space-y-4">
+              <h2 className="text-xl font-bold tracking-tight">Últimos Vídeos do TikTok</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {videos.map(video => (
+                      <Card key={video.id} className="overflow-hidden group">
+                           <a href={video.share_url} target="_blank" rel="noopener noreferrer">
+                              <div className="relative aspect-video">
+                                  <Image 
+                                      src={video.cover_image_url || '/placeholder.png'} 
+                                      alt={video.title || 'TikTok video cover'} 
+                                      fill
+                                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                  />
+                                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                                   <div className="absolute bottom-2 left-2 right-2">
+                                       <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
+                                   </div>
+                              </div>
+                           </a>
+                          <CardContent className="p-3 text-xs text-muted-foreground flex justify-around">
+                              <div className="flex items-center gap-1"><Heart className="size-3" /> {formatNumber(video.like_count)}</div>
+                              <div className="flex items-center gap-1"><MessageCircle className="size-3" /> {formatNumber(video.comment_count)}</div>
+                              <div className="flex items-center gap-1"><Share className="size-3" /> {formatNumber(video.share_count)}</div>
+                               <div className="flex items-center gap-1"><TrendingUp className="size-3" /> {formatNumber(video.view_count)}</div>
+                          </CardContent>
+                      </Card>
+                  ))}
+              </div>
+          </div>
+       )}
+
+      {tiktokAccount && (isLoadingVideos && (tiktokAccount.videoCount ?? 0 > 0)) && (
+          <div className="text-center text-muted-foreground">
+              <Loader2 className="mx-auto animate-spin h-8 w-8" />
+              <p>Carregando seus vídeos do TikTok...</p>
+          </div>
+      )}
+
+      {tiktokAccount && !isLoadingVideos && (!videos || videos.length === 0) && ((tiktokAccount.videoCount ?? 0) > 0) && (
+          <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
+              <Video className="mx-auto h-12 w-12" />
+              <h3 className="mt-4 text-lg font-semibold">Nenhum vídeo encontrado</h3>
+              <p>Não conseguimos carregar seus vídeos. Isso pode acontecer se sua conta for privada ou se a sincronização ainda estiver em andamento.</p>
+          </div>
+      )}
+
     </div>
   );
 }

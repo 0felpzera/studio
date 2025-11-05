@@ -113,6 +113,13 @@
         "videoCount": {
           "type": "number",
           "description": "Total number of videos the user has posted."
+        },
+        "videos": {
+          "type": "array",
+          "description": "A list of the user's recent TikTok videos.",
+          "items": {
+            "$ref": "#/entities/TiktokVideo"
+          }
         }
       },
       "required": [
@@ -251,7 +258,7 @@
         "definition": {
           "entityName": "User",
           "schema": {
-            "$ref": "#/backend/entities/User"
+            "$ref": "#/entities/User"
           },
           "description": "Stores user profile information. Path-based ownership ensures only the user can access their profile.",
           "params": [
@@ -267,7 +274,7 @@
         "definition": {
           "entityName": "InstagramAccount",
           "schema": {
-            "$ref": "#/backend/entities/InstagramAccount"
+            "$ref": "#/entities/InstagramAccount"
           },
           "description": "Stores Instagram account details linked to the user. Path-based ownership ensures only the user can access their connected accounts.",
           "params": [
@@ -287,7 +294,7 @@
         "definition": {
           "entityName": "TiktokAccount",
           "schema": {
-            "$ref": "#/backend/entities/TiktokAccount"
+            "$ref": "#/entities/TiktokAccount"
           },
           "description": "Stores TikTok account details linked to the user. Path-based ownership ensures only the user can access their connected accounts.",
           "params": [
@@ -303,11 +310,35 @@
         }
       },
       {
+        "path": "/users/{userId}/tiktokAccounts/{tiktokAccountId}/videos/{videoId}",
+        "definition": {
+          "entityName": "TiktokVideo",
+          "schema": {
+            "$ref": "#/entities/TiktokVideo"
+          },
+          "description": "Stores individual TikTok videos for a specific account.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "tiktokAccountId",
+              "description": "The unique identifier of the Tiktok account."
+            },
+            {
+              "name": "videoId",
+              "description": "The unique identifier of the video."
+            }
+          ]
+        }
+      },
+      {
         "path": "/users/{userId}/goals/{goalId}",
         "definition": {
           "entityName": "Goal",
           "schema": {
-            "$ref": "#/backend/entities/Goal"
+            "$ref": "#/entities/Goal"
           },
           "description": "Stores user-defined goals. Path-based ownership ensures only the user can access their goals.",
           "params": [
@@ -327,7 +358,7 @@
         "definition": {
           "entityName": "ContentTask",
           "schema": {
-            "$ref": "#/backend/entities/ContentTask"
+            "$ref": "#/entities/ContentTask"
           },
           "description": "Stores content creation tasks generated for the user. Path-based ownership ensures only the user can access their content tasks.",
           "params": [
@@ -347,7 +378,7 @@
         "definition": {
           "entityName": "SavedVideoIdea",
           "schema": {
-            "$ref": "#/backend/entities/SavedVideoIdea"
+            "$ref": "#/entities/SavedVideoIdea"
           },
           "description": "Stores video ideas saved by the user. Path-based ownership ensures only the user can access their saved ideas.",
           "params": [

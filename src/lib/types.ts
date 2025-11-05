@@ -1,3 +1,5 @@
+import { Timestamp } from 'firebase/firestore';
+
 export type TiktokVideo = {
     id: string;
     title?: string;
@@ -28,7 +30,9 @@ export type TiktokAccount = {
     tokenExpiresAt: number;
     refreshTokenExpiresAt: number;
     lastSyncStatus: 'pending' | 'syncing' | 'success' | 'error';
+    lastSyncTime?: string;
     lastSyncError?: string;
+    videos?: TiktokVideo[];
 };
 
 export type SavedVideoIdea = {
@@ -38,6 +42,5 @@ export type SavedVideoIdea = {
     description: string;
     scriptOutline: string;
     type: 'Evergreen' | 'Trending';
-    savedAt: any; // Using `any` for Firestore Timestamp compatibility
+    savedAt: Timestamp; 
 };
-    

@@ -95,7 +95,11 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
-            const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,profile_deep_link,is_verified,follower_count,following_count,likes_count,video_count,profile_web_link';
+            const userFields = [
+                'open_id','union_id','avatar_url','display_name','bio_description',
+                'profile_deep_link','is_verified','follower_count','following_count',
+                'likes_count','video_count','profile_web_link'
+            ].join(',');
             const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${userFields}`;
 
             const userInfoResponse = await axios.get(userInfoUrlWithParams, {
@@ -109,7 +113,29 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             
             // Step 3: Use access token to fetch THE FIRST PAGE of the video list (but don't fail if it doesn't work)
             let videos: any[] = [];
-            
+            if (userInfo.video_count > 0) {
+                 try {
+                    const videoFields = [
+                        "id", "title", "cover_image_url", "share_url", "view_count",
+                        "like_count", "comment_count", "share_count", "create_time"
+                    ].join(',');
+
+                    const videoListResponse = await axios.post(
+                        TIKTOK_VIDEOLIST_URL,
+                        { fields: videoFields, max_count: 20 },
+                        { headers: { 'Authorization': `Bearer ${access_token}`, 'Content-Type': 'application/json' } }
+                    );
+
+                    if (videoListResponse.data.error.code === 'ok' && videoListResponse.data.data.videos) {
+                        videos = videoListResponse.data.data.videos;
+                    } else {
+                        console.warn("Could not fetch initial video list:", videoListResponse.data.error.message);
+                    }
+                } catch (videoError) {
+                    console.warn("An error occurred while fetching the initial video list. Continuing without it.", videoError);
+                }
+            }
+
             return {
                 open_id: userInfo.open_id,
                 union_id: userInfo.union_id,
@@ -138,5 +164,3 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
-
-    
