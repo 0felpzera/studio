@@ -25,12 +25,13 @@ import {
   CardTitle,
   CardDescription,
 } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
 import type { TiktokAccount, TiktokVideo, SavedVideoIdea } from '@/lib/types';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
 
 function formatNumber(value: number | undefined | null): string {
@@ -47,6 +48,7 @@ function formatNumber(value: number | undefined | null): string {
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
+    const [timeRange, setTimeRange] = useState('total');
 
     const upcomingTasksQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -81,36 +83,47 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
+    const filteredVideos = useMemo(() => {
+        if (!tiktokAccount || !tiktokAccount.videos) return [];
+        if (timeRange === '30d') {
+            const thirtyDaysAgo = (Date.now() / 1000) - (30 * 24 * 60 * 60);
+            return tiktokAccount.videos.filter(video => (video.create_time || 0) > thirtyDaysAgo);
+        }
+        return tiktokAccount.videos;
+    }, [tiktokAccount, timeRange]);
+
+
     const totalViews = useMemo(() => {
-      if (!tiktokAccount || !tiktokAccount.videos) return 0;
-      return tiktokAccount.videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
-    }, [tiktokAccount]);
+      return filteredVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    }, [filteredVideos]);
+
+    const totalLikes = useMemo(() => {
+      return filteredVideos.reduce((sum, video) => sum + (video.like_count || 0), 0);
+    }, [filteredVideos]);
+
+    // Follower count is a total, so it doesn't change with time range filter.
+    const followerCount = tiktokAccount?.followerCount;
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
          if (!tiktokAccount.videos || tiktokAccount.videos.length < 2) {
              return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
+        // This is a mock trend as we don't have historical follower data.
         return tiktokAccount.videos.map((_, index) => ({
             value: Math.round((tiktokAccount.followerCount || 0) - (tiktokAccount.videos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
     }, [tiktokAccount]);
 
     const likesData = useMemo(() => {
-      if (!tiktokAccount) return [{ value: 0 }];
-      if (!tiktokAccount.videos || tiktokAccount.videos.length < 2) {
-        return [{ value: Math.round((tiktokAccount.likesCount || 0) * 0.95) }, { value: tiktokAccount.likesCount || 0 }];
-      }
-      // This is a mock trend, in a real scenario you would have historical likes data
-      return tiktokAccount.videos.map((v, index) => ({
-        value: (v.like_count || 0) + (index * 100), // simulate a growing trend
-      }));
-    }, [tiktokAccount]);
+      if (filteredVideos.length < 2) return [{ value: 0 }, { value: totalLikes }];
+      return filteredVideos.map(v => ({ value: v.like_count || 0 })).reverse();
+    }, [filteredVideos, totalLikes]);
 
     const viewsData = useMemo(() => {
-      if (!tiktokAccount || !tiktokAccount.videos || tiktokAccount.videos.length < 2) return [{ value: 0 }];
-      return tiktokAccount.videos.map(v => ({ value: v.view_count || 0 })).reverse();
-    }, [tiktokAccount]);
+      if (filteredVideos.length < 2) return [{ value: 0 }, { value: totalViews }];
+      return filteredVideos.map(v => ({ value: v.view_count || 0 })).reverse();
+    }, [filteredVideos, totalViews]);
 
 
     const getTrendColor = (data: { value: number }[]) => {
@@ -125,7 +138,8 @@ export default function DashboardPage() {
     const businessCards = [
         {
             title: 'Seguidores',
-            value: tiktokAccount ? formatNumber(tiktokAccount.followerCount) : 'N/A',
+            value: formatNumber(followerCount),
+            description: timeRange === '30d' ? 'Total de seguidores' : 'Número total de seguidores',
             isLoading: isLoadingTiktok,
             icon: UserPlus,
             data: followersData.length > 0 ? followersData : [{value: 0}],
@@ -133,8 +147,9 @@ export default function DashboardPage() {
             gradientId: 'followersGradient',
         },
         {
-            title: 'Total de Curtidas',
-            value: tiktokAccount ? formatNumber(tiktokAccount.likesCount) : 'N/A',
+            title: 'Curtidas',
+            value: formatNumber(totalLikes),
+            description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de curtidas',
             isLoading: isLoadingTiktok,
             icon: Heart,
             data: likesData.length > 0 ? likesData : [{value: 0}],
@@ -142,8 +157,9 @@ export default function DashboardPage() {
             gradientId: 'likesGradient',
         },
         {
-            title: 'Total de Views (Últimos Vídeos)',
+            title: 'Visualizações',
             value: formatNumber(totalViews),
+            description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de visualizações',
             isLoading: isLoadingTiktok,
             icon: Film,
             data: viewsData.length > 0 ? viewsData : [{value: 0}],
@@ -166,6 +182,14 @@ export default function DashboardPage() {
         </p>
       </header>
 
+      <Tabs defaultValue="total" onValueChange={setTimeRange}>
+        <TabsList className="grid w-full grid-cols-2 max-w-xs">
+            <TabsTrigger value="total">Total</TabsTrigger>
+            <TabsTrigger value="30d">Últimos 30 Dias</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+
       <div className="w-full">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {businessCards.map((card, i) => {
@@ -186,7 +210,7 @@ export default function DashboardPage() {
                         ) : (
                             <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
                         )}
-                      <div className="text-sm text-muted-foreground whitespace-nowrap">Total</div>
+                      <div className="text-sm text-muted-foreground whitespace-nowrap">{card.description}</div>
                     </div>
 
                     <div className="max-w-40 h-16 w-full relative">
@@ -316,11 +340,11 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       {tiktokAccount && tiktokAccount.videos && tiktokAccount.videos.length > 0 && (
+       {tiktokAccount && filteredVideos && filteredVideos.length > 0 && (
           <div className="space-y-4">
-              <h2 className="text-xl font-bold tracking-tight">Últimos Vídeos do TikTok</h2>
+              <h2 className="text-xl font-bold tracking-tight">Vídeos Recentes do TikTok</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {tiktokAccount.videos.map(video => (
+                  {filteredVideos.map(video => (
                       <Card key={video.id} className="overflow-hidden group">
                            <a href={video.share_url} target="_blank" rel="noopener noreferrer">
                               <div className="relative aspect-[9/16]">
@@ -355,11 +379,11 @@ export default function DashboardPage() {
           </div>
       )}
 
-      {tiktokAccount && (!tiktokAccount.videos || tiktokAccount.videos.length === 0) && (
+      {tiktokAccount && (!filteredVideos || filteredVideos.length === 0) && (
           <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
               <Video className="mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">Nenhum vídeo encontrado</h3>
-              <p>Não conseguimos carregar seus vídeos. Isso pode acontecer se sua conta for privada ou se a sincronização ainda estiver em andamento.</p>
+              <p>Não encontramos vídeos para o período selecionado ou a sincronização ainda está em andamento.</p>
           </div>
       )}
 
