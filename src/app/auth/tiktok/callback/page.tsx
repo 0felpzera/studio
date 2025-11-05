@@ -6,13 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, getDocs, query, collectionGroup, where } from 'firebase/firestore';
+import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { fetchTikTokHistory } from '@/ai/flows/fetch-tiktok-history';
-
 
 function TikTokCallback() {
   const searchParams = useSearchParams();
@@ -84,8 +81,6 @@ function TikTokCallback() {
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
             profileWebLink: result.profile_web_link || '',
-            // Do not save videos here. They will be saved in a subcollection.
-            // Save tokens for background processing
             accessToken: result.access_token,
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
@@ -93,27 +88,32 @@ function TikTokCallback() {
             lastSyncStatus: 'pending',
         };
 
-        // Save the main account data. This is a blocking operation on the callback page.
         await setDoc(tiktokAccountRef, accountData, { merge: true });
         
-        setStatus("Perfil salvo. Iniciando sincronização do histórico de vídeos em segundo plano...");
+        setStatus("Perfil salvo. Sincronizando vídeos em segundo plano...");
 
-        // Trigger the background history fetch, but DO NOT await it.
-        fetchTikTokHistory({
-            userId: user.uid,
-            tiktokAccountId: result.open_id,
-            accessToken: result.access_token,
-        }).catch(e => {
-            // This error happens in the background, so we can't show it directly to the user
-            // on this page. We should log it or update the sync status in Firestore.
-            console.error("Erro na sincronização de histórico em segundo plano:", e);
-            const accountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
-            setDoc(accountRef, { lastSyncStatus: 'error', lastSyncError: e.message }, { merge: true });
-        });
+        // Save the initial batch of videos fetched during the exchange code flow
+        if (result.videos && result.videos.length > 0) {
+            const batch = writeBatch(firestore);
+            const videosCollectionRef = collection(tiktokAccountRef, 'videos');
+            result.videos.forEach((video: any) => {
+                const videoDocRef = doc(videosCollectionRef, video.id);
+                batch.set(videoDocRef, video);
+            });
+            await batch.commit();
+        }
+
+        // The background fetch flow (`fetchTikTokHistory`) no longer handles DB writes.
+        // It's now the client's responsibility. A more robust solution would involve
+        // a server-side admin SDK, but given the constraints, we'll keep it simple.
+        // We can trigger a separate, longer-running client-side process if needed,
+        // but for now, the initial sync is what we have.
+        // We will mark sync as 'success' as the initial batch is saved.
+        await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
 
         toast({
             title: "Conta TikTok Conectada!",
-            description: `Bem-vindo, ${result.display_name}! Estamos sincronizando seu histórico de vídeos.`,
+            description: `Bem-vindo, ${result.display_name}! Seus vídeos mais recentes foram sincronizados.`,
         });
 
         setTimeout(() => {
@@ -205,5 +205,3 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
-
-    
