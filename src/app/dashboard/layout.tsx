@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import {
   DollarSign,
@@ -52,7 +52,6 @@ export const Logo = () => {
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Plano', href: '/dashboard/plan', icon: CalendarCheck },
-  { name: 'Conexões', href: '/dashboard/connections', icon: Share2 },
 ];
 
 const resourcesItems = [
@@ -63,55 +62,123 @@ const resourcesItems = [
     { name: 'Ideias para Publis', href: '/dashboard/sponsored-content', icon: Star },
 ];
 
+const connectionItem = { name: 'Conexões', href: '/dashboard/connections', icon: Share2 };
+
 const MainNav = () => {
   const pathname = usePathname();
+  const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<(HTMLAnchorElement | HTMLButtonElement | null)[]>([]);
+
+  useEffect(() => {
+    const updateIndicator = () => {
+      let activeIndex = -1;
+
+      // Find active index in navItems
+      activeIndex = navItems.findIndex(item => pathname === item.href);
+
+      // Check if a resource item is active
+      if (activeIndex === -1 && resourcesItems.some(item => pathname.startsWith(item.href))) {
+        activeIndex = navItems.length; // Index of the dropdown trigger
+      }
+      
+      // Check if connection item is active
+      if (activeIndex === -1 && pathname === connectionItem.href) {
+          activeIndex = navItems.length + 1; // Index after the dropdown
+      }
+
+
+      const activeItem = itemRefs.current[activeIndex];
+      if (activeItem && containerRef.current) {
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const itemRect = activeItem.getBoundingClientRect();
+        
+        setIndicatorStyle({
+          width: itemRect.width,
+          left: itemRect.left - containerRect.left,
+        });
+      }
+    };
+
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [pathname]);
+
 
   return (
     <nav 
+      ref={containerRef}
       className="relative flex items-center justify-center bg-card/60 shadow-lg rounded-full p-1 border border-border/20 backdrop-blur-sm"
     >
-      {navItems.map((item) => (
+        {/* Active indicator */}
+        <motion.div
+            className="absolute h-[calc(100%-0.5rem)] rounded-full bg-primary/10"
+            style={indicatorStyle}
+            transition={{ type: "spring", stiffness: 400, damping: 30 }}
+        />
+
+        {navItems.map((item, index) => (
+            <Link
+              key={item.name}
+              href={item.href}
+              ref={(el) => (itemRefs.current[index] = el)}
+              className={cn(
+                'relative z-10 px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
+                pathname === item.href
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              <item.icon className="h-4 w-4" />
+              {item.name}
+            </Link>
+        ))}
+      
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button
+                    ref={(el) => (itemRefs.current[navItems.length] = el)}
+                    variant="ghost"
+                    className={cn('relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-full flex items-center gap-2',
+                    resourcesItems.some(item => pathname.startsWith(item.href))
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-foreground'
+                    )}
+                >
+                    <Wand2 className="h-4 w-4" />
+                    Recursos
+                    <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56" align="start" forceMount>
+                <DropdownMenuGroup>
+                    {resourcesItems.map((item) => (
+                        <DropdownMenuItem key={item.name} asChild>
+                            <Link href={item.href}>
+                                <item.icon className="mr-2 h-4 w-4" />
+                                <span>{item.name}</span>
+                            </Link>
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+
         <Link
-          key={item.name}
-          href={item.href}
-          className={cn(
-            'relative z-10 px-4 py-2 rounded-full text-sm font-medium transition-colors',
-            pathname === item.href
-              ? 'text-primary'
-              : 'text-muted-foreground hover:text-foreground'
-          )}
-        >
-          {item.name}
-        </Link>
-      ))}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className={cn('relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-full',
-               resourcesItems.some(item => pathname.startsWith(item.href))
+            ref={(el) => (itemRefs.current[navItems.length + 1] = el)}
+            key={connectionItem.name}
+            href={connectionItem.href}
+            className={cn(
+                'relative z-10 px-4 py-2 rounded-full text-sm font-medium transition-colors flex items-center gap-2',
+                pathname === connectionItem.href
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             )}
-          >
-            Recursos
-            <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56" align="start" forceMount>
-            <DropdownMenuGroup>
-                {resourcesItems.map((item) => (
-                    <DropdownMenuItem key={item.name} asChild>
-                         <Link href={item.href}>
-                            <item.icon className="mr-2 h-4 w-4" />
-                            <span>{item.name}</span>
-                        </Link>
-                    </DropdownMenuItem>
-                ))}
-            </DropdownMenuGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
-       {/* Active indicator logic can be added here if needed */}
+            >
+            <connectionItem.icon className="h-4 w-4" />
+            {connectionItem.name}
+        </Link>
     </nav>
   );
 };
