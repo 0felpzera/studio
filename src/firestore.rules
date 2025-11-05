@@ -87,10 +87,7 @@ service cloud.firestore {
        * @principle Enforces document ownership for writes, prevents unauthorized data access and modification.
        */
       match /tiktokAccounts/{tiktokAccountId} {
-        allow read, list: if isSignedIn() && isOwner(userId);
-        allow create: if isSignedIn() && isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isSignedIn() && isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
-        allow delete: if isSignedIn() && isExistingOwner(userId);
+        allow read, write: if isSignedIn() && isOwner(userId);
         
         /**
          * @description Enforces access control for TikTok videos. Only the owner can manage their videos.
