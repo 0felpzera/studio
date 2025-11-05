@@ -1,8 +1,6 @@
 'use server';
 /**
- * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info.
- * This flow is designed to be fast, fetching only the essential user profile data and the most recent batch of videos.
- * A separate flow (`fetch-tiktok-history`) is responsible for fetching the complete video history asynchronously.
+ * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info and videos.
  * 
  * - exchangeTikTokCode - The main flow function.
  * - ExchangeTikTokCodeInput - Input schema for the flow.
@@ -11,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import axios from 'axios';
 
 const ExchangeTikTokCodeInputSchema = z.object({
     code: z.string().describe('The authorization code returned from TikTok OAuth.'),
@@ -47,7 +46,7 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
     video_count: z.number().describe("The total number of videos the user has uploaded."),
-    videos: z.array(TiktokVideoSchema).describe("A list of the user's most recent public videos (first page).")
+    videos: z.array(TiktokVideoSchema).describe("A list of the user's most recent public videos.")
 });
 
 export type ExchangeTikTokCodeOutput = z.infer<typeof ExchangeTikTokCodeOutputSchema>;
@@ -83,17 +82,14 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             tokenParams.append('grant_type', 'authorization_code');
             tokenParams.append('redirect_uri', 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback');
 
-            const tokenResponse = await fetch(TIKTOK_TOKEN_URL, {
-                method: 'POST',
+            const tokenResponse = await axios.post(TIKTOK_TOKEN_URL, tokenParams, {
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: tokenParams,
             });
             
-            const tokenData = await tokenResponse.json();
-            
+            const tokenData = tokenResponse.data;
             const { access_token, refresh_token, expires_in, refresh_expires_in, error, error_description, open_id } = tokenData;
-            
-            if (error && error.code !== 'ok') { throw new Error(`TikTok API Error: ${error.message || error_description}`); }
+
+            if (error) { throw new Error(`TikTok API Error: ${error} - ${error_description}`); }
             if (!access_token || !open_id) { throw new Error('Failed to retrieve access token or open_id from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
@@ -104,44 +100,45 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             ].join(',');
             const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${userFields}`;
 
-            const userInfoResponse = await fetch(userInfoUrlWithParams, {
+            const userInfoResponse = await axios.get(userInfoUrlWithParams, {
                 headers: { 'Authorization': `Bearer ${access_token}` },
             });
 
-            const userInfoData = await userInfoResponse.json();
-
-            if (userInfoData.error.code !== 'ok') {
-                throw new Error(`Failed to fetch user info: ${userInfoData.error.message}`);
+            if (userInfoResponse.data.error.code !== 'ok') {
+                throw new Error(`Failed to fetch user info: ${userInfoResponse.data.error.message}`);
             }
-            const userInfo = userInfoData.data.user;
+            const userInfo = userInfoResponse.data.data.user;
             
             // Step 3: Use access token to fetch THE FIRST PAGE of the video list
             let videos: any[] = [];
             if (userInfo.video_count > 0) {
                  try {
-                    const videoFields = 'id,title,cover_image_url,share_url,view_count,like_count,comment_count,share_count,create_time';
+                    const videoFields = [
+                        'id', 'title', 'cover_image_url', 'share_url', 'view_count',
+                        'like_count', 'comment_count', 'share_count', 'create_time'
+                    ].join(',');
                     
-                    const videoListResponse = await fetch(
+                    const videoListResponse = await axios.post(
                         TIKTOK_VIDEOLIST_URL,
                         {
-                            method: 'POST',
+                            fields: videoFields,
+                            max_count: 20,
+                        },
+                        {
                             headers: { 
                                 'Authorization': `Bearer ${access_token}`,
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ fields: videoFields, max_count: 20 }),
                         }
                     );
                     
-                    const videoListData = await videoListResponse.json();
-
-                    if (videoListData.error.code === 'ok' && videoListData.data.videos) {
-                        videos = videoListData.data.videos;
+                    if (videoListResponse.data.error.code === 'ok' && videoListResponse.data.data.videos) {
+                        videos = videoListResponse.data.data.videos;
                     } else {
-                        console.warn("Could not fetch initial video list:", videoListData.error.message);
+                        console.warn("Could not fetch initial video list:", videoListResponse.data.error.message);
                     }
                 } catch (videoError: any) {
-                    console.error("TikTok video fetch failed:", videoError.message);
+                     console.error('TikTok video fetch failed:', videoError.response?.data || videoError.message);
                 }
             }
 
@@ -165,8 +162,11 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 videos: videos,
             };
         } catch (err: any) {
-            console.error("Flow Error Details:", err);
-            throw err;
+            if (axios.isAxiosError(err) && err.response) {
+                console.error("Axios Error Details:", err.response.data);
+                throw new Error(`API Request Failed: ${err.response.status} ${err.response.statusText} - ${JSON.stringify(err.response.data)}`);
+            }
+            throw err; // Re-throw other errors
         }
     }
 );

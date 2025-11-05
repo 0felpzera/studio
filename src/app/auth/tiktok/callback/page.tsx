@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
@@ -6,11 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useUser, useFirestore, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { toast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { fetchTikTokHistory } from '@/ai/flows/fetch-tiktok-history';
 
 function TikTokCallback() {
   const searchParams = useSearchParams();
@@ -78,6 +75,7 @@ function TikTokCallback() {
             followingCount: result.following_count,
             likesCount: result.likes_count,
             videoCount: result.video_count,
+            videos: result.videos || [],
             bioDescription: result.bio_description || '',
             isVerified: result.is_verified || false,
             profileDeepLink: result.profile_deep_link || '',
@@ -86,38 +84,11 @@ function TikTokCallback() {
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
             refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-            lastSyncStatus: 'pending',
+            lastSyncStatus: 'success',
+            lastSyncTime: new Date().toISOString(),
         };
 
         await setDoc(tiktokAccountRef, accountData, { merge: true });
-        
-        setStatus("Perfil salvo. Sincronizando vídeos...");
-
-        // Save the initial batch of videos fetched during the exchange code flow
-        if (result.videos && result.videos.length > 0) {
-            const batch = writeBatch(firestore);
-            const videosCollectionRef = collection(tiktokAccountRef, 'videos');
-            result.videos.forEach((video: any) => {
-                const videoDocRef = doc(videosCollectionRef, video.id);
-                batch.set(videoDocRef, video);
-            });
-            await batch.commit();
-            setStatus("Vídeos iniciais sincronizados.");
-        }
-        
-        // Start the full history fetch in the background (non-blocking)
-        if (result.video_count > (result.videos?.length || 0)) {
-            fetchTikTokHistory({
-                userId: user.uid,
-                tiktokAccountId: result.open_id,
-                accessToken: result.access_token, // Pass access token
-            });
-             setStatus("Sincronização completa iniciada em segundo plano.");
-        } else {
-             setStatus("Sincronização de vídeos concluída!");
-             await setDoc(tiktokAccountRef, { lastSyncStatus: 'success', lastSyncTime: new Date().toISOString() }, { merge: true });
-        }
-
 
         toast({
             title: "Conta TikTok Conectada!",

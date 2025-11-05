@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -82,47 +81,36 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
-    const { data: videos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(
-      useMemoFirebase(() => {
-        if (!user || !firestore || !tiktokAccount || !tiktokAccount.id || (tiktokAccount.videoCount ?? 0) === 0) return null;
-        return query(
-          collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
-          orderBy('create_time', 'desc'),
-          limit(10)
-        );
-      }, [user, firestore, tiktokAccount])
-    );
-
     const totalViews = useMemo(() => {
-      if (!videos) return 0;
-      return videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
-    }, [videos]);
+      if (!tiktokAccount || !tiktokAccount.videos) return 0;
+      return tiktokAccount.videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    }, [tiktokAccount]);
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
-         if (!videos || videos.length < 2) {
+         if (!tiktokAccount.videos || tiktokAccount.videos.length < 2) {
              return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
         }
-        return videos.map((_, index) => ({
-            value: Math.round((tiktokAccount.followerCount || 0) - (videos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
+        return tiktokAccount.videos.map((_, index) => ({
+            value: Math.round((tiktokAccount.followerCount || 0) - (tiktokAccount.videos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
         }));
-    }, [tiktokAccount, videos]);
+    }, [tiktokAccount]);
 
     const likesData = useMemo(() => {
       if (!tiktokAccount) return [{ value: 0 }];
-      if (!videos || videos.length < 2) {
+      if (!tiktokAccount.videos || tiktokAccount.videos.length < 2) {
         return [{ value: Math.round((tiktokAccount.likesCount || 0) * 0.95) }, { value: tiktokAccount.likesCount || 0 }];
       }
       // This is a mock trend, in a real scenario you would have historical likes data
-      return videos.map((v, index) => ({
+      return tiktokAccount.videos.map((v, index) => ({
         value: (v.like_count || 0) + (index * 100), // simulate a growing trend
       }));
-    }, [tiktokAccount, videos]);
+    }, [tiktokAccount]);
 
     const viewsData = useMemo(() => {
-      if (!videos || videos.length < 2) return [{ value: 0 }];
-      return videos.map(v => ({ value: v.view_count || 0 })).reverse();
-    }, [videos]);
+      if (!tiktokAccount || !tiktokAccount.videos || tiktokAccount.videos.length < 2) return [{ value: 0 }];
+      return tiktokAccount.videos.map(v => ({ value: v.view_count || 0 })).reverse();
+    }, [tiktokAccount]);
 
 
     const getTrendColor = (data: { value: number }[]) => {
@@ -156,7 +144,7 @@ export default function DashboardPage() {
         {
             title: 'Total de Views (Últimos Vídeos)',
             value: formatNumber(totalViews),
-            isLoading: isLoadingVideos,
+            isLoading: isLoadingTiktok,
             icon: Film,
             data: viewsData.length > 0 ? viewsData : [{value: 0}],
             color: getTrendColor(viewsData),
@@ -328,11 +316,11 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-       {videos && videos.length > 0 && (
+       {tiktokAccount && tiktokAccount.videos && tiktokAccount.videos.length > 0 && (
           <div className="space-y-4">
               <h2 className="text-xl font-bold tracking-tight">Últimos Vídeos do TikTok</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {videos.map(video => (
+                  {tiktokAccount.videos.map(video => (
                       <Card key={video.id} className="overflow-hidden group">
                            <a href={video.share_url} target="_blank" rel="noopener noreferrer">
                               <div className="relative aspect-[9/16]">
@@ -360,14 +348,14 @@ export default function DashboardPage() {
           </div>
        )}
 
-      {tiktokAccount && (isLoadingVideos && (tiktokAccount.videoCount ?? 0) > 0) && (
+      {isLoadingTiktok && (
           <div className="text-center text-muted-foreground py-10">
               <Loader2 className="mx-auto animate-spin h-8 w-8" />
               <p className="mt-2">Carregando seus vídeos do TikTok...</p>
           </div>
       )}
 
-      {tiktokAccount && !isLoadingVideos && (!videos || videos.length === 0) && ((tiktokAccount.videoCount ?? 0) > 0) && (
+      {tiktokAccount && (!tiktokAccount.videos || tiktokAccount.videos.length === 0) && (
           <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg">
               <Video className="mx-auto h-12 w-12" />
               <h3 className="mt-4 text-lg font-semibold">Nenhum vídeo encontrado</h3>
