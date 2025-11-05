@@ -14,13 +14,14 @@ import {
   Presentation,
   LogOut,
   User,
-  Share2
+  Share2,
+  ChevronDown,
+  Wand2,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TrendifyLogo } from '@/components/icons';
 import { useAuth, useUser } from '@/firebase';
-import { FloatingNav } from '@/components/ui/floating-nav';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,8 +29,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuGroup,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export const Logo = () => {
   return (
@@ -46,15 +49,71 @@ export const Logo = () => {
 };
 
 const navItems = [
-  { name: 'Dashboard', link: '/dashboard', icon: <LayoutDashboard className="size-4" /> },
-  { name: 'Plano', link: '/dashboard/plan', icon: <CalendarCheck className="size-4" /> },
-  { name: 'Ideias', link: '/dashboard/ideas', icon: <Lightbulb className="size-4" /> },
-  { name: 'Tendências', link: '/dashboard/trends', icon: <Flame className="size-4" /> },
-  { name: 'Análise', link: '/dashboard/analysis', icon: <Presentation className="size-4" /> },
-  { name: 'Monetização', link: '/dashboard/monetization', icon: <DollarSign className="size-4" /> },
-  { name: 'Publis', link: '/dashboard/sponsored-content', icon: <Star className="size-4" /> },
-  { name: 'Conexões', link: '/dashboard/connections', icon: <Share2 className="size-4" /> },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Plano', href: '/dashboard/plan', icon: CalendarCheck },
+  { name: 'Conexões', href: '/dashboard/connections', icon: Share2 },
 ];
+
+const resourcesItems = [
+    { name: 'Gerador de Ideias', href: '/dashboard/ideas', icon: Lightbulb },
+    { name: 'Feed de Tendências', href: '/dashboard/trends', icon: Flame },
+    { name: 'Análise de Vídeo', href: '/dashboard/analysis', icon: Presentation },
+    { name: 'Assistente de Monetização', href: '/dashboard/monetization', icon: DollarSign },
+    { name: 'Ideias para Publis', href: '/dashboard/sponsored-content', icon: Star },
+];
+
+const MainNav = () => {
+  const pathname = usePathname();
+
+  return (
+    <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+      {navItems.map((item) => (
+        <Link
+          key={item.name}
+          href={item.href}
+          className={cn(
+            'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+            pathname === item.href
+              ? 'bg-primary/10 text-primary'
+              : 'text-muted-foreground hover:text-foreground'
+          )}
+        >
+          <item.icon className="inline-block size-4 mr-2" />
+          {item.name}
+        </Link>
+      ))}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className={cn('px-3 py-2 text-sm font-medium transition-colors',
+               resourcesItems.some(item => pathname === item.href)
+                ? 'text-primary'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            <Wand2 className="inline-block size-4 mr-2" />
+            Recursos
+            <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56" align="start" forceMount>
+            <DropdownMenuGroup>
+                {resourcesItems.map((item) => (
+                    <DropdownMenuItem key={item.name} asChild>
+                         <Link href={item.href}>
+                            <item.icon className="mr-2 h-4 w-4" />
+                            <span>{item.name}</span>
+                        </Link>
+                    </DropdownMenuItem>
+                ))}
+            </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </nav>
+  );
+};
+
 
 export default function DashboardLayout({
   children,
@@ -73,11 +132,10 @@ export default function DashboardLayout({
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex h-20 items-center justify-between gap-4 px-4 sticky top-0 z-50">
-        <Logo />
-
-        <div className="absolute left-1/2 -translate-x-1/2">
-            <FloatingNav navItems={navItems} />
+      <header className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
+        <div className="flex items-center gap-6">
+            <Logo />
+            <MainNav />
         </div>
 
         <div className="flex items-center gap-4">
