@@ -72,7 +72,16 @@ export default function ConnectionsPage() {
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
         tiktokAuthUrl.searchParams.append('state', state);
 
-        window.location.href = tiktokAuthUrl.toString();
+        const width = 600;
+        const height = 700;
+        const left = window.screen.width / 2 - width / 2;
+        const top = window.screen.height / 2 - height / 2;
+        
+        window.open(
+            tiktokAuthUrl.toString(),
+            'tiktokLogin',
+            `width=${width},height=${height},top=${top},left=${left}`
+        );
     };
 
     const handleDisconnectTikTok = async () => {
@@ -131,7 +140,7 @@ export default function ConnectionsPage() {
         metaAuthUrl.searchParams.append('response_type', 'code');
         metaAuthUrl.searchParams.append('state', state);
 
-        window.location.href = metaAuthUrl.toString();
+        window.open(metaAuthUrl.toString(), 'instagramLogin', 'width=600,height=700');
     };
 
     return (

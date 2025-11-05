@@ -38,7 +38,16 @@ export default function OnboardingPage() {
     tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
     tiktokAuthUrl.searchParams.append('state', state);
 
-    window.location.href = tiktokAuthUrl.toString();
+    const width = 600;
+    const height = 700;
+    const left = window.screen.width / 2 - width / 2;
+    const top = window.screen.height / 2 - height / 2;
+    
+    window.open(
+        tiktokAuthUrl.toString(),
+        'tiktokLogin',
+        `width=${width},height=${height},top=${top},left=${left}`
+    );
   };
 
   const handleFinishOnboarding = async () => {
