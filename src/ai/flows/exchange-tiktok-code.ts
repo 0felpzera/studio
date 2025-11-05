@@ -120,7 +120,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                     const videoFields = [
                         'id', 'title', 'cover_image_url', 'share_url', 'view_count',
                         'like_count', 'comment_count', 'share_count', 'create_time'
-                    ].join(',');
+                    ];
                     
                     const videoListResponse = await fetch(
                         TIKTOK_VIDEOLIST_URL,
@@ -131,7 +131,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                fields: videoFields,
+                                fields: videoFields, // Correctly passing an array of strings
                                 max_count: 20,
                             }),
                         }

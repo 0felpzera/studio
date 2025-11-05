@@ -43,7 +43,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       const videoFields = [
         "id", "title", "cover_image_url", "share_url", "view_count",
         "like_count", "comment_count", "share_count", "create_time"
-      ].join(',');
+      ];
       
       let cursor: string | number | undefined = undefined;
       let hasMore = true;
@@ -54,7 +54,7 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
         page++;
         console.log(`Fetching page ${page} of TikTok videos for user ${userId}...`);
         
-        const requestBody: { fields: string; max_count: number; cursor?: string | number } = {
+        const requestBody: { fields: string[]; max_count: number; cursor?: string | number } = {
             fields: videoFields,
             max_count: 20,
         };
@@ -99,12 +99,13 @@ const fetchTikTokHistoryFlow = ai.defineFlow(
       
       console.log(`Successfully fetched and saved ${allVideos.length} videos for user ${userId}.`);
       
-      // Update the sync status
+      // Update the sync status and the video array on the main document
       const tiktokAccountRef = firestore.doc(`users/${userId}/tiktokAccounts/${tiktokAccountId}`);
       await firestore.batch().update(tiktokAccountRef, {
           lastSyncStatus: 'success',
           lastSyncTime: new Date().toISOString(),
-          videoCount: allVideos.length
+          videoCount: allVideos.length,
+          videos: allVideos // Overwrite with the full, most recent list
       }).commit();
 
     } catch (err: any) {
