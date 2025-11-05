@@ -75,8 +75,9 @@ export default function DashboardPage() {
         return null;
     }, [tiktokAccounts]);
     
+    /*
     const videosQuery = useMemoFirebase(() => {
-        if (!user || !firestore || !tiktokAccount) return null;
+        if (!user || !firestore || !tiktokAccount || !tiktokAccount.videoCount || tiktokAccount.videoCount === 0) return null;
         return query(
             collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'),
             orderBy('create_time', 'desc'),
@@ -84,7 +85,6 @@ export default function DashboardPage() {
         );
     }, [user, firestore, tiktokAccount]);
 
-    const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
     const { data: videos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
 
 
@@ -92,6 +92,11 @@ export default function DashboardPage() {
       if (!videos) return 0;
       return videos.reduce((sum, video) => sum + (video.view_count || 0), 0);
     }, [videos]);
+    */
+   const videos: TiktokVideo[] = [];
+   const isLoadingVideos = false;
+   const totalViews = 0;
+
 
     const followersData = useMemo(() => {
         if (!tiktokAccount) return [{ value: 0 }];
@@ -141,6 +146,8 @@ export default function DashboardPage() {
             gradientId: 'viewsGradient',
         },
     ];
+
+    const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
 
   return (
     <div className="space-y-6">
@@ -223,17 +230,6 @@ export default function DashboardPage() {
         </div>
       </div>
       
-       {isLoadingVideos && (
-          <Card>
-              <CardHeader>
-                <CardTitle className="font-bold">Carregando seus vídeos...</CardTitle>
-              </CardHeader>
-              <CardContent className="flex justify-center items-center h-48">
-                  <Loader2 className="size-12 animate-spin text-primary" />
-              </CardContent>
-          </Card>
-      )}
-
        {!isLoading && !tiktokAccount && (
         <Card className="bg-amber-50 border-amber-200 text-amber-900">
           <CardHeader className="flex-row gap-4 items-center">
@@ -250,40 +246,6 @@ export default function DashboardPage() {
           </CardFooter>
         </Card>
        )}
-
-      {tiktokAccount && !isLoadingVideos && videos && videos.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-bold">Últimos Vídeos do TikTok</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {videos.map((video) => (
-              <Link href={video.share_url} key={video.id} target="_blank" rel="noopener noreferrer" className="group">
-                 <Card className="overflow-hidden">
-                    <div className="relative aspect-[9/16]">
-                      <Image 
-                        src={video.cover_image_url || '/placeholder.png'} 
-                        alt={video.title || 'TikTok Video'} 
-                        fill 
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                      <div className="absolute bottom-2 left-2 right-2">
-                        <p className="text-white text-xs font-semibold truncate">{video.title || 'Sem título'}</p>
-                        <p className="text-white/80 text-xs">{formatNumber(video.view_count)} views</p>
-                      </div>
-                    </div>
-                 </Card>
-              </Link>
-            ))}
-          </CardContent>
-          {tiktokAccount.videoCount > 10 && (
-            <CardFooter>
-                <Button variant="secondary" className="w-full">Ver todos os vídeos</Button>
-            </CardFooter>
-          )}
-        </Card>
-      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
@@ -348,5 +310,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

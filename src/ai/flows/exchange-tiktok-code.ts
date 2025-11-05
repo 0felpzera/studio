@@ -44,6 +44,7 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     bio_description: z.string().optional().describe("User's profile bio description"),
     is_verified: z.boolean().optional().describe("Indicates if the user is a verified account"),
     profile_deep_link: z.string().url().optional().describe("Deep link to the user's profile"),
+    profile_web_link: z.string().url().optional().describe("Web link to the user's profile"),
     follower_count: z.number().describe("The number of followers the user has."),
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
@@ -94,7 +95,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
             // Step 2: Use the access token to fetch user information
-            const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,profile_deep_link,is_verified,follower_count,following_count,likes_count,video_count';
+            const userFields = 'open_id,union_id,avatar_url,display_name,bio_description,profile_deep_link,is_verified,follower_count,following_count,likes_count,video_count,profile_web_link';
             const userInfoUrlWithParams = `${TIKTOK_USERINFO_URL}?fields=${userFields}`;
 
             const userInfoResponse = await axios.get(userInfoUrlWithParams, {
@@ -106,38 +107,8 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             const userInfo = userInfoResponse.data.data.user;
             
-            // Step 3: Use access token to fetch THE FIRST PAGE of the video list
-            let videos = [];
-            try {
-                const videoFields = [
-                    "id", "title", "cover_image_url", "share_url", "view_count",
-                    "like_count", "comment_count", "share_count", "create_time"
-                ].join(',');
-                
-                const videoListResponse = await axios.post(
-                    TIKTOK_VIDEOLIST_URL,
-                    {
-                        fields: videoFields,
-                        max_count: 20,
-                    },
-                    {
-                        headers: { 
-                            'Authorization': `Bearer ${access_token}`, 
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                
-                if (videoListResponse.data.error.code === 'ok') {
-                    videos = videoListResponse.data.data.videos || [];
-                } else {
-                    // Log the error but don't block the main flow
-                    console.error(`Failed to fetch initial video list: ${videoListResponse.data.error.message}`);
-                }
-            } catch (videoError) {
-                 // Log the error but don't block the main flow
-                console.error("An error occurred during the initial video fetch:", videoError);
-            }
+            // Step 3: Use access token to fetch THE FIRST PAGE of the video list (but don't fail if it doesn't work)
+            let videos: any[] = [];
             
             return {
                 open_id: userInfo.open_id,
@@ -151,6 +122,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 bio_description: userInfo.bio_description,
                 is_verified: userInfo.is_verified,
                 profile_deep_link: userInfo.profile_deep_link,
+                profile_web_link: userInfo.profile_web_link,
                 follower_count: userInfo.follower_count,
                 following_count: userInfo.following_count,
                 likes_count: userInfo.likes_count,
