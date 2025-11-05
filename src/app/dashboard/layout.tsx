@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { motion } from "framer-motion";
 
 export const Logo = () => {
   return (
@@ -66,19 +67,20 @@ const MainNav = () => {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+    <nav 
+      className="relative flex items-center justify-center bg-card/60 shadow-lg rounded-full p-1 border border-border/20 backdrop-blur-sm"
+    >
       {navItems.map((item) => (
         <Link
           key={item.name}
           href={item.href}
           className={cn(
-            'px-3 py-2 rounded-md text-sm font-medium transition-colors',
+            'relative z-10 px-4 py-2 rounded-full text-sm font-medium transition-colors',
             pathname === item.href
-              ? 'bg-primary/10 text-primary'
+              ? 'text-primary'
               : 'text-muted-foreground hover:text-foreground'
           )}
         >
-          <item.icon className="inline-block size-4 mr-2" />
           {item.name}
         </Link>
       ))}
@@ -86,13 +88,12 @@ const MainNav = () => {
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
-            className={cn('px-3 py-2 text-sm font-medium transition-colors',
-               resourcesItems.some(item => pathname === item.href)
+            className={cn('relative z-10 px-4 py-2 text-sm font-medium transition-colors rounded-full',
+               resourcesItems.some(item => pathname.startsWith(item.href))
                 ? 'text-primary'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
-            <Wand2 className="inline-block size-4 mr-2" />
             Recursos
             <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" />
           </Button>
@@ -110,6 +111,7 @@ const MainNav = () => {
             </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+       {/* Active indicator logic can be added here if needed */}
     </nav>
   );
 };
@@ -132,17 +134,20 @@ export default function DashboardLayout({
 
   return (
     <div className="flex flex-col h-screen">
-      <header className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 sticky top-0 z-50 bg-background/80 backdrop-blur-sm border-b">
-        <div className="flex items-center gap-6">
+      <header className="flex h-20 items-center justify-between gap-4 px-4 sm:px-6 sticky top-0 z-50">
+        <div className="flex items-center">
             <Logo />
+        </div>
+
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 hidden md:block">
             <MainNav />
         </div>
 
         <div className="flex items-center gap-4">
              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                        <Avatar className="size-8">
+                    <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                        <Avatar className="size-10 border-2 border-border/20">
                             <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'User'} />
                             <AvatarFallback>{user?.displayName?.charAt(0).toUpperCase() || 'U'}</AvatarFallback>
                         </Avatar>
@@ -175,7 +180,7 @@ export default function DashboardLayout({
             </DropdownMenu>
         </div>
       </header>
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 -mt-4">
         {children}
       </main>
     </div>
