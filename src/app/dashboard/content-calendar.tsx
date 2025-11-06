@@ -67,25 +67,15 @@ const formSchema = z.object({
 
 type PendingTask = Omit<ContentTask, 'id' | 'date'>;
 
-const parseCalendarString = (
-  calendarString: string,
+const parseCalendarResponse = (
+  response: GenerateWeeklyContentCalendarOutput,
   userId: string
 ): PendingTask[] => {
-  const lines = calendarString
-    .trim()
-    .split('\n')
-    .filter((line) => line.trim() !== '' && line.includes(':'));
-  return lines.map((line) => {
-    const [dayPart, ...rest] = line.split(':');
-    const idea = rest.join(':').trim();
-    const platformMatch = idea.match(/\((.*?)\)/);
-    const platform = platformMatch ? platformMatch[1] : 'Reels';
-    const description = idea.replace(/\(.*?\)\s*-\s*/, '').trim();
-
+  return response.calendar.map((idea) => {
     return {
       userId,
-      platform,
-      description,
+      platform: idea.platform,
+      description: `${idea.title} - ${idea.description}`,
       isCompleted: false,
       status: 'pending',
     };
@@ -133,7 +123,7 @@ export default function ContentCalendar() {
     try {
       const result: GenerateWeeklyContentCalendarOutput =
         await generateWeeklyContentCalendar(values);
-      const newTasks = parseCalendarString(result.calendar, user.uid);
+      const newTasks = parseCalendarResponse(result, user.uid);
       setPendingPlan(newTasks);
 
       toast({
@@ -153,7 +143,7 @@ export default function ContentCalendar() {
   }
 
   const acceptPlan = async () => {
-    const planToSave = pendingPlan || pendingTasksFromDB;
+    const planToSave = pendingPlan || (pendingTasksFromDB.length > 0 ? pendingTasksFromDB : null);
     if (!user || !firestore || !planToSave || planToSave.length === 0) {
       toast({ title: "Erro", description: "Nenhum plano pendente para salvar.", variant: "destructive" });
       return;

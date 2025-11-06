@@ -22,12 +22,15 @@ export type GenerateWeeklyContentCalendarInput = z.infer<
   typeof GenerateWeeklyContentCalendarInputSchema
 >;
 
+const ContentIdeaSchema = z.object({
+    day: z.string().describe('The day of the week for the content idea (e.g., "Segunda-feira").'),
+    title: z.string().describe('A catchy title for the content idea.'),
+    description: z.string().describe('A brief description of the video or post.'),
+    platform: z.string().describe('The suggested platform(s) for this content (e.g., "TikTok, Reels").')
+});
+
 const GenerateWeeklyContentCalendarOutputSchema = z.object({
-  calendar: z
-    .string()
-    .describe(
-      'A weekly content calendar with suggested platforms (TikTok, Reels, etc.) for each day.'
-    ),
+  calendar: z.array(ContentIdeaSchema).describe('A list of structured content ideas for the week.'),
 });
 export type GenerateWeeklyContentCalendarOutput = z.infer<
   typeof GenerateWeeklyContentCalendarOutputSchema
@@ -43,7 +46,15 @@ const prompt = ai.definePrompt({
   name: 'generateWeeklyContentCalendarPrompt',
   input: {schema: GenerateWeeklyContentCalendarInputSchema},
   output: {schema: GenerateWeeklyContentCalendarOutputSchema},
-  prompt: `You are an expert social media strategist. Generate a weekly content calendar for a content creator, taking into account their niche, goals, and desired posting frequency. Suggest the optimal platform (e.g., TikTok, Reels, YouTube) for each day to maximize engagement and growth. Return the calendar as a simple string.
+  prompt: `You are an expert social media strategist. Generate a weekly content calendar for a content creator, taking into account their niche, goals, and desired posting frequency. 
+  
+  For each suggestion, provide:
+  - The day of the week.
+  - A catchy title for the idea.
+  - A brief description of the content.
+  - The optimal platform (e.g., TikTok, Reels, YouTube) for each day to maximize engagement and growth.
+
+  Return the calendar as a structured JSON array.
 
 Niche: {{{niche}}}
 Goals: {{{goals}}}
