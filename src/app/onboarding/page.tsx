@@ -1,23 +1,27 @@
 
-
 'use client';
 
-import { useState } from 'react';
-import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
-import { useRouter } from 'next/navigation';
-import { Loader2, UserPlus, Goal, Check, Share2 } from 'lucide-react';
+import { useState, useEffect, useMemo, Suspense } from 'react';
+import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
+import { doc, setDoc, collection } from 'firebase/firestore';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Loader2, Goal, Check, Share2, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { SiTiktok } from 'react-icons/si';
+import type { TiktokAccount } from '@/lib/types';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export default function OnboardingPage() {
+
+function OnboardingComponent() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -25,21 +29,26 @@ export default function OnboardingPage() {
   const [followerGoal, setFollowerGoal] = useState('');
   const [postingFrequency, setPostingFrequency] = useState('');
 
+  // --- TikTok Connection State ---
+  const tiktokConnectedParam = searchParams.get('tiktokConnected');
+
+  const tiktokAccountsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return collection(firestore, 'users', user.uid, 'tiktokAccounts');
+  }, [firestore, user]);
+
+  const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+  const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
+  
+  const isTiktokConnected = useMemo(() => !!tiktokAccount, [tiktokAccount]);
+
   const handleConnectTikTok = () => {
-    if (isUserLoading) {
-        toast({
-            title: "Aguarde um momento",
-            description: "Estamos verificando sua sessão. Tente novamente em alguns segundos.",
-        });
-        return;
-    }
     if (!user) {
         toast({
-            title: "Usuário não encontrado",
-            description: "Você precisa estar logado para conectar sua conta.",
+            title: "Sessão não encontrada",
+            description: "Por favor, aguarde um momento enquanto carregamos seus dados.",
             variant: "destructive"
         });
-        router.push('/login');
         return;
     }
     
@@ -52,12 +61,12 @@ export default function OnboardingPage() {
         });
         return;
     }
-    const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
+    
+    const redirectUri = new URL('/auth/tiktok/callback', window.location.origin).toString();
     const scope = 'user.info.profile,user.info.stats,video.list';
 
-    // Encode user ID and a random value into the state parameter
     const randomState = crypto.randomUUID();
-    const state = Buffer.from(JSON.stringify({ userId: user.uid, random: randomState })).toString('base64');
+    const state = Buffer.from(JSON.stringify({ userId: user.uid, random: randomState, from: 'onboarding' })).toString('base64');
     
     const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
     tiktokAuthUrl.searchParams.append('client_key', clientKey);
@@ -89,11 +98,9 @@ export default function OnboardingPage() {
         postingFrequency,
       };
       
-      // Use a predictable ID for the goal document
       const goalDocRef = doc(firestore, 'users', user.uid, 'goals', 'user-goal');
       await setDoc(goalDocRef, goalData, { merge: true });
 
-      // Also update the main user doc with the niche for easy access
       const userDocRef = doc(firestore, 'users', user.uid);
       await setDoc(userDocRef, { niche }, { merge: true });
 
@@ -116,7 +123,7 @@ export default function OnboardingPage() {
     }
   };
 
-  if (isUserLoading && !user) {
+  if (isUserLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -171,22 +178,54 @@ export default function OnboardingPage() {
                 </div>
             </div>
 
-             <div className="space-y-4">
+            <div className="space-y-4">
                 <h3 className='font-semibold text-lg flex items-center gap-2'><Share2 className='size-5 text-primary'/> Conecte suas Contas</h3>
-                <p className="text-sm text-muted-foreground">Conecte sua conta do TikTok para importar suas métricas e obter análises mais precisas.</p>
-                <Button className="w-full" variant="outline" onClick={handleConnectTikTok} disabled={isUserLoading}>
-                   {isUserLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                   Conectar TikTok
-                </Button>
+                {isLoadingTiktok ? (
+                    <div className="flex items-center justify-center rounded-lg border h-10 w-full bg-muted animate-pulse">
+                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+                    </div>
+                ) : isTiktokConnected && tiktokAccount ? (
+                    <div className="flex items-center justify-between rounded-lg border p-3 bg-green-500/10 text-green-800">
+                        <div className="flex items-center gap-3">
+                             <Avatar className="size-8">
+                                <AvatarImage src={tiktokAccount.avatarUrl} alt={tiktokAccount.username} />
+                                <AvatarFallback>{tiktokAccount.username.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <span className="font-semibold">{tiktokAccount.username}</span>
+                        </div>
+                        <Check className="size-5 text-green-600" />
+                    </div>
+                ) : (
+                    <>
+                        <p className="text-sm text-muted-foreground">Conecte sua conta do TikTok para importar suas métricas e obter análises mais precisas.</p>
+                        <Button className="w-full" variant="outline" onClick={handleConnectTikTok} disabled={isUserLoading}>
+                            {isUserLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SiTiktok className="mr-2" />}
+                            Conectar TikTok
+                        </Button>
+                    </>
+                )}
             </div>
-          
         </CardContent>
-        <CardContent>
+        <CardFooter>
             <Button onClick={handleFinishOnboarding} disabled={isLoading || isUserLoading} className="w-full font-bold text-lg">
                 {isLoading ? <Loader2 className="animate-spin" /> : <><Check className="mr-2" /> Concluir e ir para o Dashboard</>}
             </Button>
-        </CardContent>
+        </CardFooter>
       </Card>
     </div>
   );
 }
+
+export default function OnboardingPage() {
+    return (
+        <Suspense fallback={
+             <div className="flex h-screen w-full items-center justify-center bg-background">
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            </div>
+        }>
+            <OnboardingComponent />
+        </Suspense>
+    )
+}
+
+    

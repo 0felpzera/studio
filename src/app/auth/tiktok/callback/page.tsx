@@ -6,10 +6,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
-import { collection } from 'firebase/firestore';
 
 function TikTokCallback() {
   const searchParams = useSearchParams();
@@ -24,7 +23,6 @@ function TikTokCallback() {
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
-    // This effect should only run when the user's auth state is determined.
     if (isUserLoading) {
       setStatus("Verificando sua sessão...");
       return;
@@ -35,7 +33,6 @@ function TikTokCallback() {
     const returnedError = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
-    // Handle initial errors from TikTok redirect
     if (returnedError) {
       setError(errorDescription || "O TikTok retornou um erro desconhecido.");
       setStatus("Erro na autenticação.");
@@ -57,7 +54,6 @@ function TikTokCallback() {
         return;
     }
     
-    // Auth check: Ensure a Firebase user is logged in
     if (!user || !firestore) {
       setError("Você precisa estar logado para conectar uma conta.");
       setStatus("Usuário não autenticado.");
@@ -71,17 +67,24 @@ function TikTokCallback() {
       return;
     }
 
-    // All checks passed, proceed to exchange code
     const processCode = async () => {
       try {
         setStatus("Trocando código, buscando perfil e vídeos...");
         
-        const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
+        // This must match the URI registered in the TikTok Developer portal
+        const redirectUri = new URL(window.location.href);
+        redirectUri.search = ''; // Remove query params to get the base callback URL
         
-        const result = await exchangeTikTokCode({ code: authCode, redirect_uri: redirectUri, state: returnedState });
+        const result = await exchangeTikTokCode({ code: authCode, redirect_uri: redirectUri.toString(), state: returnedState });
         
-        // Final security check: ensure the user ID from the decoded state matches the logged-in user
-        if (result.decodedStateUserId !== user.uid) {
+        let decodedState: { userId: string; random: string; from: string };
+        try {
+            decodedState = JSON.parse(Buffer.from(returnedState, 'base64').toString('utf8'));
+        } catch (e) {
+            throw new Error("Falha ao decodificar o parâmetro 'state' de segurança.");
+        }
+
+        if (decodedState.userId !== user.uid) {
             setError("A sessão do usuário mudou durante a autenticação. Por segurança, o processo foi cancelado. Por favor, tente novamente.");
             setStatus("Conflito de sessão.");
             setIsProcessing(false);
@@ -93,7 +96,6 @@ function TikTokCallback() {
 
         const batch = writeBatch(firestore);
 
-        // 1. Set the main TikTok account document
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
         const accountData = {
             id: result.open_id,
@@ -112,12 +114,11 @@ function TikTokCallback() {
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
             refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-            lastSyncStatus: 'success', // Sync is done in one go
+            lastSyncStatus: 'success',
             lastSyncTime: new Date().toISOString(),
         };
         batch.set(tiktokAccountRef, accountData, { merge: true });
 
-        // 2. Set the video documents in the subcollection
         if (result.videos && result.videos.length > 0) {
             const videosCollectionRef = collection(tiktokAccountRef, 'videos');
             result.videos.forEach(video => {
@@ -126,7 +127,6 @@ function TikTokCallback() {
             });
         }
         
-        // 3. Commit the batch
         await batch.commit();
 
         toast({
@@ -137,9 +137,11 @@ function TikTokCallback() {
         setStatus("Conexão bem-sucedida! Redirecionando...");
         setIsProcessing(false);
 
+        const destination = decodedState.from === 'onboarding' ? '/onboarding?tiktokConnected=true' : '/dashboard';
+
         setTimeout(() => {
-            router.push('/dashboard');
-        }, 3000);
+            router.push(destination);
+        }, 1500);
 
       } catch (e: any) {
         console.error("Erro ao processar o código do TikTok:", e);
@@ -149,12 +151,11 @@ function TikTokCallback() {
       }
     };
     
-    // Only call processCode if it hasn't been run yet (isProcessing is true)
     if (isProcessing) {
       processCode();
     }
 
-  }, [isUserLoading, user, firestore, router, searchParams, toast]);
+  }, [isUserLoading, user, firestore, router, searchParams, toast, isProcessing]);
 
   const renderStatus = () => {
       if (isProcessing) {
@@ -171,7 +172,7 @@ function TikTokCallback() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-4">
-        <Card className="w-full max-w-2xl">
+        <Card className="w-full max-w-md">
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     Processando Conexão TikTok
@@ -190,18 +191,14 @@ function TikTokCallback() {
                         </div>
                     </div>
                 )}
-                {apiResponse && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className='text-lg'>Resposta da API do TikTok</CardTitle>
-                            {!error && <CardDescription>Sincronização concluída. Redirecionando para o dashboard em 3 segundos...</CardDescription>}
-                        </CardHeader>
-                        <CardContent>
-                           <pre className="mt-2 w-full overflow-auto text-sm bg-muted p-4 rounded-lg">
-                                {JSON.stringify(apiResponse, null, 2)}
-                           </pre>
-                        </CardContent>
-                    </Card>
+                {apiResponse && !error && (
+                    <div className="flex items-start gap-3 text-green-600 bg-green-500/10 p-3 rounded-lg">
+                        <CheckCircle className="h-5 w-5 mt-0.5"/>
+                        <div>
+                            <h4 className="font-semibold">Sucesso!</h4>
+                            <p className="text-sm">Redirecionando em breve...</p>
+                        </div>
+                    </div>
                 )}
             </CardContent>
         </Card>
@@ -221,3 +218,5 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
+
+    
