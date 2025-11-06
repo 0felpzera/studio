@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -6,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Loader2 } from 'lucide-react';
-import { doc, getDoc } from 'firebase/firestore';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { doc, setDoc } from 'firebase/firestore';
 
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
@@ -29,34 +30,64 @@ export default function SignUpPage() {
     const firestore = useFirestore();
     const { user, isUserLoading } = useUser();
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
+    const { toast } = useToast();
+    
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
-    // Effect to handle redirection for already logged-in users
     useEffect(() => {
         if (!isUserLoading && user) {
-            const checkUserDoc = async () => {
-                const userDocRef = doc(firestore, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/onboarding');
-                }
-            };
-            checkUserDoc();
+            router.push('/onboarding');
         }
-    }, [user, isUserLoading, router, firestore]);
+    }, [user, isUserLoading, router]);
 
-    const handleSocialSignUp = async () => {
+    const handleGoogleSignUp = async () => {
         if (!auth) return;
-        setIsLoading(true);
+        setIsSubmitting(true);
         const provider = new GoogleAuthProvider();
-        // Just initiate the redirect. The login page will handle the result.
+        // Redirect to login page, which will handle the result
         await signInWithRedirect(auth, provider);
     };
 
-    if (isUserLoading || isLoading) {
+    const handleEmailSignUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!auth || !firestore || !email || !password || !name) return;
+        setIsSubmitting(true);
+
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            const user = userCredential.user;
+
+            await updateProfile(user, { displayName: name });
+            
+            const userDocRef = doc(firestore, 'users', user.uid);
+            await setDoc(userDocRef, {
+                id: user.uid,
+                email: user.email,
+                name: name,
+            });
+
+            // The useEffect will handle the redirect to /onboarding
+        } catch (error: any) {
+            console.error("Email sign up error:", error);
+            let message = "Não foi possível criar sua conta. Tente novamente.";
+            if (error.code === 'auth/email-already-in-use') {
+                message = "Este e-mail já está em uso. Tente fazer login.";
+            }
+            toast({
+                title: "Erro no Cadastro",
+                description: message,
+                variant: 'destructive',
+            });
+            setIsSubmitting(false);
+        }
+    };
+    
+    if (isUserLoading || isSubmitting || user) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -77,9 +108,38 @@ export default function SignUpPage() {
                             Comece a transformar sua estratégia de conteúdo hoje mesmo.
                         </p>
                     </div>
+
+                    <form onSubmit={handleEmailSignUp} className="grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="name">Nome</Label>
+                            <Input id="name" type="text" placeholder="Seu nome completo" required value={name} onChange={(e) => setName(e.target.value)} />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" placeholder="seu@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                        </div>
+                         <div className="grid gap-2">
+                            <Label htmlFor="password">Senha</Label>
+                            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                        </div>
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Criar Conta
+                        </Button>
+                    </form>
                     
-                    <Button variant="outline" className="w-full" onClick={handleSocialSignUp} disabled={isLoading}>
-                        {isLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon className="mr-2 h-6 w-6" /> Cadastre-se com o Google</>}
+                    <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">OU CONTINUE COM</span>
+                        </div>
+                    </div>
+
+                    <Button variant="outline" className="w-full" onClick={handleGoogleSignUp} disabled={isSubmitting}>
+                        <GoogleIcon className="mr-2 h-6 w-6" />
+                        Cadastre-se com o Google
                     </Button>
 
                     <div className="mt-4 text-center text-sm">

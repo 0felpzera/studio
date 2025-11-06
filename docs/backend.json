@@ -246,9 +246,7 @@
   "auth": {
     "providers": [
       "password",
-      "anonymous",
-      "google.com",
-      "apple.com"
+      "google.com"
     ]
   },
   "firestore": {

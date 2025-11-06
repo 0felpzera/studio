@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -6,11 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Loader2 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -29,81 +31,97 @@ export default function LoginPage() {
     const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
-    const [isLoading, setIsLoading] = useState(true); // Start loading to handle redirect
+    
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isPageLoading, setIsPageLoading] = useState(true);
+
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
-    // Centralized handler for Google redirect result
     useEffect(() => {
         if (!auth || !firestore || isUserLoading) {
-            // Wait for dependencies to be ready
             return;
         }
 
-        // Only process redirect result if there's no user logged in yet.
-        if (!user) {
-            getRedirectResult(auth)
-                .then(async (result) => {
-                    if (result) {
-                        // User has successfully signed in via redirect.
-                        const user = result.user;
-                        const userDocRef = doc(firestore, 'users', user.uid);
-                        const userDoc = await getDoc(userDocRef);
-
-                        // If user document doesn't exist, it's a new user.
-                        if (!userDoc.exists()) {
-                            await setDoc(userDocRef, {
-                                id: user.uid,
-                                email: user.email,
-                                name: user.displayName,
-                            });
-                            toast({ title: "Cadastro bem-sucedido!", description: "Vamos configurar seu perfil." });
-                            // The next effect will redirect to onboarding.
-                        }
-                        // If user exists, the next effect will handle the redirect to dashboard.
-                    } else {
-                        // No redirect result, user is on the login page normally.
-                        setIsLoading(false);
-                    }
-                })
-                .catch((error) => {
-                    console.error("Redirect result error:", error);
-                    toast({
-                        title: "Erro no Login",
-                        description: "Não foi possível completar o login com Google.",
-                        variant: 'destructive'
-                    });
-                    setIsLoading(false);
-                });
+        if (user) {
+            // Already logged in, no need to process redirect, just go to dashboard
+            router.push('/dashboard');
+            return;
         }
+        
+        setIsPageLoading(true);
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (result) {
+                    const user = result.user;
+                    const userDocRef = doc(firestore, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (!userDoc.exists()) {
+                        await setDoc(userDocRef, {
+                            id: user.uid,
+                            email: user.email,
+                            name: user.displayName,
+                        });
+                        toast({ title: "Bem-vindo!", description: "Vamos configurar seu perfil." });
+                        router.push('/onboarding');
+                    } else {
+                        // User exists, will be redirected by the main user effect
+                    }
+                } else {
+                    // No redirect result, user is on the login page normally.
+                    setIsPageLoading(false);
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect result error:", error);
+                toast({
+                    title: "Erro no Login com Google",
+                    description: "Não foi possível completar o login. Tente novamente.",
+                    variant: 'destructive'
+                });
+                setIsPageLoading(false);
+            });
+            
     }, [auth, firestore, isUserLoading, user, router, toast]);
 
-    // Handles redirection for already logged-in users.
+     // This effect handles redirection for already logged-in users or after a successful login.
     useEffect(() => {
         if (!isUserLoading && user) {
-            const checkUserDoc = async () => {
-                const userDocRef = doc(firestore, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    router.push('/dashboard');
-                } else {
-                    router.push('/onboarding');
-                }
-            };
-            checkUserDoc();
+            router.push('/dashboard');
         } else if (!isUserLoading && !user) {
-             // If after all checks, there's no user and not loading, show the page.
-             setIsLoading(false);
+            setIsPageLoading(false);
         }
-    }, [user, isUserLoading, router, firestore]);
+    }, [user, isUserLoading, router]);
 
-    const handleSocialLogin = async () => {
+    const handleGoogleLogin = async () => {
         if (!auth) return;
-        setIsLoading(true);
+        setIsSubmitting(true);
         const provider = new GoogleAuthProvider();
         await signInWithRedirect(auth, provider);
     };
 
-    if (isLoading) {
+    const handleEmailLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!auth || !email || !password) return;
+        setIsSubmitting(true);
+        try {
+            await signInWithEmailAndPassword(auth, email, password);
+            // The useEffect will handle the redirect to /dashboard
+        } catch (error: any) {
+            console.error("Email login error:", error);
+            toast({
+                title: "Erro no Login",
+                description: "Verifique seu e-mail e senha e tente novamente.",
+                variant: 'destructive',
+            });
+            setIsSubmitting(false);
+        }
+    };
+
+
+    if (isPageLoading) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -125,8 +143,36 @@ export default function LoginPage() {
                         </p>
                     </div>
                     
-                    <Button variant="outline" className="w-full" onClick={handleSocialLogin} disabled={isLoading}>
-                        <GoogleIcon className="mr-2 h-6 w-6" /> Google
+                    <form onSubmit={handleEmailLogin} className="grid gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="email">Email</Label>
+                            <Input id="email" type="email" placeholder="seu@email.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                        </div>
+                         <div className="grid gap-2">
+                            <div className="flex items-center">
+                                <Label htmlFor="password">Senha</Label>
+                                <Link href="#" className="ml-auto inline-block text-sm underline">Esqueceu a senha?</Link>
+                            </div>
+                            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                        </div>
+                        <Button type="submit" className="w-full" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Entrar
+                        </Button>
+                    </form>
+
+                     <div className="relative">
+                        <div className="absolute inset-0 flex items-center">
+                            <span className="w-full border-t" />
+                        </div>
+                        <div className="relative flex justify-center text-xs uppercase">
+                            <span className="bg-background px-2 text-muted-foreground">OU CONTINUE COM</span>
+                        </div>
+                    </div>
+
+                    <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isSubmitting}>
+                        {isSubmitting ? <Loader2 className="animate-spin" /> : <GoogleIcon className="mr-2 h-6 w-6" />}
+                        Google
                     </Button>
 
                     <div className="mt-4 text-center text-sm">
