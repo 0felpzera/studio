@@ -50,7 +50,7 @@ const Sidebar = () => {
                     <Link
                         key={item.name}
                         href={item.href}
-                        className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-300 transition-colors hover:bg-white/5',
+                        className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
                            pathname === item.href ? 'active' : ''
                         )}
                     >
@@ -63,7 +63,7 @@ const Sidebar = () => {
                     <Link
                         key={item.name}
                         href={item.href}
-                        className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-gray-300 transition-colors hover:bg-white/5',
+                        className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
                            pathname.startsWith(item.href) ? 'active' : ''
                         )}
                     >
