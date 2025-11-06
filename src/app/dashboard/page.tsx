@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -37,10 +38,10 @@ import Image from 'next/image';
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
     if (value >= 1000000) {
-        return (value / 1000000).toFixed(1) + 'M';
+        return (value / 1000000).toFixed(1).replace('.', ',') + 'M';
     }
     if (value >= 1000) {
-        return (value / 1000).toFixed(1) + 'k';
+        return (value / 1000).toFixed(1).replace('.', ',') + 'k';
     }
     return value.toString();
 }
@@ -209,7 +210,7 @@ export default function DashboardPage() {
                   <div className="flex items-end gap-2.5 justify-between">
                     <div className="flex flex-col gap-1">
                        {card.isLoading ? (
-                            <Loader2 className="size-8 animate-spin text-muted-foreground" />
+                            <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
                         ) : (
                             <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
                         )}
@@ -250,7 +251,7 @@ export default function DashboardPage() {
                             fill={`url(#${card.gradientId})`}
                             strokeWidth={2}
                             dot={false}
-                            activeDot={{ r: 6, fill: card.color, stroke: 'var(--background)', strokeWidth: 2 }}
+                            activeDot={{ r: 4, fill: card.color, stroke: 'var(--background)', strokeWidth: 1 }}
                           />
                         </AreaChart>
                       </ResponsiveContainer>
@@ -264,16 +265,16 @@ export default function DashboardPage() {
       </div>
       
        {!isLoading && !tiktokAccount && (
-        <Card className="bg-amber-50 border-amber-200 text-amber-900">
+        <Card className="bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800/50 dark:text-amber-200">
           <CardHeader className="flex-row gap-4 items-center">
-            <AlertTriangle className="size-8" />
+            <AlertTriangle className="size-8 flex-shrink-0" />
             <div>
-              <CardTitle>Conecte sua conta TikTok</CardTitle>
-              <CardDescription className="text-amber-800">Para ver seu dashboard completo, você precisa conectar sua conta do TikTok.</CardDescription>
+              <CardTitle className="text-amber-950 dark:text-amber-100">Conecte sua conta TikTok</CardTitle>
+              <CardDescription className="text-amber-800 dark:text-amber-300/80">Para ver seu dashboard completo, você precisa conectar sua conta do TikTok.</CardDescription>
             </div>
           </CardHeader>
           <CardFooter>
-            <Button asChild variant="default" className="bg-amber-900 hover:bg-amber-950 text-white">
+            <Button asChild variant="default" className="bg-amber-900 hover:bg-amber-950 text-white dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-amber-950">
               <Link href="/dashboard/connections">Conectar Agora</Link>
             </Button>
           </CardFooter>
@@ -287,19 +288,30 @@ export default function DashboardPage() {
             <CardDescription>Suas próximas tarefas agendadas.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             {isLoadingTasks && <p className="text-sm text-muted-foreground">Carregando tarefas...</p>}
-             {!isLoadingTasks && upcomingPosts?.length === 0 && <p className="text-sm text-muted-foreground">Nenhum post futuro agendado. Gere um plano!</p>}
+             {isLoadingTasks && (
+                <div className="space-y-3">
+                    <div className="h-12 bg-muted rounded-lg animate-pulse" />
+                    <div className="h-12 bg-muted rounded-lg animate-pulse" />
+                </div>
+             )}
+             {!isLoadingTasks && upcomingPosts?.length === 0 && (
+                <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
+                    <CalendarDays className="mx-auto h-8 w-8" />
+                    <h3 className="mt-2 font-semibold">Nenhum post futuro</h3>
+                    <p className="text-sm">Gere um plano de conteúdo para começar.</p>
+                </div>
+             )}
             {upcomingPosts?.map((post) => (
-              <div key={post.id} className="flex items-center gap-4">
-                <div className="rounded-lg bg-muted p-3">
-                  {post.platform.toLowerCase() === 'tiktok' ? <CalendarDays className="h-6 w-6 text-sky-500" /> : <Film className="h-6 w-6 text-rose-500" />}
+              <div key={post.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                <div className="rounded-lg bg-background p-3 border">
+                  {post.platform.toLowerCase().includes('tiktok') ? <Video className="h-6 w-6 text-sky-500" /> : <Film className="h-6 w-6 text-rose-500" />}
                 </div>
                 <div className="flex-grow">
                   <p className="font-semibold">
-                    {post.platform} - {post.description}
+                    {post.description}
                   </p>
-                  <p className="text-sm text-muted-foreground">
-                    {post.date ? new Date(post.date.toDate()).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit' }) : 'Data pendente'}
+                  <p className="text-sm text-muted-foreground capitalize">
+                    {post.platform} &middot; {post.date ? new Date(post.date.toDate()).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit' }) : 'Data pendente'}
                   </p>
                 </div>
               </div>
@@ -320,16 +332,27 @@ export default function DashboardPage() {
             <CardDescription>Suas próximas grandes ideias de vídeo.</CardDescription>
           </CardHeader>
           <CardContent>
-             {isLoadingIdeas && <p className="text-sm text-muted-foreground">Carregando ideias...</p>}
-             {!isLoadingIdeas && savedIdeas?.length === 0 && <p className="text-sm text-muted-foreground">Nenhuma ideia salva. Gere novas ideias!</p>}
+             {isLoadingIdeas && (
+                <div className="space-y-3">
+                    <div className="h-10 bg-muted rounded-lg animate-pulse" />
+                    <div className="h-10 bg-muted rounded-lg animate-pulse" />
+                </div>
+             )}
+             {!isLoadingIdeas && savedIdeas?.length === 0 && (
+                <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
+                     <Lightbulb className="mx-auto h-8 w-8" />
+                    <h3 className="mt-2 font-semibold">Nenhuma ideia salva</h3>
+                    <p className="text-sm">Gere novas ideias para o seu conteúdo.</p>
+                </div>
+             )}
             <div className="space-y-2">
               {savedIdeas?.map((idea) => (
                 <Link key={idea.id} href="/dashboard/ideas">
                   <div
                     className="flex items-center justify-between rounded-md p-3 hover:bg-muted cursor-pointer"
                   >
-                    <p className="font-medium">{idea.title}</p>
-                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                    <p className="font-medium truncate">{idea.title}</p>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
                   </div>
                 </Link>
               ))}
@@ -355,19 +378,19 @@ export default function DashboardPage() {
                                       src={video.cover_image_url || '/placeholder.png'} 
                                       alt={video.title || 'TikTok video cover'} 
                                       fill
-                                      className="object-cover transition-transform duration-300 group-hover:scale-110"
+                                      className="object-cover transition-transform duration-300 group-hover:scale-105"
                                   />
-                                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                   <div className="absolute bottom-2 left-2 right-2">
+                                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                                   <div className="absolute bottom-3 left-3 right-3">
                                        <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                    </div>
                               </div>
                            </a>
-                          <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2">
-                              <div className="flex items-center gap-1" title="Curtidas"><Heart className="size-3" /> {formatNumber(video.like_count)}</div>
-                              <div className="flex items-center gap-1" title="Comentários"><MessageCircle className="size-3" /> {formatNumber(video.comment_count)}</div>
-                              <div className="flex items-center gap-1" title="Compartilhamentos"><Share className="size-3" /> {formatNumber(video.share_count)}</div>
-                               <div className="flex items-center gap-1" title="Visualizações"><TrendingUp className="size-3" /> {formatNumber(video.view_count)}</div>
+                          <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
+                              <div className="flex items-center gap-1" title={`${formatNumber(video.like_count)} Curtidas`}><Heart className="size-3.5" /> {formatNumber(video.like_count)}</div>
+                              <div className="flex items-center gap-1" title={`${formatNumber(video.comment_count)} Comentários`}><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</div>
+                              <div className="flex items-center gap-1" title={`${formatNumber(video.share_count)} Compartilhamentos`}><Share className="size-3.5" /> {formatNumber(video.share_count)}</div>
+                              <div className="flex items-center gap-1" title={`${formatNumber(video.view_count)} Visualizações`}><TrendingUp className="size-3.5" /> {formatNumber(video.view_count)}</div>
                           </CardContent>
                       </Card>
                   ))}
@@ -375,10 +398,10 @@ export default function DashboardPage() {
           </div>
        )}
 
-      {(isLoadingTiktok || isLoadingVideos) && (
+      {(isLoadingTiktok || isLoadingVideos) && !tiktokAccount && (
           <div className="text-center text-muted-foreground py-10">
               <Loader2 className="mx-auto animate-spin h-8 w-8" />
-              <p className="mt-2">Carregando seus vídeos do TikTok...</p>
+              <p className="mt-2">Carregando seus dados do TikTok...</p>
           </div>
       )}
 
@@ -395,3 +418,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
