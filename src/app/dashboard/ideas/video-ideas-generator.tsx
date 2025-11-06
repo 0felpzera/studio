@@ -143,7 +143,6 @@ export default function VideoIdeasGenerator() {
 
 
   return (
-    <Dialog>
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1">
           <Card>
@@ -167,6 +166,7 @@ export default function VideoIdeasGenerator() {
                         Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
                       </SheetDescription>
                     </SheetHeader>
+                    <Dialog>
                     <div className="flex-1 overflow-y-auto pr-4">
                       {isLoadingSaved && (
                          <div className="space-y-4 mt-4">
@@ -210,6 +210,24 @@ export default function VideoIdeasGenerator() {
                         </div>
                       )}
                     </div>
+                     {savedIdeas?.map(idea => (
+                        <DialogContent key={idea.id}>
+                            <DialogHeader>
+                            <DialogTitle className="flex items-center gap-2">
+                                <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
+                                    {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
+                                </Badge>
+                                {idea.title}
+                            </DialogTitle>
+                            <DialogDescription>{idea.description}</DialogDescription>
+                            </DialogHeader>
+                            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
+                                <h4 className="font-semibold">Esboço do Roteiro:</h4>
+                                <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
+                            </div>
+                        </DialogContent>
+                        ))}
+                    </Dialog>
                   </SheetContent>
                 </Sheet>
               </div>
@@ -317,24 +335,6 @@ export default function VideoIdeasGenerator() {
             )}
           </div>
         </div>
-         {savedIdeas?.map(idea => (
-          <DialogContent key={idea.id}>
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                 <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
-                    {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
-                </Badge>
-                {idea.title}
-              </DialogTitle>
-              <DialogDescription>{idea.description}</DialogDescription>
-            </DialogHeader>
-            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
-                <h4 className="font-semibold">Esboço do Roteiro:</h4>
-                <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
-            </div>
-          </DialogContent>
-        ))}
       </div>
-    </Dialog>
   );
 }
