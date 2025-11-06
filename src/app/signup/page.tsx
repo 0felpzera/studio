@@ -8,8 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup, AppleAuthProvider } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -51,6 +51,50 @@ export default function SignUpPage() {
             router.push('/onboarding'); // Redirect to onboarding if user is detected
         }
     }, [user, isUserLoading, router]);
+
+    const handleSocialSignUp = async (provider: GoogleAuthProvider | AppleAuthProvider) => {
+        setIsLoading(true);
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            const userDocRef = doc(firestore, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            if (!userDoc.exists()) {
+                await setDoc(userDocRef, {
+                    id: user.uid,
+                    email: user.email,
+                    name: user.displayName,
+                });
+            }
+
+            toast({
+                title: "Cadastro bem-sucedido!",
+                description: "Vamos configurar seu perfil.",
+            });
+            // Let the useEffect handle redirection
+        } catch (error: any) {
+            toast({
+                title: "Erro no Cadastro",
+                description: error.message || "Não foi possível criar sua conta. Tente novamente.",
+                variant: 'destructive'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleGoogleSignUp = () => {
+        const provider = new GoogleAuthProvider();
+        handleSocialSignUp(provider);
+    }
+    
+    const handleAppleSignUp = () => {
+        const provider = new AppleAuthProvider();
+        handleSocialSignUp(provider);
+    }
+
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -130,10 +174,10 @@ export default function SignUpPage() {
                         </div>
                     </div>
                      <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" size="icon" disabled className="w-full h-12">
+                        <Button variant="outline" size="icon" className="w-full h-12" onClick={handleGoogleSignUp} disabled={isLoading}>
                             <GoogleIcon className="h-6 w-6" />
                         </Button>
-                        <Button variant="outline" size="icon" disabled className="w-full h-12">
+                        <Button variant="outline" size="icon" className="w-full h-12" onClick={handleAppleSignUp} disabled={isLoading}>
                             <AppleIcon className="h-6 w-6" />
                         </Button>
                     </div>

@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser } from '@/firebase';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, AppleAuthProvider } from 'firebase/auth';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -40,6 +41,7 @@ export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const firestore = useFirestore();
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
     useEffect(() => {
@@ -47,6 +49,52 @@ export default function LoginPage() {
             router.push('/dashboard');
         }
     }, [user, isUserLoading, router]);
+    
+    const handleSocialLogin = async (provider: GoogleAuthProvider | AppleAuthProvider) => {
+        setIsLoading(true);
+        try {
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
+
+            const userDocRef = doc(firestore, 'users', user.uid);
+            const userDoc = await getDoc(userDocRef);
+            
+            if (!userDoc.exists()) {
+                await setDoc(userDocRef, {
+                    id: user.uid,
+                    email: user.email,
+                    name: user.displayName,
+                });
+                 router.push('/onboarding');
+            } else {
+                 router.push('/dashboard');
+            }
+
+            toast({
+                title: "Login bem-sucedido!",
+                description: "Redirecionando...",
+            });
+
+        } catch (error: any) {
+            toast({
+                title: "Erro no Login",
+                description: error.message || "Não foi possível fazer login. Tente novamente.",
+                variant: 'destructive'
+            });
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    const handleGoogleLogin = () => {
+        const provider = new GoogleAuthProvider();
+        handleSocialLogin(provider);
+    }
+
+    const handleAppleLogin = () => {
+        const provider = new AppleAuthProvider();
+        handleSocialLogin(provider);
+    }
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -117,10 +165,10 @@ export default function LoginPage() {
                     </div>
 
                      <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" size="icon" disabled className="w-full h-12">
+                        <Button variant="outline" size="icon" className="w-full h-12" onClick={handleGoogleLogin} disabled={isLoading}>
                             <GoogleIcon className="h-6 w-6" />
                         </Button>
-                        <Button variant="outline" size="icon" disabled className="w-full h-12">
+                        <Button variant="outline" size="icon" className="w-full h-12" onClick={handleAppleLogin} disabled={isLoading}>
                             <AppleIcon className="h-6 w-6" />
                         </Button>
                     </div>
