@@ -18,7 +18,6 @@ import {
     LogOut,
     Menu,
     X,
-    FileText,
     Users,
     TrendingUp,
 } from 'lucide-react';
@@ -40,7 +39,6 @@ const resourcesItems = [
     { name: 'Análise de Vídeo', href: '/dashboard/analysis', icon: Presentation },
     { name: 'Monetização', href: '/dashboard/monetization', icon: DollarSign },
     { name: 'Ideias para Publis', href: '/dashboard/sponsored-content', icon: Star },
-    { name: 'Prompts da IA', href: '/dashboard/prompts', icon: FileText },
 ];
 
 const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
