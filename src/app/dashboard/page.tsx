@@ -67,11 +67,16 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-3 text-sm">
         <p className="label font-bold text-foreground">{`Mês: ${label}`}</p>
-        {payload.map((pld: any) => (
-          <p key={pld.dataKey} style={{ color: pld.color }}>
-            {`${pld.name}: ${formatNumber(pld.value)}`}
-          </p>
-        ))}
+        {payload.map((pld: any) => {
+            const value = pld.dataKey === 'Engajamento' 
+                ? `${pld.value.toFixed(2).replace('.', ',')}%`
+                : formatNumber(pld.value);
+            return (
+              <p key={pld.dataKey} style={{ color: pld.color }}>
+                {`${pld.name}: ${value}`}
+              </p>
+            )
+        })}
       </div>
     );
   }
@@ -140,10 +145,10 @@ export default function DashboardPage() {
     
     const chartData = useMemo(() => {
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const dataByMonth: { [key: string]: { views: number; likes: number } } = {};
+        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number } } = {};
         
         months.forEach(m => {
-            dataByMonth[m] = { views: 0, likes: 0 };
+            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0 };
         });
 
         if (filteredVideos && filteredVideos.length > 0) {
@@ -154,16 +159,25 @@ export default function DashboardPage() {
                     if (month) {
                         dataByMonth[month].views += video.view_count || 0;
                         dataByMonth[month].likes += video.like_count || 0;
+                        dataByMonth[month].comments += video.comment_count || 0;
+                        dataByMonth[month].shares += video.share_count || 0;
                     }
                 }
             });
         }
         
-        return months.map((month) => ({
-            month,
-            Visualizações: dataByMonth[month].views,
-            Curtidas: dataByMonth[month].likes,
-        }));
+        return months.map((month) => {
+            const monthData = dataByMonth[month];
+            const totalEngagements = monthData.likes + monthData.comments + monthData.shares;
+            const engagementRate = monthData.views > 0 ? (totalEngagements / monthData.views) * 100 : 0;
+            
+            return {
+                month,
+                Visualizações: monthData.views,
+                Curtidas: monthData.likes,
+                Engajamento: engagementRate,
+            };
+        });
 
     }, [filteredVideos]);
 
@@ -436,7 +450,7 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className='font-bold'>Visão Geral da Performance</CardTitle>
-                        <CardDescription>Visualizações e curtidas dos seus vídeos ao longo do tempo.</CardDescription>
+                        <CardDescription>Visualizações, curtidas e engajamento dos seus vídeos ao longo do tempo.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[350px] pl-0">
                         <ResponsiveContainer width="100%" height="100%">
@@ -450,11 +464,21 @@ export default function DashboardPage() {
                                     axisLine={false}
                                 />
                                 <YAxis 
+                                    yAxisId="left"
                                     stroke="hsl(var(--muted-foreground))"
                                     fontSize={12}
                                     tickLine={false}
                                     axisLine={false}
                                     tickFormatter={(value) => formatNumber(value)}
+                                />
+                                <YAxis 
+                                    yAxisId="right"
+                                    orientation="right"
+                                    stroke="hsl(var(--muted-foreground))"
+                                    fontSize={12}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickFormatter={(value) => `${value.toFixed(1)}%`}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
                                 <defs>
@@ -462,13 +486,10 @@ export default function DashboardPage() {
                                         <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
                                         <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
                                     </linearGradient>
-                                     <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
-                                    </linearGradient>
                                 </defs>
-                                <Bar dataKey="Visualizações" fill="hsl(var(--chart-2) / 0.5)" radius={[4, 4, 0, 0]} />
-                                <Area type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-3))" fill="url(#colorLikes)" />
+                                <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1) / 0.5)" radius={[4, 4, 0, 0]} />
+                                <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorViews)" />
+                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }}/>
                             </ComposedChart>
                         </ResponsiveContainer>
                     </CardContent>
