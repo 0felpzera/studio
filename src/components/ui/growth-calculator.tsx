@@ -122,7 +122,7 @@ export function GrowthCalculator() {
         setHighestStep(Math.max(highestStep, currentStep + 1));
         form.reset(updatedFormData);
       } else {
-        onSubmit(updatedFormData as GenerateGrowthPlanInput);
+        onSubmit(updatedFormData as FormData);
       }
     } else {
          toast({
@@ -144,11 +144,15 @@ export function GrowthCalculator() {
     }
   };
   
-  const onSubmit = async (data: GenerateGrowthPlanInput) => {
+  const onSubmit = async (data: FormData) => {
     setIsCalculating(true);
     setFormData(data);
     try {
-      const result = await generateGrowthPlan(data);
+      const result = await generateGrowthPlan({
+        ...data,
+        followers: Number(data.followers),
+        followerGoal: Number(data.followerGoal),
+      });
       setPlan(result);
       setIsCalculated(true);
       setTimeout(() => {
