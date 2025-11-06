@@ -72,13 +72,13 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
                 <div className='overflow-y-auto p-4 space-y-1'>
-                    <p className="px-4 py-2 text-xs font-semibold text-foreground tracking-wider">Menu</p>
+                    <p className="px-4 py-2 text-xs font-semibold text-primary tracking-wider">Menu</p>
                     {[...navItems].map(item => (
                         <Button
                             key={item.name}
                             variant={pathname === item.href ? 'secondary' : 'ghost'}
                             className={cn('w-full justify-start gap-3', 
-                               pathname === item.href && 'text-primary font-semibold'
+                               pathname === item.href ? 'text-primary font-semibold' : 'text-black'
                             )}
                             onClick={() => handleLinkClick(item.href)}
                         >
@@ -86,13 +86,13 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
                             <span>{item.name}</span>
                         </Button>
                     ))}
-                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-foreground tracking-wider">Ferramentas de IA</p>
+                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-primary tracking-wider">Ferramentas de IA</p>
                      {resourcesItems.map(item => (
                         <Button
                             key={item.name}
                             variant={pathname.startsWith(item.href) ? 'secondary' : 'ghost'}
                             className={cn('w-full justify-start gap-3', 
-                               pathname.startsWith(item.href) && 'text-primary font-semibold'
+                               pathname.startsWith(item.href) ? 'text-primary font-semibold' : 'text-black'
                             )}
                             onClick={() => handleLinkClick(item.href)}
                         >
