@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -154,7 +155,7 @@ export default function SponsoredContentIdeator() {
                 <CardContent>
                   <div className="flex flex-wrap gap-2">
                     {result.formatSuggestions.map((format, index) => (
-                      <Badge key={index} variant="secondary" appearance='light' className="text-base px-3 py-1">{format}</Badge>
+                      <Badge key={index} variant="secondary" className="text-base px-3 py-1">{format}</Badge>
                     ))}
                   </div>
                 </CardContent>

@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -17,9 +17,13 @@ import {
     Star,
     Share2,
     LogOut,
+    Menu,
+    X,
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { TrendifyLogo } from '@/components/icons';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -35,7 +39,7 @@ const resourcesItems = [
     { name: 'Ideias para Publis', href: '/dashboard/sponsored-content', icon: Star },
 ];
 
-const Sidebar = () => {
+const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
     const pathname = usePathname();
     const { user } = useUser();
     const auth = useAuth();
@@ -45,47 +49,58 @@ const Sidebar = () => {
         try {
             if (auth) {
                 await signOut(auth);
+                if (onLinkClick) onLinkClick();
                 router.push('/login');
             }
         } catch (error) {
             console.error("Error signing out: ", error);
         }
     };
+    
+    const handleLinkClick = (href: string) => {
+        router.push(href);
+        if (onLinkClick) {
+            onLinkClick();
+        }
+    }
 
     return (
-        <aside className="w-64 flex-shrink-0 flex-col z-10 hidden md:flex bg-card/60">
+        <>
             <div className="h-20 flex items-center justify-center border-b">
-                <Link href="/dashboard" className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-black font-headline">Trendify</span>
+                <Link href="/dashboard" className="flex items-center gap-2" onClick={onLinkClick}>
+                    <TrendifyLogo className="size-7 text-primary" />
+                    <span className="text-xl font-bold text-foreground font-headline">Trendify</span>
                 </Link>
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
-                <div className='overflow-y-auto p-4'>
-                    <p className="px-4 py-2 text-xs font-semibold text-black tracking-wider">Menu</p>
+                <div className='overflow-y-auto p-4 space-y-1'>
+                    <p className="px-4 py-2 text-xs font-semibold text-muted-foreground tracking-wider">Menu</p>
                     {[...navItems].map(item => (
-                        <Link
+                        <Button
                             key={item.name}
-                            href={item.href}
-                            className={cn('flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
-                               pathname === item.href ? 'bg-primary/10 text-primary font-semibold' : 'font-medium'
+                            variant={pathname === item.href ? 'secondary' : 'ghost'}
+                            className={cn('w-full justify-start gap-3', 
+                               pathname === item.href && 'text-primary font-semibold'
                             )}
+                            onClick={() => handleLinkClick(item.href)}
                         >
                             <item.icon className="w-5 h-5" />
                             <span>{item.name}</span>
-                        </Link>
+                        </Button>
                     ))}
-                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-black tracking-wider">Ferramentas de IA</p>
+                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-muted-foreground tracking-wider">Ferramentas de IA</p>
                      {resourcesItems.map(item => (
-                        <Link
+                        <Button
                             key={item.name}
-                            href={item.href}
-                            className={cn('flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
-                               pathname.startsWith(item.href) ? 'bg-primary/10 text-primary font-semibold' : 'font-medium'
+                            variant={pathname.startsWith(item.href) ? 'secondary' : 'ghost'}
+                            className={cn('w-full justify-start gap-3', 
+                               pathname.startsWith(item.href) && 'text-primary font-semibold'
                             )}
+                            onClick={() => handleLinkClick(item.href)}
                         >
                             <item.icon className="w-5 h-5" />
                             <span>{item.name}</span>
-                        </Link>
+                        </Button>
                     ))}
                 </div>
             </div>
@@ -104,20 +119,47 @@ const Sidebar = () => {
                     </Button>
                 </div>
             </div>
-        </aside>
+        </>
     );
 };
 
+
 export default function DashboardLayout({ children }: { children: ReactNode }) {
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
     return (
         <div className="relative min-h-screen w-full bg-background text-foreground overflow-hidden">
             <div className="shape-1"></div>
             <div className="shape-2"></div>
             <div className="flex h-screen w-full">
-                <Sidebar />
-                <main className="flex-1 overflow-auto p-8">
-                    {children}
-                </main>
+                {/* Desktop Sidebar */}
+                <aside className="w-64 flex-shrink-0 flex-col z-10 hidden md:flex bg-card/60 border-r">
+                    <SidebarContent />
+                </aside>
+
+                <div className="flex flex-1 flex-col">
+                    {/* Mobile Header */}
+                    <header className="md:hidden sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
+                        <Link href="/dashboard" className="flex items-center gap-2">
+                            <TrendifyLogo className="size-7 text-primary" />
+                            <span className="text-lg font-bold font-headline">Trendify</span>
+                        </Link>
+                        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+                            <SheetTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                    <Menu className="h-6 w-6" />
+                                    <span className="sr-only">Abrir menu</span>
+                                </Button>
+                            </SheetTrigger>
+                            <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
+                                <SidebarContent onLinkClick={() => setIsSheetOpen(false)} />
+                            </SheetContent>
+                        </Sheet>
+                    </header>
+
+                    <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
+                        {children}
+                    </main>
+                </div>
             </div>
         </div>
     );

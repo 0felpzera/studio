@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -6,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { PlayCircle } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const allTrends = [
   { id: 1, title: 'Desafio de Dança Viral #1', category: 'Dança', views: '2.1M', imageId: 'trend-1' },
@@ -30,11 +32,14 @@ export default function TrendsFeed() {
   return (
     <div className="w-full">
       <Tabs defaultValue="Todos" onValueChange={setSelectedNiche} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:flex sm:flex-wrap sm:w-auto">
-          {niches.map(niche => (
-            <TabsTrigger key={niche} value={niche}>{niche}</TabsTrigger>
-          ))}
-        </TabsList>
+        <ScrollArea className="w-full whitespace-nowrap">
+            <TabsList>
+            {niches.map(niche => (
+                <TabsTrigger key={niche} value={niche}>{niche}</TabsTrigger>
+            ))}
+            </TabsList>
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       
         <div className="mt-6">
             <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">

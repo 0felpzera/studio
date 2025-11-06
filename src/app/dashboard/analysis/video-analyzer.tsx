@@ -98,9 +98,9 @@ export default function VideoAnalyzer() {
               onClick={() => fileInputRef.current?.click()}
             >
               {videoPreview ? (
-                <video src={videoPreview} controls className="w-full h-full object-contain rounded-lg" />
+                <video src={videoPreview} controls className="w-full h-full object-contain rounded-lg bg-black" />
               ) : (
-                <div className="text-center">
+                <div className="text-center p-4">
                   <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
                   <p className="mt-2 text-sm text-muted-foreground">
                     <span className="font-semibold">Clique para enviar</span> ou arraste e solte
@@ -210,7 +210,7 @@ export default function VideoAnalyzer() {
                 <div>
                   <h4 className="font-semibold text-sm mb-2">Hashtags Sugeridas:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary" appearance="light">{tag}</Badge>)}
+                    {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
                   </div>
                 </div>
               </CardContent>
@@ -221,5 +221,3 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
-
-    
