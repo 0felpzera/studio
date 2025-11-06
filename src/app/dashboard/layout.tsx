@@ -43,16 +43,18 @@ const Sidebar = () => {
 
     const handleSignOut = async () => {
         try {
-            await signOut(auth);
-            router.push('/login');
+            if (auth) {
+                await signOut(auth);
+                router.push('/login');
+            }
         } catch (error) {
             console.error("Error signing out: ", error);
         }
     };
 
     return (
-        <aside className="glass-effect w-64 flex-shrink-0 flex-col z-10 hidden md:flex">
-            <div className="h-20 flex items-center justify-center border-b border-white/10">
+        <aside className="w-64 flex-shrink-0 flex-col z-10 hidden md:flex bg-card/60">
+            <div className="h-20 flex items-center justify-center border-b">
                 <Link href="/dashboard" className="flex items-center gap-2">
                     <span className="text-xl font-bold text-black font-headline">Trendify</span>
                 </Link>
@@ -64,8 +66,8 @@ const Sidebar = () => {
                         <Link
                             key={item.name}
                             href={item.href}
-                            className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
-                               pathname === item.href ? 'active' : ''
+                            className={cn('flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
+                               pathname === item.href ? 'bg-primary/10 text-primary font-semibold' : 'font-medium'
                             )}
                         >
                             <item.icon className="w-5 h-5" />
@@ -77,8 +79,8 @@ const Sidebar = () => {
                         <Link
                             key={item.name}
                             href={item.href}
-                            className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
-                               pathname.startsWith(item.href) ? 'active' : ''
+                            className={cn('flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
+                               pathname.startsWith(item.href) ? 'bg-primary/10 text-primary font-semibold' : 'font-medium'
                             )}
                         >
                             <item.icon className="w-5 h-5" />
@@ -87,17 +89,17 @@ const Sidebar = () => {
                     ))}
                 </div>
             </div>
-            <div className="p-4 border-t border-white/10">
+            <div className="p-4 border-t">
                 <div className="flex items-center gap-3">
                      <Avatar>
                         <AvatarImage src={user?.photoURL || "https://picsum.photos/seed/avatar/100/100"} alt={user?.displayName || "User Avatar"} />
                         <AvatarFallback>{user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
                     </Avatar>
-                    <div className='flex-1'>
-                        <p className="font-semibold text-white">{user?.displayName}</p>
-                        <p className="text-xs text-gray-400">{user?.email}</p>
+                    <div className='flex-1 min-w-0'>
+                        <p className="font-semibold text-foreground truncate">{user?.displayName}</p>
+                        <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                     </div>
-                     <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-white/70 hover:text-white hover:bg-white/10">
+                     <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
                         <LogOut className="w-5 h-5" />
                     </Button>
                 </div>
