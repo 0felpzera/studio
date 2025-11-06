@@ -56,13 +56,17 @@ export interface ContentTask {
   status: 'pending' | 'active';
 }
 
-export interface Goal {
+export const GoalSchema = z.object({
+  niche: z.string().min(1, "O nicho é obrigatório."),
+  followerGoal: z.coerce.number().min(1, "A meta de seguidores é obrigatória."),
+  postingFrequency: z.string().min(1, "A frequência de postagem é obrigatória."),
+});
+
+export type Goal = z.infer<typeof GoalSchema> & {
     id: string;
     userId: string;
-    niche: string;
-    followerGoal: number;
-    postingFrequency: string;
-}
+};
+
 
 export const GenerateGrowthPlanInputSchema = z.object({
   niche: z.string().describe("The creator's primary niche (e.g., 'Fashion', 'Fitness')."),
