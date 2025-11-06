@@ -96,8 +96,8 @@ export function NavBar({ items, className }: NavBarProps) {
       <div className="flex-1 flex justify-end">
         {isUserLoading ? (
             <div className="flex items-center gap-2">
-                <Skeleton className="h-9 w-20" />
-                <Skeleton className="h-9 w-24" />
+                <Skeleton className="h-9 w-20 rounded-full" />
+                <Skeleton className="h-9 w-24 rounded-full" />
             </div>
         ) : user ? (
            <Button variant="ghost" onClick={() => router.push('/dashboard')} className="whitespace-nowrap bg-card shadow-lg rounded-full py-2 px-4 h-auto border border-border">
@@ -106,10 +106,10 @@ export function NavBar({ items, className }: NavBarProps) {
             </Button>
         ) : (
             <div className="hidden sm:flex items-center gap-1 bg-card shadow-lg rounded-full p-1 border border-border">
-                <Button variant="ghost" size="sm" onClick={() => router.push('/login')} className="whitespace-nowrap">
+                <Button variant="ghost" onClick={() => router.push('/login')} className="whitespace-nowrap px-4 py-2 text-sm h-auto rounded-full">
                     Entrar
                 </Button>
-                <Button size="sm" onClick={() => router.push('/signup')} className="whitespace-nowrap">
+                <Button onClick={() => router.push('/signup')} className="whitespace-nowrap px-4 py-2 text-sm h-auto rounded-full">
                     Cadastre-se
                 </Button>
             </div>
