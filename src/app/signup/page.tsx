@@ -45,7 +45,13 @@ export default function SignUpPage() {
     const handleSocialSignUp = async (providerName: 'google') => {
         setIsLoading(true);
         try {
-            const provider = new GoogleAuthProvider();
+            let provider;
+            if (providerName === 'google') {
+                provider = new GoogleAuthProvider();
+            } else {
+                throw new Error('Provedor de cadastro desconhecido');
+            }
+            
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
@@ -66,11 +72,13 @@ export default function SignUpPage() {
             });
             // Let the useEffect handle redirection
         } catch (error: any) {
-            toast({
-                title: "Erro no Cadastro",
-                description: error.message || "Não foi possível criar sua conta. Tente novamente.",
-                variant: 'destructive'
-            });
+            if (error.code !== 'auth/popup-closed-by-user') {
+                toast({
+                    title: "Erro no Cadastro",
+                    description: error.message || "Não foi possível criar sua conta. Tente novamente.",
+                    variant: 'destructive'
+                });
+            }
         } finally {
             setIsLoading(false);
         }

@@ -6,8 +6,7 @@ import {
   signInWithEmailAndPassword,
   updateProfile,
 } from 'firebase/auth';
-import { doc, setDoc, getFirestore } from 'firebase/firestore';
-import { initializeFirebase } from '.';
+import { doc, setDoc, Firestore } from 'firebase/firestore';
 
 /** Initiate anonymous sign-in (non-blocking). */
 export function initiateAnonymousSignIn(authInstance: Auth): void {
@@ -15,7 +14,7 @@ export function initiateAnonymousSignIn(authInstance: Auth): void {
 }
 
 /** Initiate email/password sign-up (non-blocking). */
-export function initiateEmailSignUp(authInstance: Auth, email: string, password: string, name: string): void {
+export function initiateEmailSignUp(authInstance: Auth, firestore: Firestore, email: string, password: string, name: string): void {
   createUserWithEmailAndPassword(authInstance, email, password)
     .then(userCredential => {
       const user = userCredential.user;
@@ -23,7 +22,6 @@ export function initiateEmailSignUp(authInstance: Auth, email: string, password:
       return updateProfile(user, { displayName: name })
         .then(() => {
           // Create user document in Firestore
-          const { firestore } = initializeFirebase(); // Make sure firestore is initialized
           const userDocRef = doc(firestore, 'users', user.uid);
           return setDoc(userDocRef, {
             id: user.uid,

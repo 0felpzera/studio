@@ -44,7 +44,13 @@ export default function LoginPage() {
     const handleSocialLogin = async (providerName: 'google') => {
         setIsLoading(true);
         try {
-            const provider = new GoogleAuthProvider();
+            let provider;
+            if (providerName === 'google') {
+                provider = new GoogleAuthProvider();
+            } else {
+                throw new Error('Provedor de login desconhecido');
+            }
+            
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
@@ -68,11 +74,13 @@ export default function LoginPage() {
             });
 
         } catch (error: any) {
-            toast({
-                title: "Erro no Login",
-                description: error.message || "Não foi possível fazer login. Tente novamente.",
-                variant: 'destructive'
-            });
+            if (error.code !== 'auth/popup-closed-by-user') {
+                toast({
+                    title: "Erro no Login",
+                    description: error.message || "Não foi possível fazer login. Tente novamente.",
+                    variant: 'destructive'
+                });
+            }
         } finally {
             setIsLoading(false);
         }
