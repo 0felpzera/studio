@@ -16,7 +16,7 @@ import {
     Star,
     Share2,
 } from 'lucide-react';
-import { ViralBoostLogo } from '@/components/icons';
+import { TrendifyLogo } from '@/components/icons';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -40,8 +40,8 @@ const Sidebar = () => {
         <aside className="glass-effect w-64 flex-shrink-0 flex-col z-10 hidden md:flex">
             <div className="h-20 flex items-center justify-center border-b border-white/10">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <ViralBoostLogo className="w-8 h-8 text-primary" />
-                    <span className="text-xl font-bold text-white font-headline">ViralBoost</span>
+                    <TrendifyLogo className="w-8 h-8 text-primary" />
+                    <span className="text-xl font-bold text-white font-headline">Trendify</span>
                 </Link>
             </div>
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">

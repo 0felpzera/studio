@@ -4,7 +4,6 @@ import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import './globals.css';
 import { Inter, Poppins } from 'next/font/google';
-import Script from 'next/script';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -21,7 +20,7 @@ const poppins = Poppins({
 
 
 export const metadata: Metadata = {
-  title: 'ViralBoost AI',
+  title: 'Trendify',
   description: 'Sua plataforma de IA para viralizar nas redes sociais.',
 };
 
