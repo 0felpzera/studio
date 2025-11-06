@@ -89,10 +89,5 @@ export const GenerateGrowthPlanOutputSchema = z.object({
   timeToGoal: z.string().describe("An estimated time to reach the follower goal, like '~8 months' or '~1.5 years'."),
   potentialEarnings: z.string().describe("An estimated monthly earnings potential, like 'R$1.5k-R$5k'."),
   weeklyPlan: z.string().describe("A recommended weekly posting plan, like '2 Reels, 3 Stories'."),
-  hookIdeas: z.array(z.string()).length(3).describe('An array of three specific hook ideas for the given niche.'),
-  trendIdeas: z.array(z.object({
-    type: z.string().describe('The type of the trend (e.g., Audio, Format, Challenge).'),
-    description: z.string().describe('A brief description of the trend.'),
-  })).length(3).describe('An array of three specific, trending ideas for the given niche.'),
 });
 export type GenerateGrowthPlanOutput = z.infer<typeof GenerateGrowthPlanOutputSchema>;

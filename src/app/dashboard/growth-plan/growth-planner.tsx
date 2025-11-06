@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart, CheckCircle2, Loader2, Info, Rocket, Save } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart, CheckCircle2, Loader2, Info, Rocket, Save, Flame } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -27,7 +27,8 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion"
+} from "@/components/ui/accordion";
+import Link from 'next/link';
 
 
 const formSchema = z.object({
@@ -347,33 +348,25 @@ export function GrowthPlanner() {
             </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 font-bold"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho ({formData.niche})</CardTitle>
-                    <CardDescription>Ideias de inícios de vídeo para capturar a atenção imediatamente.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {displayPlan.hookIdeas.map((idea, index) => (
-                    <p key={index}>{index + 1}. "{idea}"</p>
-                  ))}
-                </CardContent>
-            </Card>
-             <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2 font-bold"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta para {formData.niche}</CardTitle>
-                     <CardDescription>Formatos e áudios que estão viralizando agora.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {displayPlan.trendIdeas.map((trend, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Badge variant="secondary">{trend.type}</Badge> 
-                      <span>{trend.description}</span>
-                    </div>
-                  ))}
-                </CardContent>
-            </Card>
-        </div>
+        <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2 font-bold"><Sparkles className="h-5 w-5 text-primary"/> Próximos Passos Criativos</CardTitle>
+                <CardDescription>Use nossas ferramentas de IA para colocar seu plano em ação e criar conteúdo que viraliza.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Button asChild variant="outline">
+                    <Link href="/dashboard/ideas" className="flex items-center gap-2">
+                        <Lightbulb className="h-4 w-4"/> Gerar Ideias de Vídeo
+                    </Link>
+                </Button>
+                <Button asChild variant="outline">
+                    <Link href="/dashboard/trends" className="flex items-center gap-2">
+                       <Flame className="h-4 w-4" /> Encontrar Tendências
+                    </Link>
+                </Button>
+            </CardContent>
+        </Card>
+
 
         <div className="text-center space-y-4 pt-8">
             <Dialog>

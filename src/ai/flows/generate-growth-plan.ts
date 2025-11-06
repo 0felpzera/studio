@@ -34,8 +34,6 @@ Your Task is to generate a plan optimized for *today's* algorithm and audience b
 1.  **Estimate Time to Goal**: Calculate a realistic timeframe to reach the follower goal (e.g., '~8 meses', '~1.5 anos').
 2.  **Estimate Earnings**: Based on current market rates for the niche in Brazil, estimate a potential monthly income range from brand deals (e.g., 'R$2.000-R$6.000').
 3.  **Recommend Weekly Plan**: Suggest a simple, effective weekly posting schedule (e.g., '3 Reels, 5 Stories com CTA').
-4.  **Generate 3 Modern Hook Ideas**: Create three compelling, specific video hook ideas in Brazilian Portuguese, tailored to the creator's niche.
-5.  **Generate 3 Relevant Trend Ideas**: Provide three actionable, *current* trends (Audio, Format, or Challenge) relevant to the niche in Brazil.
 
 Your entire output MUST conform to the JSON schema. Do not add any extra text or explanation.`,
 });
