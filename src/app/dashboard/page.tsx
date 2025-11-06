@@ -36,7 +36,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line, Bar } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import type { ContentTask } from '@/lib/types';
@@ -124,52 +124,35 @@ export default function DashboardPage() {
     }, [allVideos, timeRange]);
     
     const chartData = useMemo(() => {
-      if (!filteredVideos || !tiktokAccount) return [];
+        const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+        const dataByMonth: { [key: string]: { views: number; likes: number } } = {};
+        
+        months.forEach(m => {
+            dataByMonth[m] = { views: 0, likes: 0 };
+        });
 
-      const sortedVideos = [...filteredVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-      const followerCount = tiktokAccount.followerCount || 0;
-
-      // Handle case for new users with no video data
-      if (sortedVideos.length < 2) {
-          const firstMonth = sortedVideos.length > 0 ? new Date((sortedVideos[0].create_time || 0) * 1000).toLocaleString('pt-BR', { month: 'short' }) : 'Início';
-          const lastFollowerCount = followerCount; // just use the current count
-          return [
-              { month: 'Começo', Seguidores: Math.max(0, lastFollowerCount > 10 ? lastFollowerCount - 10 : 0), Visualizações: 0, Curtidas: 0 },
-              { month: firstMonth, Seguidores: lastFollowerCount, Visualizações: sortedVideos[0]?.view_count || 0, Curtidas: sortedVideos[0]?.like_count || 0 }
-          ];
-      }
-
-      const dataByMonth: { [key: string]: { views: number; likes: number; videos: number } } = {};
-      let cumulativeFollowers = followerCount - (filteredVideos.length * 10); // Simplified simulation base
-
-      sortedVideos.forEach(video => {
-          const date = new Date((video.create_time || 0) * 1000);
-          const month = date.toLocaleString('pt-BR', { month: 'short' });
-          
-          if (!dataByMonth[month]) {
-              dataByMonth[month] = { views: 0, likes: 0, videos: 0 };
-          }
-          dataByMonth[month].views += video.view_count || 0;
-          dataByMonth[month].likes += video.like_count || 0;
-          dataByMonth[month].videos += 1;
-      });
-
-      const months = Object.keys(dataByMonth);
-      const followerGrowthRate = 0.05; // 5% growth per period
-      const periods = months.length;
-      const initialSimulatedFollowers = followerCount / Math.pow(1 + followerGrowthRate, periods);
-
-      let runningFollowers = initialSimulatedFollowers;
-
-      return months.map((month) => {
-        runningFollowers *= (1 + followerGrowthRate);
-        return {
-          month,
-          Seguidores: Math.round(runningFollowers),
-          Visualizações: dataByMonth[month].views,
-          Curtidas: dataByMonth[month].likes,
+        if (filteredVideos && filteredVideos.length > 0) {
+            filteredVideos.forEach(video => {
+                const date = new Date((video.create_time || 0) * 1000);
+                const month = months[date.getMonth()];
+                if (month) {
+                    dataByMonth[month].views += video.view_count || 0;
+                    dataByMonth[month].likes += video.like_count || 0;
+                }
+            });
         }
-      });
+        
+        const currentFollowers = tiktokAccount?.followerCount || 0;
+        // Simple linear projection for follower growth over the year.
+        // Let's project a 2x growth over 12 months for demonstration.
+        const projectedFollowerGrowth = currentFollowers / 12;
+
+        return months.map((month, index) => ({
+            month,
+            Visualizações: dataByMonth[month].views,
+            Curtidas: dataByMonth[month].likes,
+            Seguidores: Math.round(currentFollowers + (projectedFollowerGrowth * index)),
+        }));
 
     }, [filteredVideos, tiktokAccount]);
 
@@ -395,7 +378,7 @@ export default function DashboardPage() {
              {activeContentTab === 'overview' && (
                 <Tabs value={timeRange} onValueChange={setTimeRange}>
                     <TabsList className="grid w-full sm:w-auto grid-cols-2">
-                        <TabsTrigger value="total">Total</TabsTrigger>
+                        <TabsTrigger value="total">Anual</TabsTrigger>
                         <TabsTrigger value="30d">Últimos 30 Dias</TabsTrigger>
                     </TabsList>
                 </Tabs>
@@ -467,8 +450,13 @@ export default function DashboardPage() {
                                         <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
                                         <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
                                     </linearGradient>
+                                     <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--chart-3))" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
+                                    </linearGradient>
                                 </defs>
-                                <Area yAxisId="right" type="monotone" dataKey="Visualizações" fill="url(#colorViews)" stroke="hsl(var(--chart-2))" strokeWidth={2} />
+                                <Bar yAxisId="right" dataKey="Visualizações" fill="hsl(var(--chart-2) / 0.5)" radius={[4, 4, 0, 0]} />
+                                <Bar yAxisId="right" dataKey="Curtidas" fill="hsl(var(--chart-3) / 0.4)" radius={[4, 4, 0, 0]} />
                                 <Line yAxisId="left" type="monotone" dataKey="Seguidores" stroke="hsl(var(--chart-1))" strokeWidth={3} dot={false} />
                             </ComposedChart>
                         </ResponsiveContainer>
