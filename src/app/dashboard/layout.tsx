@@ -30,7 +30,6 @@ const navItems = [
   { name: 'Plano de Conteúdo', href: '/dashboard/plan', icon: CalendarCheck },
   { name: 'Plano de Crescimento', href: '/dashboard/growth-plan', icon: TrendingUp },
   { name: 'Conexões', href: '/dashboard/connections', icon: Share2 },
-  { name: 'Perfil', href: '/dashboard/profile', icon: Users },
 ];
 
 const resourcesItems = [
@@ -106,7 +105,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
                 </div>
             </div>
             <div className="p-4 border-t">
-                <div className="flex items-center gap-3">
+                <Link href="/dashboard/profile" className="flex items-center gap-3 rounded-md p-2 hover:bg-muted" onClick={onLinkClick}>
                      <Avatar>
                         <AvatarImage src={user?.photoURL || "https://picsum.photos/seed/avatar/100/100"} alt={user?.displayName || "User Avatar"} />
                         <AvatarFallback>{user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
@@ -115,10 +114,10 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
                         <p className="font-semibold text-foreground truncate">{user?.displayName}</p>
                         <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
                     </div>
-                     <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
+                     <Button variant="ghost" size="icon" onClick={(e) => { e.stopPropagation(); e.preventDefault(); handleSignOut(); }} className="text-muted-foreground hover:text-foreground">
                         <LogOut className="w-5 h-5" />
                     </Button>
-                </div>
+                </Link>
             </div>
         </>
     );
