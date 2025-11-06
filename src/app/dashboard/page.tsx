@@ -665,8 +665,8 @@ export default function DashboardPage() {
                         {filteredVideos.map(video => {
                              const videoDate = video.create_time ? new Date(video.create_time * 1000).toLocaleDateString('pt-BR') : 'Data Indisponível';
                              return (
-                            <Card key={video.id} className="overflow-hidden group">
-                                <a href={video.share_url} target="_blank" rel="noopener noreferrer" className="block relative">
+                            <a key={video.id} href={video.share_url} target="_blank" rel="noopener noreferrer" className="block group">
+                                <Card className="overflow-hidden h-full">
                                     <div className="relative aspect-[9/16]">
                                         <Image 
                                             src={video.cover_image_url || '/placeholder.png'} 
@@ -688,26 +688,26 @@ export default function DashboardPage() {
                                             <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                         </div>
                                     </div>
-                                </a>
-                                <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
-                                     <UITooltip>
-                                        <TooltipTrigger className="flex items-center gap-1"><Heart className="size-3.5" /> {formatNumber(video.like_count)}</TooltipTrigger>
-                                        <TooltipContent>{(video.like_count || 0).toLocaleString('pt-BR')} Curtidas</TooltipContent>
-                                    </UITooltip>
-                                      <UITooltip>
-                                        <TooltipTrigger className="flex items-center gap-1"><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</TooltipTrigger>
-                                        <TooltipContent>{(video.comment_count || 0).toLocaleString('pt-BR')} Comentários</TooltipContent>
-                                    </UITooltip>
-                                     <UITooltip>
-                                        <TooltipTrigger className="flex items-center gap-1"><Share className="size-3.5" /> {formatNumber(video.share_count)}</TooltipTrigger>
-                                        <TooltipContent>{(video.share_count || 0).toLocaleString('pt-BR')} Compartilhamentos</TooltipContent>
-                                    </UITooltip>
-                                     <UITooltip>
-                                        <TooltipTrigger className="flex items-center gap-1"><TrendingUp className="size-3.5" /> {formatNumber(video.view_count)}</TooltipTrigger>
-                                        <TooltipContent>{(video.view_count || 0).toLocaleString('pt-BR')} Visualizações</TooltipContent>
-                                    </UITooltip>
-                                </CardContent>
-                            </Card>
+                                    <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
+                                        <UITooltip>
+                                            <TooltipTrigger className="flex items-center gap-1"><Heart className="size-3.5" /> {formatNumber(video.like_count)}</TooltipTrigger>
+                                            <TooltipContent>{(video.like_count || 0).toLocaleString('pt-BR')} Curtidas</TooltipContent>
+                                        </UITooltip>
+                                        <UITooltip>
+                                            <TooltipTrigger className="flex items-center gap-1"><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</TooltipTrigger>
+                                            <TooltipContent>{(video.comment_count || 0).toLocaleString('pt-BR')} Comentários</TooltipContent>
+                                        </UITooltip>
+                                        <UITooltip>
+                                            <TooltipTrigger className="flex items-center gap-1"><Share className="size-3.5" /> {formatNumber(video.share_count)}</TooltipTrigger>
+                                            <TooltipContent>{(video.share_count || 0).toLocaleString('pt-BR')} Compartilhamentos</TooltipContent>
+                                        </UITooltip>
+                                        <UITooltip>
+                                            <TooltipTrigger className="flex items-center gap-1"><TrendingUp className="size-3.5" /> {formatNumber(video.view_count)}</TooltipTrigger>
+                                            <TooltipContent>{(video.view_count || 0).toLocaleString('pt-BR')} Visualizações</TooltipContent>
+                                        </UITooltip>
+                                    </CardContent>
+                                </Card>
+                            </a>
                              )
                         })}
                     </div>
