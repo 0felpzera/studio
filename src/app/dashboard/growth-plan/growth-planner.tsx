@@ -163,7 +163,8 @@ export function GrowthPlanner() {
                 <CardContent className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
                     <div className="space-y-1.5">
                         <Label htmlFor="followers">Seguidores Atuais</Label>
-                        <Input id="followers" type="number" {...form.register('followers')} placeholder="Ex: 1500" disabled={!tiktokAccount} />
+                        <Input id="followers" type="number" {...form.register('followers')} placeholder="Ex: 1500" disabled={!!tiktokAccount} />
+                        {tiktokAccount && <p className='text-xs text-muted-foreground'>Preenchido com dados do TikTok.</p>}
                         {!tiktokAccount && <p className='text-xs text-muted-foreground'>Conecte sua conta TikTok para preencher.</p>}
                     </div>
                      <div className="space-y-1.5">
