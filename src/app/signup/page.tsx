@@ -1,18 +1,17 @@
+
 'use client';
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { GoogleAuthProvider, signInWithRedirect, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { doc, setDoc } from 'firebase/firestore';
-
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -27,7 +26,6 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function SignUpPage() {
     const auth = useAuth();
-    const firestore = useFirestore();
     const { user, isUserLoading } = useUser();
     const router = useRouter();
     const { toast } = useToast();
@@ -41,7 +39,7 @@ export default function SignUpPage() {
 
     useEffect(() => {
         if (!isUserLoading && user) {
-            router.push('/onboarding');
+            router.push('/dashboard');
         }
     }, [user, isUserLoading, router]);
 
@@ -49,45 +47,32 @@ export default function SignUpPage() {
         if (!auth) return;
         setIsSubmitting(true);
         const provider = new GoogleAuthProvider();
-        // Redirect to login page, which will handle the result
         await signInWithRedirect(auth, provider);
     };
 
     const handleEmailSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!auth || !firestore || !email || !password || !name) return;
-        setIsSubmitting(true);
-
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-
-            await updateProfile(user, { displayName: name });
-            
-            const userDocRef = doc(firestore, 'users', user.uid);
-            await setDoc(userDocRef, {
-                id: user.uid,
-                email: user.email,
-                name: name,
-            });
-
-            // The useEffect will handle the redirect to /onboarding
-        } catch (error: any) {
-            console.error("Email sign up error:", error);
-            let message = "Não foi possível criar sua conta. Tente novamente.";
-            if (error.code === 'auth/email-already-in-use') {
-                message = "Este e-mail já está em uso. Tente fazer login.";
-            }
+        if (!email || !password || !name) {
             toast({
-                title: "Erro no Cadastro",
-                description: message,
+                title: "Campos Incompletos",
+                description: "Por favor, preencha nome, e-mail e senha.",
                 variant: 'destructive',
             });
-            setIsSubmitting(false);
+            return;
         }
+        setIsSubmitting(true);
+        
+        // Pass data to onboarding page instead of creating user here
+        const query = new URLSearchParams({
+            name: encodeURIComponent(name),
+            email: encodeURIComponent(email),
+            password: encodeURIComponent(password),
+        }).toString();
+
+        router.push(`/onboarding?${query}`);
     };
     
-    if (isUserLoading || isSubmitting || user) {
+    if (isUserLoading || (isSubmitting && !auth)) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -124,7 +109,7 @@ export default function SignUpPage() {
                         </div>
                         <Button type="submit" className="w-full" disabled={isSubmitting}>
                             {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Criar Conta
+                            Ir para o Próximo Passo
                         </Button>
                     </form>
                     

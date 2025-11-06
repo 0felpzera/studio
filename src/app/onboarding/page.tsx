@@ -2,8 +2,8 @@
 'use client';
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { doc, setDoc, collection } from 'firebase/firestore';
+import { useUser, useFirestore, useAuth } from '@/firebase';
+import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, Goal, Check, Share2, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,13 +13,12 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { SiTiktok } from 'react-icons/si';
-import type { TiktokAccount } from '@/lib/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 function OnboardingComponent() {
-  const { user, isUserLoading } = useUser();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
+  const auth = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -29,93 +28,73 @@ function OnboardingComponent() {
   const [followerGoal, setFollowerGoal] = useState('');
   const [postingFrequency, setPostingFrequency] = useState('');
 
-  // --- TikTok Connection State ---
-  const tiktokConnectedParam = searchParams.get('tiktokConnected');
+  // Get sign-up data from URL
+  const signupName = useMemo(() => searchParams.get('name') || '', [searchParams]);
+  const signupEmail = useMemo(() => searchParams.get('email') || '', [searchParams]);
+  const signupPassword = useMemo(() => searchParams.get('password') || '', [searchParams]);
 
-  const tiktokAccountsQuery = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
-    return collection(firestore, 'users', user.uid, 'tiktokAccounts');
-  }, [firestore, user]);
-
-  const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
-  const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
-  
-  const isTiktokConnected = useMemo(() => !!tiktokAccount, [tiktokAccount]);
-
-  const handleConnectTikTok = () => {
-    if (!user) {
-        toast({
-            title: "Sessão não encontrada",
-            description: "Por favor, aguarde um momento enquanto carregamos seus dados.",
-            variant: "destructive"
-        });
-        return;
-    }
-    
-    const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
-    if (!clientKey) {
-        toast({
-            title: "Configuração Incompleta",
-            description: "A chave de cliente do TikTok não foi configurada.",
-            variant: "destructive"
-        });
-        return;
-    }
-    
-    const redirectUri = new URL('/auth/tiktok/callback', window.location.origin).toString();
-    const scope = 'user.info.profile,user.info.stats,video.list';
-
-    const randomState = crypto.randomUUID();
-    const state = Buffer.from(JSON.stringify({ userId: user.uid, random: randomState, from: 'onboarding' })).toString('base64');
-    
-    const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
-    tiktokAuthUrl.searchParams.append('client_key', clientKey);
-    tiktokAuthUrl.searchParams.append('scope', scope);
-    tiktokAuthUrl.searchParams.append('response_type', 'code');
-    tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
-    tiktokAuthUrl.searchParams.append('state', state);
-
-    window.location.href = tiktokAuthUrl.toString();
-  };
 
   const handleFinishOnboarding = async () => {
-    if (!user || !firestore) {
-      toast({ title: "Erro", description: "Usuário não autenticado.", variant: "destructive" });
+    if (!auth || !firestore) {
+      toast({ title: "Erro", description: "Serviços de autenticação não disponíveis.", variant: "destructive" });
       return;
     }
     if (!niche || !followerGoal || !postingFrequency) {
       toast({ title: "Campos obrigatórios", description: "Por favor, preencha todos os campos de metas.", variant: "destructive" });
       return;
     }
+    if (!signupEmail || !signupPassword || !signupName) {
+        toast({ title: "Dados de Cadastro Incompletos", description: "Volte para a página de cadastro e tente novamente.", variant: "destructive" });
+        return;
+    }
 
     setIsLoading(true);
 
     try {
+      // 1. Create User in Firebase Auth
+      const userCredential = await createUserWithEmailAndPassword(auth, signupEmail, signupPassword);
+      const newUser = userCredential.user;
+
+      // 2. Update user's profile with name
+      await updateProfile(newUser, { displayName: signupName });
+
+      // 3. Create user document in Firestore
+      const userDocRef = doc(firestore, 'users', newUser.uid);
+      await setDoc(userDocRef, {
+          id: newUser.uid,
+          email: newUser.email,
+          name: signupName,
+          niche,
+      });
+
+      // 4. Create goal document in Firestore
       const goalData = {
-        userId: user.uid,
+        userId: newUser.uid,
         niche,
         followerGoal: parseInt(followerGoal, 10),
         postingFrequency,
       };
-      
-      const goalDocRef = doc(firestore, 'users', user.uid, 'goals', 'user-goal');
-      await setDoc(goalDocRef, goalData, { merge: true });
-
-      const userDocRef = doc(firestore, 'users', user.uid);
-      await setDoc(userDocRef, { niche }, { merge: true });
+      const goalDocRef = doc(firestore, 'users', newUser.uid, 'goals', 'user-goal');
+      await setDoc(goalDocRef, goalData);
 
       toast({
         title: "Tudo pronto!",
-        description: "Suas metas foram salvas. Bem-vindo ao seu dashboard!",
+        description: "Sua conta foi criada. Bem-vindo ao seu dashboard!",
       });
 
+      // The onAuthStateChanged listener will now pick up the new user and redirect automatically.
+      // Forcing a redirect just in case.
       router.push('/dashboard');
 
-    } catch (error) {
-      console.error("Erro ao salvar metas:", error);
+    } catch (error: any) {
+      console.error("Erro ao finalizar onboarding e criar conta:", error);
+       let message = "Não foi possível criar sua conta. Tente novamente.";
+        if (error.code === 'auth/email-already-in-use') {
+            message = "Este e-mail já está em uso. Tente fazer login.";
+        }
       toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar suas metas. Tente novamente.",
+        title: "Erro ao Criar Conta",
+        description: message,
         variant: "destructive",
       });
     } finally {
@@ -123,7 +102,15 @@ function OnboardingComponent() {
     }
   };
 
-  if (isUserLoading) {
+  useEffect(() => {
+    // If a user is somehow already logged in, redirect them.
+    if (!isAuthLoading && user) {
+        router.push('/dashboard');
+    }
+  }, [user, isAuthLoading, router]);
+
+  // This is a special case for onboarding. We want to show loading until auth state is confirmed false.
+  if (isAuthLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -138,8 +125,8 @@ function OnboardingComponent() {
             <div className="mx-auto mb-4">
                 <span className="text-2xl font-bold text-foreground font-headline">Trendify</span>
             </div>
-          <CardTitle className="text-2xl font-bold">Bem-vindo(a) ao Trendify!</CardTitle>
-          <CardDescription>Vamos configurar seu perfil para começar a crescer.</CardDescription>
+          <CardTitle className="text-2xl font-bold">Quase lá, {decodeURIComponent(signupName)}!</CardTitle>
+          <CardDescription>Só mais alguns detalhes para personalizar sua experiência.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 p-6">
             <div className="space-y-4">
@@ -179,36 +166,17 @@ function OnboardingComponent() {
             </div>
 
             <div className="space-y-4">
-                <h3 className='font-semibold text-lg flex items-center gap-2'><Share2 className='size-5 text-primary'/> Conecte suas Contas</h3>
-                {isLoadingTiktok ? (
-                    <div className="flex items-center justify-center rounded-lg border h-10 w-full bg-muted animate-pulse">
-                        <Loader2 className="size-4 animate-spin text-muted-foreground" />
-                    </div>
-                ) : isTiktokConnected && tiktokAccount ? (
-                    <div className="flex items-center justify-between rounded-lg border p-3 bg-green-500/10 text-green-800">
-                        <div className="flex items-center gap-3">
-                             <Avatar className="size-8">
-                                <AvatarImage src={tiktokAccount.avatarUrl} alt={tiktokAccount.username} />
-                                <AvatarFallback>{tiktokAccount.username.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span className="font-semibold">{tiktokAccount.username}</span>
-                        </div>
-                        <Check className="size-5 text-green-600" />
-                    </div>
-                ) : (
-                    <>
-                        <p className="text-sm text-muted-foreground">Conecte sua conta do TikTok para importar suas métricas e obter análises mais precisas.</p>
-                        <Button className="w-full" variant="outline" onClick={handleConnectTikTok} disabled={isUserLoading}>
-                            {isUserLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <SiTiktok className="mr-2" />}
-                            Conectar TikTok
-                        </Button>
-                    </>
-                )}
+                <h3 className='font-semibold text-lg flex items-center gap-2'><Share2 className='size-5 text-primary'/> Conecte suas Contas (Opcional)</h3>
+                <p className="text-sm text-muted-foreground">Você poderá fazer isso mais tarde no seu dashboard.</p>
+                 <Button className="w-full" variant="outline" disabled={true}>
+                    <SiTiktok className="mr-2" />
+                    Conectar TikTok
+                </Button>
             </div>
         </CardContent>
         <CardFooter>
-            <Button onClick={handleFinishOnboarding} disabled={isLoading || isUserLoading} className="w-full font-bold text-lg">
-                {isLoading ? <Loader2 className="animate-spin" /> : <><Check className="mr-2" /> Concluir e ir para o Dashboard</>}
+            <Button onClick={handleFinishOnboarding} disabled={isLoading || isAuthLoading} className="w-full font-bold text-lg">
+                {isLoading ? <Loader2 className="animate-spin" /> : <><Check className="mr-2" /> Criar Conta e ir para o Dashboard</>}
             </Button>
         </CardFooter>
       </Card>
