@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { ReactNode } from 'react';
@@ -53,7 +54,7 @@ const Sidebar = () => {
         <aside className="glass-effect w-64 flex-shrink-0 flex-col z-10 hidden md:flex">
             <div className="h-20 flex items-center justify-center border-b border-white/10">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-white font-headline">Trendify</span>
+                    <span className="text-xl font-bold text-black font-headline">Trendify</span>
                 </Link>
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
