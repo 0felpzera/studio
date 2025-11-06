@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart, CheckCircle2, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,6 +18,8 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { generateGrowthPlan } from '@/ai/flows/generate-growth-plan';
+import type { GenerateGrowthPlanInput, GenerateGrowthPlanOutput } from '@/lib/types';
 
 
 const step1Schema = z.object({
@@ -70,6 +72,7 @@ const variants = {
 export function GrowthCalculator() {
   const [[currentStep, direction], setStep] = useState([0, 0]);
   const [isCalculated, setIsCalculated] = useState(false);
+  const [isCalculating, setIsCalculating] = useState(false);
   const [highestStep, setHighestStep] = useState(0);
   const [formData, setFormData] = useState<Partial<FormData>>({
     niche: 'Moda',
@@ -80,6 +83,7 @@ export function GrowthCalculator() {
     storiesPerMonth: 12,
     priority: 'Alcance'
   });
+  const [plan, setPlan] = useState<GenerateGrowthPlanOutput | null>(null);
   const { toast } = useToast();
 
   const form = useForm<FormData>({
@@ -118,7 +122,7 @@ export function GrowthCalculator() {
         setHighestStep(Math.max(highestStep, currentStep + 1));
         form.reset(updatedFormData);
       } else {
-        onSubmit(updatedFormData as FormData);
+        onSubmit(updatedFormData as GenerateGrowthPlanInput);
       }
     } else {
          toast({
@@ -140,12 +144,26 @@ export function GrowthCalculator() {
     }
   };
   
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: GenerateGrowthPlanInput) => {
+    setIsCalculating(true);
     setFormData(data);
-    setIsCalculated(true);
-    setTimeout(() => {
+    try {
+      const result = await generateGrowthPlan(data);
+      setPlan(result);
+      setIsCalculated(true);
+      setTimeout(() => {
         document.getElementById('calculator-results')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }, 100);
+      }, 100);
+    } catch (error) {
+      console.error("Erro ao gerar plano de crescimento:", error);
+      toast({
+        title: "Erro ao Calcular",
+        description: "Não foi possível gerar seu plano. Por favor, tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCalculating(false);
+    }
   };
     
   
@@ -357,12 +375,13 @@ export function GrowthCalculator() {
                            {renderStepContent()}
                         </CardContent>
                         <CardFooter className="flex justify-between p-4 bg-muted/30 border-t border-border/20">
-                            <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0}>
+                            <Button type="button" variant="ghost" onClick={prevStep} disabled={currentStep === 0 || isCalculating}>
                                 <ChevronLeft className="mr-2 h-4 w-4" /> Anterior
                             </Button>
-                            <Button type="button" onClick={nextStep}>
-                                {currentStep < steps.length - 1 ? 'Próximo' : 'Calcular Potencial'} 
-                                {currentStep < steps.length - 1 ? <ArrowRight className="ml-2 h-4 w-4" /> : <Sparkles className="ml-2 h-4 w-4" />}
+                            <Button type="button" onClick={nextStep} disabled={isCalculating}>
+                                {isCalculating ? <Loader2 className="animate-spin mr-2" /> : null}
+                                {isCalculating ? 'Calculando...' : currentStep < steps.length - 1 ? 'Próximo' : 'Calcular Potencial'} 
+                                {!isCalculating && (currentStep < steps.length - 1 ? <ArrowRight className="ml-2 h-4 w-4" /> : <Sparkles className="ml-2 h-4 w-4" />)}
                             </Button>
                         </CardFooter>
                   </form>
@@ -370,7 +389,7 @@ export function GrowthCalculator() {
               </motion.div>
             </motion.div>
         ) : (
-          <div id="calculator-results" className="space-y-12">
+          plan && <div id="calculator-results" className="space-y-12">
             <div className="text-center">
                  <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Seu Plano de Crescimento Personalizado</h2>
                  <p className="mt-4 text-lg text-muted-foreground max-w-3xl mx-auto">Com base nas suas metas, aqui está uma projeção realista e um plano de ação para você decolar.</p>
@@ -383,8 +402,8 @@ export function GrowthCalculator() {
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold">~8 meses</div>
-                  <p className="text-xs text-muted-foreground">Previsão para Dezembro de 2024</p>
+                  <div className="text-4xl font-bold">{plan.timeToGoal}</div>
+                  <p className="text-xs text-muted-foreground">Projeção estimada pela IA</p>
                 </CardContent>
               </Card>
               <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
@@ -393,8 +412,8 @@ export function GrowthCalculator() {
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-4xl font-bold">R$1.5k-R$5k</div>
-                  <p className="text-xs text-muted-foreground">Baseado em publis e parcerias</p>
+                  <div className="text-4xl font-bold">{plan.potentialEarnings}</div>
+                  <p className="text-xs text-muted-foreground">Baseado em publis e parcerias no seu nicho</p>
                 </CardContent>
               </Card>
               <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
@@ -403,8 +422,8 @@ export function GrowthCalculator() {
                   <Target className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">2 Reels, 3 Stories</div>
-                  <p className="text-xs text-muted-foreground">Foco em consistência e engajamento</p>
+                  <div className="text-2xl font-bold">{plan.weeklyPlan}</div>
+                  <p className="text-xs text-muted-foreground">Foco em consistência e {formData.priority?.toLowerCase()}</p>
                 </CardContent>
               </Card>
             </div>
@@ -422,24 +441,27 @@ export function GrowthCalculator() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-bold"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho</CardTitle>
+                        <CardTitle className="flex items-center gap-2 font-bold"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho ({formData.niche})</CardTitle>
                         <CardDescription>Ideias de inícios de vídeo para capturar a atenção imediatamente.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <p>1. "3 mitos sobre {formData.niche} que você provavelmente acredita."</p>
-                        <p>2. "O erro nº 1 que iniciantes em {formData.niche} cometem (e como evitar)."</p>
-                        <p>3. "Meu segredo para {`alcançar algo no seu nicho`} usando apenas..."</p>
+                      {plan.hookIdeas.map((idea, index) => (
+                        <p key={index}>{index + 1}. "{idea}"</p>
+                      ))}
                     </CardContent>
                 </Card>
                  <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-bold"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta</CardTitle>
-                         <CardDescription>Formatos e áudios que estão viralizando agora no seu nicho.</CardDescription>
+                        <CardTitle className="flex items-center gap-2 font-bold"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta para {formData.niche}</CardTitle>
+                         <CardDescription>Formatos e áudios que estão viralizando agora.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                        <div className="flex items-center gap-2"><Badge variant="secondary">Áudio</Badge> "Som de gatinho fofo para vídeos de unboxing"</div>
-                        <div className="flex items-center gap-2"><Badge variant="secondary">Formato</Badge> "Transição de 'antes e depois' com corte rápido"</div>
-                        <div className="flex items-center gap-2"><Badge variant="secondary">Desafio</Badge> "Desafio de 7 dias para {'{tema do seu nicho}'}"</div>
+                      {plan.trendIdeas.map((trend, index) => (
+                        <div key={index} className="flex items-center gap-2">
+                          <Badge variant="secondary">{trend.type}</Badge> 
+                          <span>{trend.description}</span>
+                        </div>
+                      ))}
                     </CardContent>
                 </Card>
             </div>
@@ -449,7 +471,7 @@ export function GrowthCalculator() {
                     <Users className="mr-3"/> Criar conta e seguir o plano
                 </Button>
                 <div className='flex items-center justify-center gap-4'>
-                    <Button variant="outline" onClick={() => setIsCalculated(false)}>Refazer cálculo</Button>
+                    <Button variant="outline" onClick={() => { setIsCalculated(false); setPlan(null); }}>Refazer cálculo</Button>
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="link">Ver como calculamos</Button>

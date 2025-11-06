@@ -1,5 +1,6 @@
 
 import { Timestamp } from 'firebase/firestore';
+import { z } from 'zod';
 
 export type TiktokVideo = {
     id: string;
@@ -54,3 +55,26 @@ export interface ContentTask {
   isCompleted: boolean;
   status: 'pending' | 'active';
 }
+
+export const GenerateGrowthPlanInputSchema = z.object({
+  niche: z.string().describe("The creator's primary niche (e.g., 'Fashion', 'Fitness')."),
+  country: z.string().describe("The creator's primary country of operation (e.g., 'Brazil')."),
+  followers: z.coerce.number().describe('The current number of followers.'),
+  followerGoal: z.coerce.number().describe('The target number of followers.'),
+  reelsPerMonth: z.number().describe('The number of Reels the creator plans to post per month.'),
+  storiesPerMonth: z.number().describe('The number of Stories with a Call-to-Action the creator plans to post per month.'),
+  priority: z.string().describe("The creator's main priority ('Reach', 'Conversion', or 'Authority')."),
+});
+export type GenerateGrowthPlanInput = z.infer<typeof GenerateGrowthPlanInputSchema>;
+
+export const GenerateGrowthPlanOutputSchema = z.object({
+  timeToGoal: z.string().describe("An estimated time to reach the follower goal, like '~8 months' or '~1.5 years'."),
+  potentialEarnings: z.string().describe("An estimated monthly earnings potential, like 'R$1.5k-R$5k'."),
+  weeklyPlan: z.string().describe("A recommended weekly posting plan, like '2 Reels, 3 Stories'."),
+  hookIdeas: z.array(z.string()).length(3).describe('An array of three specific hook ideas for the given niche.'),
+  trendIdeas: z.array(z.object({
+    type: z.enum(['Áudio', 'Formato', 'Desafio']).describe('The type of the trend.'),
+    description: z.string().describe('A brief description of the trend.'),
+  })).length(3).describe('An array of three specific, trending ideas for the given niche.'),
+});
+export type GenerateGrowthPlanOutput = z.infer<typeof GenerateGrowthPlanOutputSchema>;

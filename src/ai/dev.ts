@@ -8,3 +8,4 @@ import '@/ai/flows/analyze-video-for-improvement.ts';
 import '@/aiflows/generate-sponsored-content-ideas.ts';
 import '@/ai/flows/exchange-tiktok-code.ts';
 import '@/ai/flows/refresh-tiktok-data.ts';
+import '@/ai/flows/generate-growth-plan.ts';
