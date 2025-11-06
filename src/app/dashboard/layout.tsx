@@ -2,9 +2,9 @@
 
 import React, { ReactNode } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useUser } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { cn } from '@/lib/utils';
 import {
     LayoutDashboard,
@@ -15,8 +15,10 @@ import {
     DollarSign,
     Star,
     Share2,
+    LogOut,
 } from 'lucide-react';
-import { TrendifyLogo } from '@/components/icons';
+import { signOut } from 'firebase/auth';
+import { Button } from '@/components/ui/button';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -35,53 +37,68 @@ const resourcesItems = [
 const Sidebar = () => {
     const pathname = usePathname();
     const { user } = useUser();
+    const auth = useAuth();
+    const router = useRouter();
+
+    const handleSignOut = async () => {
+        try {
+            await signOut(auth);
+            router.push('/login');
+        } catch (error) {
+            console.error("Error signing out: ", error);
+        }
+    };
 
     return (
         <aside className="glass-effect w-64 flex-shrink-0 flex-col z-10 hidden md:flex">
             <div className="h-20 flex items-center justify-center border-b border-white/10">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <TrendifyLogo className="w-8 h-8 text-primary" />
                     <span className="text-xl font-bold text-white font-headline">Trendify</span>
                 </Link>
             </div>
-            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                <p className="px-4 py-2 text-xs font-semibold text-white/80 tracking-wider">Menu</p>
-                {[...navItems].map(item => (
-                    <Link
-                        key={item.name}
-                        href={item.href}
-                        className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
-                           pathname === item.href ? 'active' : ''
-                        )}
-                    >
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.name}</span>
-                    </Link>
-                ))}
-                <p className="px-4 pt-4 pb-2 text-xs font-semibold text-white/80 tracking-wider">Ferramentas de IA</p>
-                 {resourcesItems.map(item => (
-                    <Link
-                        key={item.name}
-                        href={item.href}
-                        className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
-                           pathname.startsWith(item.href) ? 'active' : ''
-                        )}
-                    >
-                        <item.icon className="w-5 h-5" />
-                        <span>{item.name}</span>
-                    </Link>
-                ))}
-            </nav>
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <div className='overflow-y-auto p-4'>
+                    <p className="px-4 py-2 text-xs font-semibold text-black tracking-wider">Menu</p>
+                    {[...navItems].map(item => (
+                        <Link
+                            key={item.name}
+                            href={item.href}
+                            className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
+                               pathname === item.href ? 'active' : ''
+                            )}
+                        >
+                            <item.icon className="w-5 h-5" />
+                            <span>{item.name}</span>
+                        </Link>
+                    ))}
+                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-black tracking-wider">Ferramentas de IA</p>
+                     {resourcesItems.map(item => (
+                        <Link
+                            key={item.name}
+                            href={item.href}
+                            className={cn('nav-link flex items-center gap-3 px-4 py-2.5 rounded-lg text-black transition-colors hover:bg-white/5',
+                               pathname.startsWith(item.href) ? 'active' : ''
+                            )}
+                        >
+                            <item.icon className="w-5 h-5" />
+                            <span>{item.name}</span>
+                        </Link>
+                    ))}
+                </div>
+            </div>
             <div className="p-4 border-t border-white/10">
                 <div className="flex items-center gap-3">
                      <Avatar>
                         <AvatarImage src={user?.photoURL || "https://picsum.photos/seed/avatar/100/100"} alt={user?.displayName || "User Avatar"} />
                         <AvatarFallback>{user?.displayName?.charAt(0) ?? 'U'}</AvatarFallback>
                     </Avatar>
-                    <div>
+                    <div className='flex-1'>
                         <p className="font-semibold text-white">{user?.displayName}</p>
                         <p className="text-xs text-gray-400">{user?.email}</p>
                     </div>
+                     <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-white/70 hover:text-white hover:bg-white/10">
+                        <LogOut className="w-5 h-5" />
+                    </Button>
                 </div>
             </div>
         </aside>
