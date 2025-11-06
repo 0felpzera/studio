@@ -2,7 +2,7 @@
 "use client";
 
 import { ImageCarouselHero } from "@/components/ui/ai-image-generator-hero";
-import { NavBar } from "@/components/ui/tubelight-navbar";
+import { Header } from "@/components/ui/navbar";
 import { useRouter } from "next/navigation";
 import {
   SiFacebook,
@@ -303,22 +303,14 @@ export default function LandingPage() {
     }
   ]
 
-  const navItems = [
-    { name: "Início", url: "#", icon: Home },
-    { name: "Recursos", url: "#features", icon: Star },
-    { name: "Calculadora", url: "#calculator", icon: Calculator },
-    { name: "Depoimentos", url: "#testimonials", icon: MessageSquareQuote },
-  ];
-
   return (
     <div className="text-foreground bg-background">
-      <NavBar items={navItems} />
+      <Header />
       <ImageCarouselHero
         title="Transforme Conteúdo em Tendência"
         description="Sua plataforma de IA para viralizar nas redes sociais. Analise, crie e monetize com o poder da inteligência artificial."
         ctaText="Comece a Crescer Agora"
         onCtaClick={() => router.push("/signup")}
-        icons={demoIcons}
       />
       
       <div className="bg-background rounded-t-[50px]">
