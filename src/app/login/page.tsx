@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -31,15 +31,56 @@ export default function LoginPage() {
     const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Start as true to handle redirect
     const firestore = useFirestore();
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
     useEffect(() => {
-        if (!isUserLoading && user) {
-            router.push('/dashboard');
+        if (!isUserLoading) {
+            if (user) {
+                router.push('/dashboard');
+            } else {
+                setIsLoading(false); // No user, stop loading
+            }
         }
     }, [user, isUserLoading, router]);
+
+    useEffect(() => {
+        if (!auth || isUserLoading) return;
+
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (result) {
+                    setIsLoading(true); // Start loading while processing result
+                    const user = result.user;
+                    const userDocRef = doc(firestore, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (!userDoc.exists()) {
+                        await setDoc(userDocRef, {
+                            id: user.uid,
+                            email: user.email,
+                            name: user.displayName,
+                        });
+                        router.push('/onboarding');
+                    } else {
+                        router.push('/dashboard');
+                    }
+                    toast({ title: "Login bem-sucedido!", description: "Redirecionando..." });
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect result error:", error);
+                if (error.code !== 'auth/popup-closed-by-user') {
+                    toast({
+                        title: "Erro no Login",
+                        description: "Não foi possível fazer login com o Google.",
+                        variant: 'destructive'
+                    });
+                }
+                setIsLoading(false);
+            });
+    }, [auth, firestore, router, toast, isUserLoading]);
     
     const handleSocialLogin = async (providerName: 'google') => {
         setIsLoading(true);
@@ -50,52 +91,23 @@ export default function LoginPage() {
             } else {
                 throw new Error('Provedor de login desconhecido');
             }
-            
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            const userDocRef = doc(firestore, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            
-            if (!userDoc.exists()) {
-                await setDoc(userDocRef, {
-                    id: user.uid,
-                    email: user.email,
-                    name: user.displayName,
-                });
-                 router.push('/onboarding');
-            } else {
-                 router.push('/dashboard');
-            }
-
-            toast({
-                title: "Login bem-sucedido!",
-                description: "Redirecionando...",
-            });
-
+            await signInWithRedirect(auth, provider);
         } catch (error: any) {
-            if (error.code !== 'auth/popup-closed-by-user') {
-                toast({
-                    title: "Erro no Login",
-                    description: error.message || "Não foi possível fazer login. Tente novamente.",
-                    variant: 'destructive'
-                });
-            }
-        } finally {
+             toast({
+                title: "Erro no Login",
+                description: "Não foi possível iniciar o login. Tente novamente.",
+                variant: 'destructive'
+            });
             setIsLoading(false);
         }
     }
-
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            toast({
-                title: "Login bem-sucedido!",
-                description: "Redirecionando para o seu painel.",
-            });
+            // On success, useEffect will handle redirect
         } catch (error: any) {
              toast({
                 title: "Erro no Login",
@@ -106,7 +118,7 @@ export default function LoginPage() {
         }
     };
     
-    if (isUserLoading || user) {
+    if (isUserLoading || isLoading || user) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <p>Carregando...</p>

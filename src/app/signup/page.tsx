@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -33,14 +33,51 @@ export default function SignUpPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true); // Start as true to handle redirect
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
     useEffect(() => {
-        if (!isUserLoading && user) {
-            router.push('/onboarding'); // Redirect to onboarding if user is detected
+        if (!isUserLoading) {
+            if (user) {
+                router.push('/onboarding');
+            } else {
+                setIsLoading(false);
+            }
         }
     }, [user, isUserLoading, router]);
+
+    useEffect(() => {
+        if (!auth || isUserLoading) return;
+        
+        getRedirectResult(auth)
+            .then(async (result) => {
+                if (result) {
+                    setIsLoading(true);
+                    const user = result.user;
+                    const userDocRef = doc(firestore, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (!userDoc.exists()) {
+                        await setDoc(userDocRef, {
+                            id: user.uid,
+                            email: user.email,
+                            name: user.displayName,
+                        });
+                    }
+                    toast({ title: "Cadastro bem-sucedido!", description: "Redirecionando..." });
+                    router.push('/onboarding');
+                }
+            })
+            .catch((error) => {
+                console.error("Redirect result error:", error);
+                toast({
+                    title: "Erro no Cadastro",
+                    description: "Não foi possível criar sua conta com o Google.",
+                    variant: 'destructive'
+                });
+                setIsLoading(false);
+            });
+    }, [auth, firestore, router, toast, isUserLoading]);
 
     const handleSocialSignUp = async (providerName: 'google') => {
         setIsLoading(true);
@@ -51,39 +88,16 @@ export default function SignUpPage() {
             } else {
                 throw new Error('Provedor de cadastro desconhecido');
             }
-            
-            const result = await signInWithPopup(auth, provider);
-            const user = result.user;
-
-            const userDocRef = doc(firestore, 'users', user.uid);
-            const userDoc = await getDoc(userDocRef);
-            
-            if (!userDoc.exists()) {
-                await setDoc(userDocRef, {
-                    id: user.uid,
-                    email: user.email,
-                    name: user.displayName,
-                });
-            }
-
-            toast({
-                title: "Cadastro bem-sucedido!",
-                description: "Vamos configurar seu perfil.",
-            });
-            // Let the useEffect handle redirection
+            await signInWithRedirect(auth, provider);
         } catch (error: any) {
-            if (error.code !== 'auth/popup-closed-by-user') {
-                toast({
-                    title: "Erro no Cadastro",
-                    description: error.message || "Não foi possível criar sua conta. Tente novamente.",
-                    variant: 'destructive'
-                });
-            }
-        } finally {
+            toast({
+                title: "Erro no Cadastro",
+                description: "Não foi possível iniciar o cadastro. Tente novamente.",
+                variant: 'destructive'
+            });
             setIsLoading(false);
         }
     }
-
 
     const handleSignUp = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -101,11 +115,7 @@ export default function SignUpPage() {
                 name: name,
             });
 
-            toast({
-                title: "Cadastro realizado com sucesso!",
-                description: "Vamos configurar seu perfil.",
-            });
-            // No automatic redirect here, useEffect will handle it
+            // On success, useEffect will redirect
         } catch (error: any) {
              toast({
                 title: "Erro no Cadastro",
@@ -116,7 +126,7 @@ export default function SignUpPage() {
         }
     };
     
-    if (isUserLoading || user) {
+    if (isUserLoading || isLoading || user) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <p>Carregando...</p>
