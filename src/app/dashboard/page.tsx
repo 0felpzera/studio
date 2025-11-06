@@ -100,38 +100,44 @@ export default function DashboardPage() {
     }, [allVideos, timeRange]);
     
     const chartData = useMemo(() => {
-        if (!filteredVideos || filteredVideos.length === 0) return [];
-        
-        const sortedVideos = [...filteredVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-        
-        const dataByMonth: { [key: string]: { views: number; likes: number; count: number } } = {};
+      if (!filteredVideos) return [];
 
-        sortedVideos.forEach(video => {
-            const date = new Date((video.create_time || 0) * 1000);
-            const month = date.toLocaleString('pt-BR', { month: 'short' });
-            
-            if (!dataByMonth[month]) {
-                dataByMonth[month] = { views: 0, likes: 0, count: 0 };
-            }
-            dataByMonth[month].views += video.view_count || 0;
-            dataByMonth[month].likes += video.like_count || 0;
-            dataByMonth[month].count += 1;
-        });
+      const sortedVideos = [...filteredVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+      const followerCount = tiktokAccount?.followerCount || 0;
 
-        // This is a mock trend for followers as we don't have historical follower data.
-        const followerCount = tiktokAccount?.followerCount || 0;
-        const followerGrowth = Object.keys(dataByMonth).map((month, index, arr) => ({
-             month,
-             Seguidores: Math.round(followerCount - (arr.length - 1 - index) * (followerCount * 0.05)), // Simulate 5% growth steps
-             Visualizações: dataByMonth[month].views,
-             Curtidas: dataByMonth[month].likes,
-        }));
+      if (sortedVideos.length === 0) {
+        return [{ month: 'Início', Seguidores: followerCount, Visualizações: 0, Curtidas: 0 }];
+      }
+
+      const dataByMonth: { [key: string]: { views: number; likes: number; count: number } } = {};
+      sortedVideos.forEach(video => {
+        const date = new Date((video.create_time || 0) * 1000);
+        const month = date.toLocaleString('pt-BR', { month: 'short' });
         
-        if (followerGrowth.length === 0) {
-            return [{month: 'Início', Seguidores: followerCount, Visualizações: 0, Curtidas: 0 }]
+        if (!dataByMonth[month]) {
+            dataByMonth[month] = { views: 0, likes: 0, count: 0 };
         }
+        dataByMonth[month].views += video.view_count || 0;
+        dataByMonth[month].likes += video.like_count || 0;
+        dataByMonth[month].count += 1;
+      });
 
-        return followerGrowth;
+      const months = Object.keys(dataByMonth);
+
+      if (months.length === 1) {
+        const month = months[0];
+        return [
+          { month: 'Início', Seguidores: Math.max(0, followerCount - (dataByMonth[month].likes / 10)), Visualizações: 0, Curtidas: 0 },
+          { month, Seguidores: followerCount, Visualizações: dataByMonth[month].views, Curtidas: dataByMonth[month].likes }
+        ];
+      }
+      
+      return months.map((month, index) => ({
+        month,
+        Seguidores: Math.round(followerCount - (months.length - 1 - index) * (followerCount * 0.05)), // Simulate 5% growth steps
+        Visualizações: dataByMonth[month].views,
+        Curtidas: dataByMonth[month].likes,
+      }));
 
     }, [filteredVideos, tiktokAccount]);
 
@@ -462,3 +468,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
