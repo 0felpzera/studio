@@ -133,28 +133,24 @@ export default function DashboardPage() {
 
         if (filteredVideos && filteredVideos.length > 0) {
             filteredVideos.forEach(video => {
-                const date = new Date((video.create_time || 0) * 1000);
-                const month = months[date.getMonth()];
-                if (month) {
-                    dataByMonth[month].views += video.view_count || 0;
-                    dataByMonth[month].likes += video.like_count || 0;
+                if (video.create_time) {
+                    const date = new Date(video.create_time * 1000);
+                    const month = months[date.getMonth()];
+                    if (month) {
+                        dataByMonth[month].views += video.view_count || 0;
+                        dataByMonth[month].likes += video.like_count || 0;
+                    }
                 }
             });
         }
         
-        const currentFollowers = tiktokAccount?.followerCount || 0;
-        // Simple linear projection for follower growth over the year.
-        // Let's project a 2x growth over 12 months for demonstration.
-        const projectedFollowerGrowth = currentFollowers / 12;
-
-        return months.map((month, index) => ({
+        return months.map((month) => ({
             month,
             Visualizações: dataByMonth[month].views,
             Curtidas: dataByMonth[month].likes,
-            Seguidores: Math.round(currentFollowers + (projectedFollowerGrowth * index)),
         }));
 
-    }, [filteredVideos, tiktokAccount]);
+    }, [filteredVideos]);
 
 
     const contentTasksQuery = useMemoFirebase(() => {
@@ -413,7 +409,7 @@ export default function DashboardPage() {
                 <Card>
                     <CardHeader>
                         <CardTitle className='font-bold'>Visão Geral da Performance</CardTitle>
-                        <CardDescription>Tendências de seguidores, visualizações e curtidas ao longo do tempo.</CardDescription>
+                        <CardDescription>Visualizações e curtidas dos seus vídeos ao longo do tempo.</CardDescription>
                     </CardHeader>
                     <CardContent className="h-[350px] pl-0">
                         <ResponsiveContainer width="100%" height="100%">
@@ -427,17 +423,6 @@ export default function DashboardPage() {
                                     axisLine={false}
                                 />
                                 <YAxis 
-                                    yAxisId="left" 
-                                    orientation="left" 
-                                    stroke="hsl(var(--muted-foreground))"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(value) => formatNumber(value)}
-                                />
-                                 <YAxis 
-                                    yAxisId="right" 
-                                    orientation="right" 
                                     stroke="hsl(var(--muted-foreground))"
                                     fontSize={12}
                                     tickLine={false}
@@ -455,9 +440,8 @@ export default function DashboardPage() {
                                         <stop offset="95%" stopColor="hsl(var(--chart-3))" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <Bar yAxisId="right" dataKey="Visualizações" fill="hsl(var(--chart-2) / 0.5)" radius={[4, 4, 0, 0]} />
-                                <Bar yAxisId="right" dataKey="Curtidas" fill="hsl(var(--chart-3) / 0.4)" radius={[4, 4, 0, 0]} />
-                                <Line yAxisId="left" type="monotone" dataKey="Seguidores" stroke="hsl(var(--chart-1))" strokeWidth={3} dot={false} />
+                                <Bar dataKey="Visualizações" fill="hsl(var(--chart-2) / 0.5)" radius={[4, 4, 0, 0]} />
+                                <Area type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-3))" fill="url(#colorLikes)" />
                             </ComposedChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -662,3 +646,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
