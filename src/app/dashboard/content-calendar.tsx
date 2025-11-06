@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Check, Sparkles, Wand2, X, Trash2 } from 'lucide-react';
+import { Loader2, Check, Sparkles, Wand2, X, Trash2, BrainCircuit } from 'lucide-react';
 import {
   generateWeeklyContentCalendar,
   GenerateWeeklyContentCalendarOutput,
@@ -271,8 +271,8 @@ export default function ContentCalendar() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-bold">Defina Sua Estratégia</CardTitle>
-            <CardDescription>Diga à IA o que você quer alcançar.</CardDescription>
+            <CardTitle className="font-bold">Passo 1: Defina sua Estratégia</CardTitle>
+            <CardDescription>Diga à IA seus objetivos e frequência de postagem para gerar um plano de conteúdo personalizado.</CardDescription>
           </CardHeader>
           <Form {...form}>
             <form
@@ -312,7 +312,7 @@ export default function ContentCalendar() {
                       <FormLabel>Seus Objetivos</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Ex: Atingir 10k seguidores em 3 meses"
+                          placeholder="Ex: Aumentar o engajamento e atingir 10k seguidores."
                           className="resize-none"
                           {...field}
                         />
@@ -326,14 +326,14 @@ export default function ContentCalendar() {
                   name="postingFrequency"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Frequência de Postagem</FormLabel>
+                      <FormLabel>Frequência de Postagem Desejada</FormLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Selecione a frequência de postagem" />
+                            <SelectValue placeholder="Selecione a frequência" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -346,8 +346,6 @@ export default function ContentCalendar() {
                           <SelectItem value="6-7 times per week">
                             6-7 vezes por semana
                           </SelectItem>
-                          <SelectItem value="Daily">Diariamente</SelectItem>
-                          <SelectItem value="Twice a day">2 vezes ao dia</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -363,7 +361,7 @@ export default function ContentCalendar() {
                   disabled={isLoading || isUserLoading || isLoadingGoals}
                   className="w-full font-bold"
                 >
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className='mr-2' /> Gerar Novo Plano</> }
+                  {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className='mr-2' /> Gerar Novo Plano de Conteúdo</> }
                 </Button>
             </CardFooter>
             </form>
@@ -375,8 +373,8 @@ export default function ContentCalendar() {
         {displayPlan ? (
             <Card className="bg-primary/5 border-primary/20">
                 <CardHeader>
-                    <CardTitle className="font-bold flex items-center gap-2"><Sparkles className='text-primary'/> Sugestão de Plano Semanal</CardTitle>
-                    <CardDescription>A IA gerou o seguinte plano de conteúdo para você. O que acha?</CardDescription>
+                    <CardTitle className="font-bold flex items-center gap-2"><Sparkles className='text-primary'/> Sugestão de Plano Semanal da IA</CardTitle>
+                    <CardDescription>A IA gerou o seguinte plano de conteúdo para você. Revise as ideias e, se gostar, aceite para adicioná-las ao seu checklist.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     {displayPlan.map((task, index) => (
@@ -401,9 +399,9 @@ export default function ContentCalendar() {
         ) : (
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-bold">Checklist da Semana</CardTitle>
+                    <CardTitle className="font-bold">Passo 2: Seu Checklist da Semana</CardTitle>
                     <CardDescription>
-                        {totalTasks > 0 ? `Você completou ${completedTasks} de ${totalTasks} tarefas esta semana.` : "Nenhuma tarefa ativa. Gere um plano para começar!"}
+                        {totalTasks > 0 ? `Progresso da semana: ${completedTasks} de ${totalTasks} tarefas concluídas.` : "Seu plano de conteúdo ativo aparecerá aqui. Gere um plano para começar!"}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -415,11 +413,14 @@ export default function ContentCalendar() {
                     )}
                     {!isLoading && !isLoadingTasks && totalTasks === 0 && !displayPlan && (
                       <div className="flex flex-col items-center justify-center h-48 text-center rounded-lg border-2 border-dashed">
+                        <div className="mx-auto bg-secondary p-3 rounded-full mb-4">
+                            <BrainCircuit className="size-8 text-muted-foreground" />
+                        </div>
                         <h3 className="text-xl font-semibold">
-                          Seu plano aparecerá aqui
+                          Seu plano de conteúdo aparecerá aqui
                         </h3>
-                        <p className="text-muted-foreground">
-                          Preencha o formulário para começar!
+                        <p className="text-muted-foreground max-w-sm">
+                          Preencha o formulário e clique em "Gerar Plano" para que a IA crie sua primeira lista de tarefas.
                         </p>
                       </div>
                     )}

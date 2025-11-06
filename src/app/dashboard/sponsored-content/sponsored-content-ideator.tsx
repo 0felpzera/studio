@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles, BrainCircuit } from "lucide-react";
 import {
   generateSponsoredContentIdeas,
   GenerateSponsoredContentIdeasOutput,
@@ -109,9 +109,9 @@ export default function SponsoredContentIdeator() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-bold">Detalhes da Parceria</CardTitle>
+            <CardTitle className="font-bold">Passo 1: Detalhes da Parceria</CardTitle>
             <CardDescription>
-              Descreva o produto que você está promovendo.
+              Descreva o produto e seu nicho para que a IA gere ideias de conteúdo autênticas.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -128,7 +128,7 @@ export default function SponsoredContentIdeator() {
                       <FormLabel>Descrição do Produto</FormLabel>
                       <FormControl>
                         <Textarea
-                          placeholder="Ex: Um novo hidratante vegano da..."
+                          placeholder="Ex: Um novo hidratante vegano da marca Y, com foco em sustentabilidade."
                           {...field}
                         />
                       </FormControl>
@@ -189,15 +189,15 @@ export default function SponsoredContentIdeator() {
             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
               <CardHeader>
                 <div className="mx-auto bg-secondary p-3 rounded-full">
-                  <Sparkles className="size-8 text-muted-foreground" />
+                  <BrainCircuit className="size-8 text-muted-foreground" />
                 </div>
               </CardHeader>
               <CardContent>
                 <h3 className="text-xl font-semibold mt-2">
-                  Suas ideias de conteúdo patrocinado aparecerão aqui
+                  Passo 2: Receba as Ideias da IA
                 </h3>
-                <p className="text-muted-foreground mt-2">
-                  Preencha o formulário para começar.
+                <p className="text-muted-foreground mt-2 max-w-sm">
+                  Preencha o formulário para receber sugestões de vídeos criativos e formatos que mais convertem.
                 </p>
               </CardContent>
             </Card>
@@ -206,10 +206,10 @@ export default function SponsoredContentIdeator() {
             <Card>
               <CardHeader>
                 <CardTitle className="font-bold">
-                  Ideias de Conteúdo Criativas
+                  Resultado da IA: Ideias de Conteúdo
                 </CardTitle>
                 <CardDescription>
-                  Aqui estão algumas maneiras autênticas de apresentar o produto.
+                  Aqui estão algumas maneiras criativas e autênticas de apresentar o produto para seu público.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -217,7 +217,7 @@ export default function SponsoredContentIdeator() {
                    <div key={index} className="p-4 rounded-lg border bg-background/50">
                         <p className="font-medium leading-relaxed">{idea}</p>
                         <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
-                            <span className="text-xs text-muted-foreground font-semibold mr-2">Formatos:</span>
+                            <span className="text-xs text-muted-foreground font-semibold mr-2">Formatos Sugeridos:</span>
                              {result.formatSuggestions.map((format, formatIndex) => (
                                 <Badge key={formatIndex} variant="secondary">{format}</Badge>
                             ))}

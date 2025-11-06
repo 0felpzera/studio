@@ -5,8 +5,8 @@ export default function IdeasPage() {
     <div className="space-y-6">
       <header className="space-y-1.5">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Gerador de Ideias</h1>
-        <p className="text-muted-foreground">
-          Nunca fique sem ideias. Inspire-se com tópicos perenes e tendências.
+        <p className="text-muted-foreground max-w-2xl">
+          Use o poder da IA para ter um brainstorm de ideias de vídeo. A ferramenta sugere tanto conteúdo perene (que dura para sempre) quanto tópicos que estão em alta agora.
         </p>
       </header>
       <VideoIdeasGenerator />

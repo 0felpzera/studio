@@ -188,8 +188,8 @@ export default function VideoIdeasGenerator() {
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <div>
-                        <CardTitle className="font-bold">Inspire-se</CardTitle>
-                        <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
+                        <CardTitle className="font-bold">Passo 1: Dê o contexto</CardTitle>
+                        <CardDescription>Diga à IA sobre o que você fala e quais tendências está de olho.</CardDescription>
                     </div>
                      <Sheet>
                         <SheetTrigger asChild>
@@ -200,9 +200,9 @@ export default function VideoIdeasGenerator() {
                         </SheetTrigger>
                         <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
                             <SheetHeader>
-                            <SheetTitle>Suas Ideias Salvas</SheetTitle>
+                            <SheetTitle>Seu Banco de Ideias</SheetTitle>
                             <SheetDescription>
-                                Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
+                                Seu cofre de ideias para nunca mais sofrer com bloqueio criativo. Clique para ver os detalhes.
                             </SheetDescription>
                             </SheetHeader>
                             <Dialog>
@@ -340,8 +340,8 @@ export default function VideoIdeasGenerator() {
                       </div>
                   </CardHeader>
                   <CardContent>
-                      <h3 className="text-xl font-semibold mt-2">Suas ideias de vídeo aparecerão aqui</h3>
-                      <p className="text-muted-foreground mt-2">Preencha o formulário para ter um brainstorm com a IA!</p>
+                      <h3 className="text-xl font-semibold mt-2">Passo 2: Receba as Sugestões</h3>
+                      <p className="text-muted-foreground mt-2 max-w-sm">Preencha o formulário para que a IA gere ideias de vídeo com títulos, descrições e até esboços de roteiro.</p>
                   </CardContent>
                </Card>
             )}

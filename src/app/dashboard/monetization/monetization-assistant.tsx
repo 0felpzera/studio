@@ -5,7 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Loader2, DollarSign } from "lucide-react";
+import { Loader2, DollarSign, BrainCircuit } from "lucide-react";
 import { generateMediaKit, GenerateMediaKitOutput } from "@/ai/flows/generate-monetization-assistant";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -123,8 +123,8 @@ export default function MonetizationAssistant() {
       <div className="md:col-span-1">
         <Card>
           <CardHeader>
-            <CardTitle className="font-bold">Suas Métricas</CardTitle>
-            <CardDescription>Forneça suas estatísticas mais recentes para um mídia kit preciso.</CardDescription>
+            <CardTitle className="font-bold">Passo 1: Forneça suas Métricas</CardTitle>
+            <CardDescription>Preencha (ou deixe a IA preencher) suas estatísticas para gerar um mídia kit preciso.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -149,29 +149,29 @@ export default function MonetizationAssistant() {
                 )} />
                 <FormField control={form.control} name="niche" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nicho</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormLabel>Seu Nicho</FormLabel>
+                    <FormControl><Input placeholder="Ex: Fitness, Games, Beleza" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="averageViews" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Média de Visualizações por Post</FormLabel>
-                    <FormControl><Input type="number" {...field} /></FormControl>
+                    <FormControl><Input type="number" placeholder="Ex: 50000" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="demographics" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Demografia do Público</FormLabel>
-                    <FormControl><Textarea {...field} /></FormControl>
+                    <FormLabel>Demografia do seu Público</FormLabel>
+                    <FormControl><Textarea placeholder="Ex: Mulheres, 18-24 anos, no Brasil..." {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="topPosts" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Posts Principais (URLs, separadas por vírgula)</FormLabel>
-                    <FormControl><Textarea {...field} /></FormControl>
+                    <FormLabel>Posts Principais (URLs separadas por vírgula)</FormLabel>
+                    <FormControl><Textarea placeholder="https://tiktok.com/..., https://instagram.com/..." {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -200,12 +200,12 @@ export default function MonetizationAssistant() {
             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
                 <CardHeader>
                     <div className="mx-auto bg-secondary p-3 rounded-full">
-                        <DollarSign className="size-8 text-muted-foreground" />
+                        <BrainCircuit className="size-8 text-muted-foreground" />
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <h3 className="text-xl font-semibold mt-2">Seu mídia kit aparecerá aqui</h3>
-                    <p className="text-muted-foreground mt-2">Preencha suas métricas para gerar seu kit.</p>
+                    <h3 className="text-xl font-semibold mt-2">Passo 2: Receba seu Mídia Kit</h3>
+                    <p className="text-muted-foreground mt-2 max-w-sm">Preencha suas métricas para que a IA gere um texto de apresentação profissional e uma sugestão de preços.</p>
                 </CardContent>
             </Card>
           )}
@@ -213,8 +213,8 @@ export default function MonetizationAssistant() {
             <>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-bold">Preços Sugeridos</CardTitle>
-                  <CardDescription>Com base em suas métricas e nicho, aqui estão alguns pontos de partida.</CardDescription>
+                  <CardTitle className="font-bold">Resultado da IA: Preços Sugeridos</CardTitle>
+                  <CardDescription>Com base em suas métricas e nicho, aqui estão alguns pontos de partida para suas negociações.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans">
@@ -224,8 +224,8 @@ export default function MonetizationAssistant() {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="font-bold">Conteúdo do Mídia Kit</CardTitle>
-                  <CardDescription>Copie este conteúdo para o seu mídia kit profissional.</CardDescription>
+                  <CardTitle className="font-bold">Resultado da IA: Conteúdo do Mídia Kit</CardTitle>
+                  <CardDescription>Copie e cole este conteúdo profissional e bem formatado no seu Mídia Kit.</CardDescription>
                 </CardHeader>
                 <CardContent>
                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md whitespace-pre-wrap font-sans">

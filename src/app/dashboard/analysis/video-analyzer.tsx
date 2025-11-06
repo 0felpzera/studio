@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Loader2, Upload, Sparkles, Video, CheckCircle } from "lucide-react";
+import { Loader2, Upload, Sparkles, Video, CheckCircle, BrainCircuit } from "lucide-react";
 import { analyzeVideoForImprovement, AnalyzeVideoOutput } from "@/ai/flows/analyze-video-for-improvement";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -89,8 +89,8 @@ export default function VideoAnalyzer() {
       <div className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle className="font-bold">Envie Seu Vídeo</CardTitle>
-            <CardDescription>Selecione um arquivo de vídeo para iniciar a análise.</CardDescription>
+            <CardTitle className="font-bold">Passo 1: Envie seu vídeo</CardTitle>
+            <CardDescription>Selecione um arquivo de vídeo (até 4MB) do seu dispositivo para a IA analisar.</CardDescription>
           </CardHeader>
           <CardContent>
             <div 
@@ -143,12 +143,12 @@ export default function VideoAnalyzer() {
              <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
                 <CardHeader>
                     <div className="mx-auto bg-secondary p-3 rounded-full">
-                        <Sparkles className="size-8 text-muted-foreground" />
+                        <BrainCircuit className="size-8 text-muted-foreground" />
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <h3 className="text-xl font-semibold mt-2">Sua análise aparecerá aqui</h3>
-                    <p className="text-muted-foreground mt-2">Envie um vídeo e clique em "Analisar" para ver a mágica.</p>
+                    <h3 className="text-xl font-semibold mt-2">Passo 2: Receba a Análise da IA</h3>
+                    <p className="text-muted-foreground mt-2 max-w-sm">Envie um vídeo e clique em "Analisar" para receber feedback sobre o gancho, qualidade, ritmo e mais.</p>
                 </CardContent>
              </Card>
         )}
@@ -156,11 +156,18 @@ export default function VideoAnalyzer() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
+                <CardTitle className="font-bold">Resultado da Análise</CardTitle>
+                <CardDescription>Aqui estão as sugestões da IA para melhorar seu vídeo.</CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle className="font-bold">Análise do Gancho (Primeiros 3s)</CardTitle>
                 <CardDescription>{analysisResult.hookAnalysis.effectiveness}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <h4 className="font-semibold text-sm">Sugestões:</h4>
+                <h4 className="font-semibold text-sm">Sugestões de Ganchos Alternativos:</h4>
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
                   {analysisResult.hookAnalysis.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
@@ -177,7 +184,7 @@ export default function VideoAnalyzer() {
                   <h4 className="font-semibold">Áudio: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.audio}</span></h4>
                   <h4 className="font-semibold">Enquadramento: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.framing}</span></h4>
                 </div>
-                 <h4 className="font-semibold text-sm">Sugestões:</h4>
+                 <h4 className="font-semibold text-sm">Sugestões de Melhoria:</h4>
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
                   {analysisResult.technicalQuality.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
@@ -186,11 +193,11 @@ export default function VideoAnalyzer() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="font-bold">Ritmo & Fluxo</CardTitle>
+                <CardTitle className="font-bold">Ritmo & Fluxo do Vídeo</CardTitle>
                 <CardDescription>{analysisResult.pacing.assessment}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
-                <h4 className="font-semibold text-sm">Sugestões:</h4>
+                <h4 className="font-semibold text-sm">Sugestões para Melhorar o Ritmo:</h4>
                 <ul className="list-disc list-inside text-sm text-muted-foreground">
                   {analysisResult.pacing.suggestions.map((s, i) => <li key={i}>{s}</li>)}
                 </ul>
@@ -200,15 +207,15 @@ export default function VideoAnalyzer() {
             <Card>
               <CardHeader>
                 <CardTitle className="font-bold">Legenda & Hashtags</CardTitle>
-                <CardDescription>Otimizado para engajamento.</CardDescription>
+                <CardDescription>Use esta combinação otimizada para aumentar o alcance e o engajamento.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-sm mb-2">Legenda Sugerida:</h4>
+                  <h4 className="font-semibold text-sm mb-2">Sugestão de Legenda:</h4>
                   <p className="text-sm p-3 bg-muted rounded-md">{analysisResult.captionSuggestions}</p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-sm mb-2">Hashtags Sugeridas:</h4>
+                  <h4 className="font-semibold text-sm mb-2">Sugestão de Hashtags:</h4>
                   <div className="flex flex-wrap gap-2">
                     {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
                   </div>
