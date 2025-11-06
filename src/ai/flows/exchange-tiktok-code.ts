@@ -121,27 +121,23 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
               "like_count", "comment_count", "share_count", "create_time"
             ].join(',');
             
-            const videoListBody = {
-              fields: videoFields,
-              max_count: 20, // Fetch up to 20 recent videos
-            };
+            const videoListUrl = new URL(TIKTOK_VIDEOLIST_URL);
+            videoListUrl.searchParams.append('fields', videoFields);
 
-            const videoListResponse = await fetch(TIKTOK_VIDEOLIST_URL, {
+            const videoListResponse = await fetch(videoListUrl.toString(), {
               method: 'POST',
               headers: {
                 'Authorization': `Bearer ${access_token}`,
-                'Content-Type': 'application/json',
               },
-              body: JSON.stringify(videoListBody),
             });
             
             const videoListData = await videoListResponse.json();
             
-            if (videoListData.error.code !== 'ok' || !videoListData.data?.videos) {
+            if (videoListData.error.code !== 'ok' || !videoListData.data) {
               throw new Error(`Failed to fetch video list from TikTok: ${videoListData.error.message}`);
             }
             
-            const videos = videoListData.data.videos;
+            const videos = videoListData.data.videos || [];
 
             // Step 4: Assemble and return all data
             return {
