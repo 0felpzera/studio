@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { TrendifyLogo } from '@/components/icons';
 
 const navItems = [
@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
                 <div className="flex flex-1 flex-col">
                     {/* Mobile Header */}
-                    <header className="md:hidden sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
+                    <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
                         <Link href="/dashboard" className="flex items-center gap-2">
                             <TrendifyLogo className="size-7 text-primary" />
                             <span className="text-lg font-bold font-headline">Trendify</span>
@@ -151,6 +151,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                                 </Button>
                             </SheetTrigger>
                             <SheetContent side="left" className="w-[300px] p-0 flex flex-col">
+                                <SheetHeader className='sr-only'>
+                                    <SheetTitle>Menu Principal</SheetTitle>
+                                </SheetHeader>
                                 <SidebarContent onLinkClick={() => setIsSheetOpen(false)} />
                             </SheetContent>
                         </Sheet>
