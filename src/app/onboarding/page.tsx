@@ -28,10 +28,10 @@ function OnboardingComponent() {
   const [followerGoal, setFollowerGoal] = useState('');
   const [postingFrequency, setPostingFrequency] = useState('');
 
-  // Get sign-up data from URL
-  const signupName = useMemo(() => searchParams.get('name') || '', [searchParams]);
-  const signupEmail = useMemo(() => searchParams.get('email') || '', [searchParams]);
-  const signupPassword = useMemo(() => searchParams.get('password') || '', [searchParams]);
+  // Get sign-up data from URL, ensuring it's decoded.
+  const signupName = useMemo(() => searchParams.get('name') ? decodeURIComponent(searchParams.get('name')!) : '', [searchParams]);
+  const signupEmail = useMemo(() => searchParams.get('email') ? decodeURIComponent(searchParams.get('email')!) : '', [searchParams]);
+  const signupPassword = useMemo(() => searchParams.get('password') ? decodeURIComponent(searchParams.get('password')!) : '', [searchParams]);
 
 
   const handleFinishOnboarding = async () => {
@@ -75,15 +75,13 @@ function OnboardingComponent() {
         postingFrequency,
       };
       const goalDocRef = doc(firestore, 'users', newUser.uid, 'goals', 'user-goal');
-      await setDoc(goalDocRef, goalData);
+      await setDoc(goalDocRef, goalData, { merge: true });
 
       toast({
         title: "Tudo pronto!",
         description: "Sua conta foi criada. Bem-vindo ao seu dashboard!",
       });
-
-      // The onAuthStateChanged listener will now pick up the new user and redirect automatically.
-      // Forcing a redirect just in case.
+      
       router.push('/dashboard');
 
     } catch (error: any) {
@@ -91,6 +89,8 @@ function OnboardingComponent() {
        let message = "Não foi possível criar sua conta. Tente novamente.";
         if (error.code === 'auth/email-already-in-use') {
             message = "Este e-mail já está em uso. Tente fazer login.";
+        } else if (error.code === 'auth/invalid-email') {
+            message = "O e-mail fornecido não é válido. Por favor, volte e verifique."
         }
       toast({
         title: "Erro ao Criar Conta",
@@ -106,8 +106,19 @@ function OnboardingComponent() {
     // If a user is somehow already logged in, redirect them.
     if (!isAuthLoading && user) {
         router.push('/dashboard');
+        return;
     }
-  }, [user, isAuthLoading, router]);
+    // If we land on this page without signup data, something is wrong.
+    if (!isAuthLoading && !user && (!signupEmail || !signupName || !signupPassword)) {
+        toast({
+            title: "Sessão Inválida",
+            description: "Por favor, inicie o processo de cadastro novamente.",
+            variant: "destructive"
+        });
+        router.push('/signup');
+    }
+  }, [user, isAuthLoading, router, signupEmail, signupName, signupPassword, toast]);
+
 
   // This is a special case for onboarding. We want to show loading until auth state is confirmed false.
   if (isAuthLoading) {
@@ -125,7 +136,7 @@ function OnboardingComponent() {
             <div className="mx-auto mb-4">
                 <span className="text-2xl font-bold text-foreground font-headline">Trendify</span>
             </div>
-          <CardTitle className="text-2xl font-bold">Quase lá, {decodeURIComponent(signupName)}!</CardTitle>
+          <CardTitle className="text-2xl font-bold">Quase lá, {signupName || 'Criador'}!</CardTitle>
           <CardDescription>Só mais alguns detalhes para personalizar sua experiência.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-8 p-6">
