@@ -484,7 +484,7 @@ export function GrowthCalculator() {
                         <DialogTrigger asChild>
                             <Button variant="link">Ver como calculamos</Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-card/60 backdrop-blur-lg border-white/10">
+                        <DialogContent>
                             <DialogHeader>
                             <DialogTitle className="font-bold">Metodologia de Cálculo</DialogTitle>
                             <DialogDescription>
