@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -275,8 +275,59 @@ export function GrowthCalculator() {
     <section className="py-20 sm:py-32 overflow-hidden">
       <div className="container mx-auto px-4">
         {!isCalculated ? (
-            <div className='max-w-xl mx-auto'>
-                <Card className="bg-card/50 backdrop-blur-lg border border-border/20 shadow-2xl">
+            <motion.div 
+              className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.2 }}
+              }}
+            >
+              <motion.div 
+                className="space-y-6"
+                variants={{
+                  hidden: { opacity: 0, x: -50 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" }}
+                }}
+              >
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">
+                  Descubra seu Potencial de Crescimento
+                </h2>
+                <p className="text-lg text-muted-foreground">
+                  Nossa calculadora de IA analisa seu perfil e metas para criar uma projeção de crescimento e monetização realista. Preencha os campos para receber um plano personalizado.
+                </p>
+                <ul className="space-y-3">
+                  <li className="flex items-start gap-3">
+                    <Check className="size-5 text-primary mt-1 flex-shrink-0" />
+                    <span><span className="font-semibold text-foreground">Visualize seu crescimento</span> com um gráfico de projeção mensal.</span>
+                  </li>
+                   <li className="flex items-start gap-3">
+                    <Check className="size-5 text-primary mt-1 flex-shrink-0" />
+                    <span><span className="font-semibold text-foreground">Estime seu potencial de ganhos</span> com parcerias e publicidade.</span>
+                  </li>
+                   <li className="flex items-start gap-3">
+                    <Check className="size-5 text-primary mt-1 flex-shrink-0" />
+                    <span><span className="font-semibold text-foreground">Receba um plano de ação semanal</span> com ideias de conteúdo para seu nicho.</span>
+                  </li>
+                </ul>
+              </motion.div>
+
+              <motion.div 
+                className="relative"
+                variants={{
+                  hidden: { opacity: 0, scale: 0.95 },
+                  visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: "easeOut" }}
+                }}
+              >
+                 <div className="absolute -inset-4 opacity-50 dark:opacity-20 pointer-events-none">
+                  <div className="w-full h-full blur-2xl [mask-image:linear-gradient(to_bottom,transparent,black,transparent)]">
+                    <GrowthChart initialFollowers={2500} goalFollowers={50000} />
+                  </div>
+                 </div>
+
+                <Card className="relative bg-card/60 backdrop-blur-lg border border-border/20 shadow-2xl">
                     <CardHeader className="border-b border-border/20">
                        <ul className="flex justify-around">
                         {steps.map((step, index) => {
@@ -315,7 +366,8 @@ export function GrowthCalculator() {
                         </CardFooter>
                   </form>
                 </Card>
-            </div>
+              </motion.div>
+            </motion.div>
         ) : (
           <div id="calculator-results" className="space-y-12">
             <div className="text-center">
