@@ -155,109 +155,105 @@ export default function VideoIdeasGenerator() {
   return (
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1">
-          <div className="flex justify-between items-center mb-4">
-              <div>
-                <h3 className="text-lg font-semibold">Inspire-se</h3>
-                <p className="text-sm text-muted-foreground">Diga à IA sobre o que você fala.</p>
-              </div>
-               <Sheet>
-                  <SheetTrigger asChild>
-                    <Button variant="secondary" size="icon" className="relative">
-                      <Bookmark className="h-4 w-4" />
-                      {savedIdeas && savedIdeas.length > 0 && (
-                          <span className="absolute top-1 right-1 flex h-2 w-2">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                          </span>
-                      )}
-                       <span className="sr-only">Ver ideias salvas</span>
-                    </Button>
-                  </SheetTrigger>
-                  <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
-                    <SheetHeader>
-                      <SheetTitle>Suas Ideias Salvas</SheetTitle>
-                      <SheetDescription>
-                        Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
-                      </SheetDescription>
-                    </SheetHeader>
-                    <Dialog>
-                    <div className="flex-1 overflow-y-auto pr-4">
-                      {isLoadingSaved && (
-                         <div className="space-y-4 mt-4">
-                           {Array.from({ length: 5 }).map((_, i) => (
-                             <div key={i} className="p-4 rounded-lg border bg-muted/50 space-y-2 animate-pulse">
-                               <div className="h-4 w-3/4 bg-muted-foreground/20 rounded"></div>
-                               <div className="h-3 w-full bg-muted-foreground/20 rounded"></div>
-                             </div>
-                           ))}
-                         </div>
-                      )}
-                      {!isLoadingSaved && savedIdeas && savedIdeas.length > 0 ? (
-                        <div className="space-y-4 mt-4">
-                          {savedIdeas.map((idea) => (
-                            <div key={idea.id} className="p-4 rounded-lg border bg-muted/50 group hover:bg-muted/80 transition-colors relative">
-                                <DialogTrigger asChild>
-                                  <div className="cursor-pointer">
-                                      <h4 className="font-semibold text-foreground">{idea.title}</h4>
-                                      <p className="text-sm text-muted-foreground line-clamp-1">{idea.description}</p>
-                                  </div>
-                                </DialogTrigger>
-                               <AlertDialog>
-                                  <AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="absolute top-2 right-2 size-7 opacity-0 group-hover:opacity-100"
-                                      >
-                                        <Trash2 className="size-4 text-destructive" />
-                                      </Button>
-                                  </AlertDialogTrigger>
-                                  <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                      <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
-                                      <AlertDialogDescription>
-                                        Esta ação não pode ser desfeita. Isso excluirá permanentemente esta ideia salva.
-                                      </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                      <AlertDialogAction onClick={() => handleDeleteIdea(idea.id)} disabled={isDeleting === idea.id}>
-                                         {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : "Continuar"}
-                                      </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                  </AlertDialogContent>
-                                </AlertDialog>
-                                <DialogContent>
-                                    <DialogHeader>
-                                    <DialogTitle className="flex items-center gap-2">
-                                        <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
-                                            {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
-                                        </Badge>
-                                        {idea.title}
-                                    </DialogTitle>
-                                    <DialogDescription>{idea.description}</DialogDescription>
-                                    </DialogHeader>
-                                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
-                                        <h4 className="font-semibold">Esboço do Roteiro:</h4>
-                                        <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
-                                    </div>
-                                </DialogContent>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center">
-                          <Bookmark className="size-12 text-muted-foreground/50" />
-                          <h3 className="text-lg font-semibold mt-4">Nenhuma Ideia Salva</h3>
-                          <p className="text-sm text-muted-foreground mt-1">Clique em "Salvar Ideia" para começar a construir seu banco.</p>
-                        </div>
-                      )}
-                    </div>
-                    </Dialog>
-                  </SheetContent>
-                </Sheet>
-            </div>
           <Card>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="font-bold">Inspire-se</CardTitle>
+                        <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
+                    </div>
+                     <Sheet>
+                        <SheetTrigger asChild>
+                            <Button variant="secondary" size="sm">
+                                <Bookmark className="h-4 w-4 mr-2" />
+                                Ver Salvos
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
+                            <SheetHeader>
+                            <SheetTitle>Suas Ideias Salvas</SheetTitle>
+                            <SheetDescription>
+                                Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
+                            </SheetDescription>
+                            </SheetHeader>
+                            <Dialog>
+                            <div className="flex-1 overflow-y-auto pr-4">
+                            {isLoadingSaved && (
+                                <div className="space-y-4 mt-4">
+                                {Array.from({ length: 5 }).map((_, i) => (
+                                    <div key={i} className="p-4 rounded-lg border bg-muted/50 space-y-2 animate-pulse">
+                                    <div className="h-4 w-3/4 bg-muted-foreground/20 rounded"></div>
+                                    <div className="h-3 w-full bg-muted-foreground/20 rounded"></div>
+                                    </div>
+                                ))}
+                                </div>
+                            )}
+                            {!isLoadingSaved && savedIdeas && savedIdeas.length > 0 ? (
+                                <div className="space-y-4 mt-4">
+                                {savedIdeas.map((idea) => (
+                                    <div key={idea.id} className="p-4 rounded-lg border bg-muted/50 group hover:bg-muted/80 transition-colors relative">
+                                        <DialogTrigger asChild>
+                                        <div className="cursor-pointer">
+                                            <h4 className="font-semibold text-foreground">{idea.title}</h4>
+                                            <p className="text-sm text-muted-foreground line-clamp-1">{idea.description}</p>
+                                        </div>
+                                        </DialogTrigger>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                className="absolute top-2 right-2 size-7 opacity-0 group-hover:opacity-100"
+                                            >
+                                                <Trash2 className="size-4 text-destructive" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta ação não pode ser desfeita. Isso excluirá permanentemente esta ideia salva.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteIdea(idea.id)} disabled={isDeleting === idea.id}>
+                                                {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : "Continuar"}
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                        </AlertDialog>
+                                        <DialogContent>
+                                            <DialogHeader>
+                                            <DialogTitle className="flex items-center gap-2">
+                                                <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
+                                                    {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
+                                                </Badge>
+                                                {idea.title}
+                                            </DialogTitle>
+                                            <DialogDescription>{idea.description}</DialogDescription>
+                                            </DialogHeader>
+                                            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
+                                                <h4 className="font-semibold">Esboço do Roteiro:</h4>
+                                                <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
+                                            </div>
+                                        </DialogContent>
+                                    </div>
+                                ))}
+                                </div>
+                            ) : (
+                                <div className="flex flex-col items-center justify-center h-full text-center">
+                                <Bookmark className="size-12 text-muted-foreground/50" />
+                                <h3 className="text-lg font-semibold mt-4">Nenhuma Ideia Salva</h3>
+                                <p className="text-sm text-muted-foreground mt-1">Clique em "Salvar Ideia" para começar a construir seu banco.</p>
+                                </div>
+                            )}
+                            </div>
+                            </Dialog>
+                        </SheetContent>
+                    </Sheet>
+                </div>
+            </CardHeader>
             <CardContent className="pt-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
