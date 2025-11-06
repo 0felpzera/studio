@@ -105,7 +105,7 @@ export function NavBar({ items, className }: NavBarProps) {
                 Voltar ao App
             </Button>
         ) : (
-            <div className="hidden sm:flex items-center gap-1">
+            <div className="hidden sm:flex items-center gap-1 bg-card shadow-lg rounded-full p-1 border border-border">
                 <Button variant="ghost" size="sm" onClick={() => router.push('/login')} className="whitespace-nowrap">
                     Entrar
                 </Button>
@@ -116,7 +116,7 @@ export function NavBar({ items, className }: NavBarProps) {
         )}
          <div className="flex sm:hidden">
             { !isUserLoading && !user && (
-                 <Button variant="ghost" size="icon" className="rounded-full" onClick={() => router.push('/login')}>
+                 <Button variant="ghost" size="icon" className="rounded-full bg-card shadow-lg border border-border" onClick={() => router.push('/login')}>
                     <LogIn className="size-4" />
                  </Button>
             )}
