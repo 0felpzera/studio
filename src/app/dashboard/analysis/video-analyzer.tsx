@@ -1,10 +1,11 @@
+
 "use client";
 
 import { useState, useRef } from "react";
 import { Loader2, Upload, Sparkles, Video, CheckCircle } from "lucide-react";
 import { analyzeVideoForImprovement, AnalyzeVideoOutput } from "@/ai/flows/analyze-video-for-improvement";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
@@ -220,3 +221,5 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
+
+    
