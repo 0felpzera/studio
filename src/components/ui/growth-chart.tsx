@@ -4,27 +4,50 @@
 import { TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
-const generateChartData = (initialFollowers: number = 1500, goalFollowers: number = 100000) => {
-    const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-    const data = [];
-    const growthFactor = Math.pow(goalFollowers / initialFollowers, 1 / (months.length -1));
+const parseTimeToMonths = (timeToGoal: string): number => {
+    const timeMatch = timeToGoal.match(/~?(\d+(\.\d)?)\s*(months|years|ano|anos|mês|meses)/i);
+    if (!timeMatch) return 12; // Fallback to 12 months
 
-    for (let i = 0; i < months.length; i++) {
+    const value = parseFloat(timeMatch[1]);
+    const unit = timeMatch[3].toLowerCase();
+
+    if (unit.startsWith('ano') || unit.startsWith('year')) {
+        return Math.round(value * 12);
+    }
+    return Math.round(value);
+};
+
+
+const generateChartData = (initialFollowers: number = 1500, goalFollowers: number = 100000, timeToGoal: string = '~12 months') => {
+    const totalMonths = parseTimeToMonths(timeToGoal);
+    if (totalMonths <= 0) return [];
+    
+    const data = [];
+    // Adjust growth factor to be based on the dynamic number of months
+    const growthFactor = Math.pow(goalFollowers / initialFollowers, 1 / (totalMonths -1));
+
+    for (let i = 0; i < totalMonths; i++) {
         data.push({
-            month: months[i],
+            month: `Mês ${i + 1}`,
             followers: Math.round(initialFollowers * Math.pow(growthFactor, i)),
         });
     }
+    // Ensure the last data point is exactly the goal
+    if (data.length > 0) {
+        data[data.length - 1].followers = goalFollowers;
+    }
+    
     return data;
 }
 
 interface GrowthChartProps {
     initialFollowers?: number;
     goalFollowers?: number;
+    timeToGoal?: string;
 }
 
-export function GrowthChart({ initialFollowers, goalFollowers }: GrowthChartProps) {
-  const chartdata = generateChartData(initialFollowers, goalFollowers);
+export function GrowthChart({ initialFollowers, goalFollowers, timeToGoal }: GrowthChartProps) {
+  const chartdata = generateChartData(initialFollowers, goalFollowers, timeToGoal);
   
   return (
     <ResponsiveContainer width="100%" height="100%">
@@ -42,6 +65,7 @@ export function GrowthChart({ initialFollowers, goalFollowers }: GrowthChartProp
           fontSize={12}
           tickLine={false}
           axisLine={false}
+          interval={'preserveStartEnd'}
         />
         <YAxis
           stroke="hsl(var(--muted-foreground))"
@@ -65,5 +89,3 @@ export function GrowthChart({ initialFollowers, goalFollowers }: GrowthChartProp
     </ResponsiveContainer>
   );
 }
-
-    

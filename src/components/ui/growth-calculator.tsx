@@ -435,10 +435,14 @@ export function GrowthCalculator() {
             <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 font-bold"><TrendingUp className="h-5 w-5 text-primary" /> Curva de Crescimento de Seguidores</CardTitle>
-                    <CardDescription>Uma projeção mensal para sua meta de {formData.followerGoal?.toLocaleString('pt-BR')} seguidores.</CardDescription>
+                    <CardDescription>Uma projeção para sua meta de {formData.followerGoal?.toLocaleString('pt-BR')} seguidores em {plan.timeToGoal}.</CardDescription>
                 </CardHeader>
                  <CardContent className="h-[350px] pl-0">
-                    <GrowthChart initialFollowers={formData.followers} goalFollowers={formData.followerGoal}/>
+                    <GrowthChart 
+                        initialFollowers={formData.followers} 
+                        goalFollowers={formData.followerGoal} 
+                        timeToGoal={plan.timeToGoal}
+                    />
                 </CardContent>
             </Card>
 
