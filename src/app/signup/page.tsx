@@ -36,27 +36,33 @@ export default function SignUpPage() {
     const [isLoading, setIsLoading] = useState(true); // Start as true to handle redirect
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
+    // Effect to handle existing users or redirect after signup
     useEffect(() => {
         if (!isUserLoading) {
             if (user) {
+                // If a user is logged in, they should be in onboarding or dashboard.
+                // Redirecting to onboarding is safer.
                 router.push('/onboarding');
             } else {
+                // No user, ready to sign up.
                 setIsLoading(false);
             }
         }
     }, [user, isUserLoading, router]);
 
+    // Effect to handle the result of Google's redirect
     useEffect(() => {
-        if (!auth || isUserLoading) return;
-        
+        if (!auth || isUserLoading || user) return;
+
         getRedirectResult(auth)
             .then(async (result) => {
                 if (result) {
-                    setIsLoading(true);
+                    setIsLoading(true); // Process the result
                     const user = result.user;
                     const userDocRef = doc(firestore, 'users', user.uid);
                     const userDoc = await getDoc(userDocRef);
 
+                    // Create user doc only if it's their first time
                     if (!userDoc.exists()) {
                         await setDoc(userDocRef, {
                             id: user.uid,
@@ -64,8 +70,11 @@ export default function SignUpPage() {
                             name: user.displayName,
                         });
                     }
-                    toast({ title: "Cadastro bem-sucedido!", description: "Redirecionando..." });
-                    router.push('/onboarding');
+                    toast({ title: "Cadastro bem-sucedido!", description: "Vamos configurar seu perfil." });
+                    // Redirect is handled by the other useEffect
+                } else {
+                    // This can be null if the page is loaded without a redirect flow in progress.
+                    setIsLoading(false);
                 }
             })
             .catch((error) => {
@@ -77,7 +86,8 @@ export default function SignUpPage() {
                 });
                 setIsLoading(false);
             });
-    }, [auth, firestore, router, toast, isUserLoading]);
+    }, [auth, firestore, router, toast, isUserLoading, user]);
+
 
     const handleSocialSignUp = async (providerName: 'google') => {
         setIsLoading(true);
@@ -115,7 +125,7 @@ export default function SignUpPage() {
                 name: name,
             });
 
-            // On success, useEffect will redirect
+            // On success, the main useEffect will redirect to onboarding
         } catch (error: any) {
              toast({
                 title: "Erro no Cadastro",
@@ -126,7 +136,7 @@ export default function SignUpPage() {
         }
     };
     
-    if (isUserLoading || isLoading || user) {
+    if (isUserLoading || isLoading) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <p>Carregando...</p>

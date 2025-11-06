@@ -8,8 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
@@ -31,57 +30,15 @@ export default function LoginPage() {
     const { toast } = useToast();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(true); // Start as true to handle redirect
-    const firestore = useFirestore();
+    const [isLoading, setIsLoading] = useState(false);
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
     useEffect(() => {
-        if (!isUserLoading) {
-            if (user) {
-                router.push('/dashboard');
-            } else {
-                setIsLoading(false); // No user, stop loading
-            }
+        if (!isUserLoading && user) {
+            router.push('/dashboard');
         }
     }, [user, isUserLoading, router]);
 
-    useEffect(() => {
-        if (!auth || isUserLoading) return;
-
-        getRedirectResult(auth)
-            .then(async (result) => {
-                if (result) {
-                    setIsLoading(true); // Start loading while processing result
-                    const user = result.user;
-                    const userDocRef = doc(firestore, 'users', user.uid);
-                    const userDoc = await getDoc(userDocRef);
-
-                    if (!userDoc.exists()) {
-                        await setDoc(userDocRef, {
-                            id: user.uid,
-                            email: user.email,
-                            name: user.displayName,
-                        });
-                        router.push('/onboarding');
-                    } else {
-                        router.push('/dashboard');
-                    }
-                    toast({ title: "Login bem-sucedido!", description: "Redirecionando..." });
-                }
-            })
-            .catch((error) => {
-                console.error("Redirect result error:", error);
-                if (error.code !== 'auth/popup-closed-by-user') {
-                    toast({
-                        title: "Erro no Login",
-                        description: "Não foi possível fazer login com o Google.",
-                        variant: 'destructive'
-                    });
-                }
-                setIsLoading(false);
-            });
-    }, [auth, firestore, router, toast, isUserLoading]);
-    
     const handleSocialLogin = async (providerName: 'google') => {
         setIsLoading(true);
         try {
@@ -92,6 +49,8 @@ export default function LoginPage() {
                 throw new Error('Provedor de login desconhecido');
             }
             await signInWithRedirect(auth, provider);
+            // After redirect, the result is handled on the signup page
+            // to unify new user creation logic.
         } catch (error: any) {
              toast({
                 title: "Erro no Login",
@@ -118,7 +77,8 @@ export default function LoginPage() {
         }
     };
     
-    if (isUserLoading || isLoading || user) {
+    // Show a loading state while checking for user or during any loading operation
+    if (isUserLoading || isLoading) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
                 <p>Carregando...</p>
@@ -126,80 +86,91 @@ export default function LoginPage() {
         );
     }
 
-    return (
-        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
-            <div className="flex items-center justify-center py-12">
-                <div className="mx-auto grid w-[350px] gap-6">
-                    <div className="grid gap-2 text-center">
-                         <Link href="/" className="inline-flex justify-center items-center gap-3 mb-4">
-                            <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
-                        </Link>
-                        <h1 className="text-3xl font-bold">Boas-vindas de volta!</h1>
-                        <p className="text-balance text-muted-foreground">
-                            Faça login para continuar a impulsionar seu conteúdo.
-                        </p>
-                    </div>
-                    <form onSubmit={handleLogin} className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">E-mail</Label>
-                            <Input id="email" type="email" placeholder="criador@exemplo.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
+    // Only render the login form if there's no user and not loading
+    if (!user) {
+        return (
+            <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
+                <div className="flex items-center justify-center py-12">
+                    <div className="mx-auto grid w-[350px] gap-6">
+                        <div className="grid gap-2 text-center">
+                            <Link href="/" className="inline-flex justify-center items-center gap-3 mb-4">
+                                <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
+                            </Link>
+                            <h1 className="text-3xl font-bold">Boas-vindas de volta!</h1>
+                            <p className="text-balance text-muted-foreground">
+                                Faça login para continuar a impulsionar seu conteúdo.
+                            </p>
                         </div>
-                        <div className="grid gap-2">
-                            <div className="flex items-center">
-                                <Label htmlFor="password">Senha</Label>
-                                <Link href="#" className="ml-auto inline-block text-sm underline">
-                                    Esqueceu sua senha?
-                                </Link>
+                        <form onSubmit={handleLogin} className="grid gap-4">
+                            <div className="grid gap-2">
+                                <Label htmlFor="email">E-mail</Label>
+                                <Input id="email" type="email" placeholder="criador@exemplo.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
                             </div>
-                            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                        </div>
-                        <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                            {isLoading ? 'Entrando...' : 'Entrar'}
-                        </Button>
-                    </form>
+                            <div className="grid gap-2">
+                                <div className="flex items-center">
+                                    <Label htmlFor="password">Senha</Label>
+                                    <Link href="#" className="ml-auto inline-block text-sm underline">
+                                        Esqueceu sua senha?
+                                    </Link>
+                                </div>
+                                <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                            </div>
+                            <Button type="submit" className="w-full font-bold" disabled={isLoading}>
+                                {isLoading ? 'Entrando...' : 'Entrar'}
+                            </Button>
+                        </form>
 
-                    <div className="relative my-2">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
+                        <div className="relative my-2">
+                            <div className="absolute inset-0 flex items-center">
+                                <span className="w-full border-t" />
+                            </div>
+                            <div className="relative flex justify-center text-xs uppercase">
+                                <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
+                            </div>
                         </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Ou continue com</span>
+
+                        <div className="grid grid-cols-1 gap-4">
+                            <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')} disabled={isLoading}>
+                                <GoogleIcon className="mr-2 h-6 w-6" />
+                                Google
+                            </Button>
                         </div>
-                    </div>
 
-                     <div className="grid grid-cols-1 gap-4">
-                        <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')} disabled={isLoading}>
-                            <GoogleIcon className="mr-2 h-6 w-6" />
-                            Google
-                        </Button>
-                    </div>
-
-                    <div className="mt-4 text-center text-sm">
-                        Não tem uma conta?{" "}
-                        <Link href="/signup" className="underline">
-                            Cadastre-se
-                        </Link>
+                        <div className="mt-4 text-center text-sm">
+                            Não tem uma conta?{" "}
+                            <Link href="/signup" className="underline">
+                                Cadastre-se
+                            </Link>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div className="hidden bg-muted lg:block">
-                {heroImage && (
-                    <div className="relative h-full w-full">
-                         <Image
-                            src={heroImage.imageUrl}
-                            alt={heroImage.description}
-                            data-ai-hint={heroImage.imageHint}
-                            fill
-                            objectFit="cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-                        <div className="absolute bottom-10 left-10 text-white max-w-md">
-                            <h2 className="text-3xl font-serif font-bold">"A criatividade é a inteligência se divertindo."</h2>
-                            <p className="mt-2 text-lg font-light">- Albert Einstein (atribuído)</p>
+                <div className="hidden bg-muted lg:block">
+                    {heroImage && (
+                        <div className="relative h-full w-full">
+                            <Image
+                                src={heroImage.imageUrl}
+                                alt={heroImage.description}
+                                data-ai-hint={heroImage.imageHint}
+                                fill
+                                objectFit="cover"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                            <div className="absolute bottom-10 left-10 text-white max-w-md">
+                                <h2 className="text-3xl font-serif font-bold">"A criatividade é a inteligência se divertindo."</h2>
+                                <p className="mt-2 text-lg font-light">- Albert Einstein (atribuído)</p>
+                            </div>
                         </div>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
+        );
+    }
+    
+    // This part should ideally not be reached if the main useEffect works correctly,
+    // but it's a fallback.
+    return (
+        <div className="flex min-h-screen w-full items-center justify-center bg-background">
+            <p>Redirecionando...</p>
         </div>
     );
 }
