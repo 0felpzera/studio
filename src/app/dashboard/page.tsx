@@ -28,6 +28,7 @@ import {
   RefreshCw,
   PlayCircle,
   Users,
+  BarChart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,7 +40,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area } from 'recharts';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, Legend } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import type { ContentTask } from '@/lib/types';
@@ -77,7 +78,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 ? `${pld.value.toFixed(2).replace('.', ',')}%`
                 : formatNumber(pld.value);
             return (
-              <p key={pld.dataKey} style={{ color: pld.color }}>
+              <p key={pld.dataKey} style={{ color: pld.fill || pld.stroke }}>
                 {`${pld.name}: ${value}`}
               </p>
             )
@@ -179,6 +180,7 @@ export default function DashboardPage() {
             
             return {
                 month,
+                "Vídeos Postados": monthData.count,
                 Visualizações: monthData.views,
                 Curtidas: monthData.likes,
                 Engajamento: engagementRate,
@@ -464,10 +466,10 @@ export default function DashboardPage() {
                     </div>
                     <Card>
                         <CardHeader>
-                            <CardTitle className='font-bold'>Visão Geral da Performance</CardTitle>
+                            <CardTitle className='font-bold flex items-center gap-2'><BarChart className="size-5 text-primary" />Visão Geral da Performance</CardTitle>
                             <CardDescription>Visualizações, curtidas e engajamento dos seus vídeos ao longo do tempo.</CardDescription>
                         </CardHeader>
-                        <CardContent className="h-[350px] pl-0">
+                        <CardContent className="h-[400px] pl-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={chartData}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
@@ -496,6 +498,7 @@ export default function DashboardPage() {
                                         tickFormatter={(value) => `${value.toFixed(1)}%`}
                                     />
                                     <Tooltip content={<CustomTooltip />} />
+                                    <Legend wrapperStyle={{paddingTop: '24px'}}/>
                                     <defs>
                                         <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
@@ -506,8 +509,9 @@ export default function DashboardPage() {
                                             <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2}/>
                                         </linearGradient>
                                     </defs>
-                                    <Bar yAxisId="left" dataKey="Visualizações" fill="url(#colorViews)" radius={[4, 4, 0, 0]} />
-                                    <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" strokeWidth={2} fill="url(#colorLikes)" />
+                                    <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                                    <Bar yAxisId="left" dataKey="Vídeos Postados" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
+                                    <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" strokeWidth={2} fillOpacity={0.4} fill="url(#colorLikes)" />
                                     <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={3} dot={false} activeDot={{ r: 8 }}/>
                                 </ComposedChart>
                             </ResponsiveContainer>
@@ -761,3 +765,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+
