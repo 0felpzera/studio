@@ -3,6 +3,9 @@ import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
+  env: {
+    NEXT_PUBLIC_TIKTOK_CLIENT_KEY: process.env.TIKTOK_CLIENT_KEY,
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -64,3 +67,5 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+    

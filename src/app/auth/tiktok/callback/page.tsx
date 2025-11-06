@@ -23,10 +23,19 @@ function TikTokCallback() {
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
+    // This effect should only run when the user's auth state is determined.
+    // If it's still loading, we wait.
+    if (isUserLoading) {
+      setStatus("Verificando sua sessão...");
+      return;
+    }
+
     const authCode = searchParams.get('code');
+    const returnedState = searchParams.get('state');
     const returnedError = searchParams.get('error');
     const errorDescription = searchParams.get('error_description');
 
+    // Handle initial errors from TikTok redirect
     if (returnedError) {
       setError(errorDescription || "O TikTok retornou um erro desconhecido.");
       setStatus("Erro na autenticação.");
@@ -40,12 +49,28 @@ function TikTokCallback() {
       setIsProcessing(false);
       return;
     }
+
+    // Security check: Validate state
+    const originalStateString = sessionStorage.getItem('tiktok_oauth_state');
+    sessionStorage.removeItem('tiktok_oauth_state'); // Clean up state
     
-    if (isUserLoading) {
-      setStatus("Verificando sua sessão...");
-      return;
+    if (!originalStateString) {
+        setError("O estado de validação da sessão expirou ou não foi encontrado. Por favor, tente novamente.");
+        setStatus("Falha na validação de segurança.");
+        setIsProcessing(false);
+        return;
     }
 
+    const originalState = JSON.parse(originalStateString);
+
+    if (originalState.value !== returnedState) {
+        setError("A validação de segurança falhou (state mismatch). Por favor, tente conectar novamente.");
+        setStatus("Erro de segurança.");
+        setIsProcessing(false);
+        return;
+    }
+
+    // Auth check: Ensure a Firebase user is logged in
     if (!user || !firestore) {
       setError("Você precisa estar logado para conectar uma conta.");
       setStatus("Usuário não autenticado.");
@@ -59,10 +84,23 @@ function TikTokCallback() {
       return;
     }
 
+    // Final security check: Ensure the user ID from state matches the logged-in user
+    if (originalState.userId !== user.uid) {
+        setError("A sessão do usuário mudou durante a autenticação. Por segurança, o processo foi cancelado. Por favor, tente novamente.");
+        setStatus("Conflito de sessão.");
+        setIsProcessing(false);
+        return;
+    }
+
+    // All checks passed, proceed to exchange code
     const processCode = async () => {
       try {
         setStatus("Trocando código, buscando perfil e vídeos...");
-        const result = await exchangeTikTokCode({ code: authCode });
+        
+        // Pass the correct redirect URI to the backend flow
+        const redirectUri = `${window.location.origin}/auth/tiktok/callback`;
+        
+        const result = await exchangeTikTokCode({ code: authCode, redirect_uri: redirectUri });
         
         setApiResponse(result);
         setStatus("Informações recebidas! Salvando tudo no banco de dados...");
@@ -125,9 +163,12 @@ function TikTokCallback() {
       }
     };
     
-    processCode();
+    // Only call processCode if it hasn't been run yet (isProcessing is true)
+    if (isProcessing) {
+      processCode();
+    }
 
-  }, [searchParams, user, isUserLoading, firestore, router, toast]);
+  }, [isUserLoading, user, firestore, router, searchParams, toast]);
 
   const renderStatus = () => {
       if (isProcessing) {
@@ -194,3 +235,5 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
+
+    

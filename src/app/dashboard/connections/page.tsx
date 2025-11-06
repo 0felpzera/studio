@@ -54,16 +54,41 @@ export default function ConnectionsPage() {
     const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
 
     const handleConnectTikTok = () => {
-        const clientKey = 'sbaw8kkl7ahscrla44'; // TikTok Client Key
-        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
-        const state = '___UNIQUE_STATE_TOKEN_TIKTOK___';
+        if (!user) {
+            toast({
+                title: "Usuário não encontrado",
+                description: "Você precisa estar logado para conectar sua conta.",
+                variant: "destructive"
+            });
+            return;
+        }
+
+        const clientKey = process.env.NEXT_PUBLIC_TIKTOK_CLIENT_KEY;
+        if (!clientKey) {
+            toast({
+                title: "Configuração Incompleta",
+                description: "A chave de cliente do TikTok não foi configurada.",
+                variant: "destructive"
+            });
+            return;
+        }
+        
+        const redirectUri = `${window.location.origin}/auth/tiktok/callback`;
+        const stateValue = crypto.randomUUID();
+        
+        // Store state and user ID for verification in the callback
+        const state = {
+            value: stateValue,
+            userId: user.uid,
+        };
+        sessionStorage.setItem('tiktok_oauth_state', JSON.stringify(state));
 
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
         tiktokAuthUrl.searchParams.append('client_key', clientKey);
         tiktokAuthUrl.searchParams.append('scope', tiktokScope);
         tiktokAuthUrl.searchParams.append('response_type', 'code');
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
-        tiktokAuthUrl.searchParams.append('state', state);
+        tiktokAuthUrl.searchParams.append('state', stateValue);
 
         window.location.href = tiktokAuthUrl.toString();
     };
@@ -171,7 +196,7 @@ export default function ConnectionsPage() {
 
     const handleConnectInstagram = () => {
         const appId = 'YOUR_META_APP_ID'; // REPLACE WITH YOUR META APP ID
-        const redirectUri = 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback';
+        const redirectUri = `${window.location.origin}/auth/instagram/callback`;
         const scope = 'user_profile,user_media';
         const state = '___UNIQUE_STATE_TOKEN_META___';
 
@@ -296,3 +321,5 @@ export default function ConnectionsPage() {
         </div>
     );
 }
+
+    

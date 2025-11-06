@@ -13,6 +13,7 @@ import { z } from 'zod';
 
 const ExchangeTikTokCodeInputSchema = z.object({
     code: z.string().describe('The authorization code returned from TikTok OAuth.'),
+    redirect_uri: z.string().url().describe('The exact redirect URI used in the authorization request.'),
 });
 
 export type ExchangeTikTokCodeInput = z.infer<typeof ExchangeTikTokCodeInputSchema>;
@@ -66,7 +67,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         inputSchema: ExchangeTikTokCodeInputSchema,
         outputSchema: ExchangeTikTokCodeOutputSchema,
     },
-    async ({ code }) => {
+    async ({ code, redirect_uri }) => {
         const clientKey = process.env.TIKTOK_CLIENT_KEY;
         const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
 
@@ -81,7 +82,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             tokenParams.append('client_secret', clientSecret);
             tokenParams.append('code', code);
             tokenParams.append('grant_type', 'authorization_code');
-            tokenParams.append('redirect_uri', 'https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback');
+            tokenParams.append('redirect_uri', redirect_uri);
 
             const tokenResponse = await fetch(TIKTOK_TOKEN_URL, {
                 method: 'POST',
@@ -165,3 +166,5 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
+
+    
