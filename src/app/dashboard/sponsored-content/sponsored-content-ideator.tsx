@@ -1,37 +1,77 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2, Sparkles } from "lucide-react";
-import { generateSponsoredContentIdeas, GenerateSponsoredContentIdeasOutput } from "@/ai/flows/generate-sponsored-content-ideas";
+import {
+  generateSponsoredContentIdeas,
+  GenerateSponsoredContentIdeasOutput,
+} from "@/ai/flows/generate-sponsored-content-ideas";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, limit } from 'firebase/firestore';
+import type { Goal } from "@/lib/types";
 
 const formSchema = z.object({
-  productDescription: z.string().min(10, "Por favor, descreva o produto com mais detalhes."),
+  productDescription: z
+    .string()
+    .min(10, "Por favor, descreva o produto com mais detalhes."),
   userNiche: z.string().min(2, "Seu nicho é obrigatório."),
 });
 
 export default function SponsoredContentIdeator() {
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<GenerateSponsoredContentIdeasOutput | null>(null);
+  const [result, setResult] = useState<GenerateSponsoredContentIdeasOutput | null>(
+    null
+  );
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const goalsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'goals'), limit(1));
+  }, [user, firestore]);
+
+  const { data: goals, isLoading: isLoadingGoals } = useCollection<Goal>(goalsQuery);
+  const goal = useMemo(() => goals?.[0], [goals]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       productDescription: "Um novo suplemento de proteína sabor chocolate da Marca X.",
-      userNiche: "Fitness e Receitas Saudáveis",
+      userNiche: "",
     },
   });
+
+  useEffect(() => {
+    if (goal?.niche) {
+      form.setValue('userNiche', goal.niche);
+    }
+  }, [goal, form]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -41,14 +81,17 @@ export default function SponsoredContentIdeator() {
       setResult(response);
       toast({
         title: "Ideias Geradas!",
-        description: "Aqui estão alguns conceitos criativos para seu post patrocinado.",
+        description:
+          "Aqui estão alguns conceitos criativos para seu post patrocinado.",
       });
     } catch (error: any) {
       console.error("Erro ao gerar ideias de conteúdo patrocinado:", error);
-      
-      let description = "Não foi possível gerar ideias. Por favor, tente novamente.";
-      if (typeof error.message === 'string' && error.message.includes('503')) {
-        description = "O serviço de IA está sobrecarregado. Por favor, tente novamente em alguns minutos.";
+
+      let description =
+        "Não foi possível gerar ideias. Por favor, tente novamente.";
+      if (typeof error.message === "string" && error.message.includes("503")) {
+        description =
+          "O serviço de IA está sobrecarregado. Por favor, tente novamente em alguns minutos.";
       }
 
       toast({
@@ -67,11 +110,16 @@ export default function SponsoredContentIdeator() {
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Detalhes da Parceria</CardTitle>
-            <CardDescription>Descreva o produto que você está promovendo.</CardDescription>
+            <CardDescription>
+              Descreva o produto que você está promovendo.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-6"
+              >
                 <FormField
                   control={form.control}
                   name="productDescription"
@@ -79,7 +127,10 @@ export default function SponsoredContentIdeator() {
                     <FormItem>
                       <FormLabel>Descrição do Produto</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Ex: Um novo hidratante vegano da..." {...field} />
+                        <Textarea
+                          placeholder="Ex: Um novo hidratante vegano da..."
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -92,14 +143,28 @@ export default function SponsoredContentIdeator() {
                     <FormItem>
                       <FormLabel>Seu Nicho</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ex: Fitness, Games, Beleza" {...field} />
+                        <Input
+                          placeholder="Ex: Fitness, Games, Beleza"
+                          {...field}
+                          disabled={isLoadingGoals}
+                        />
                       </FormControl>
+                      {goal?.niche && !isLoadingGoals && (
+                        <p className="text-xs text-muted-foreground pt-1">Preenchido com o nicho do seu perfil.</p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2" />Gerar Ideias</>}
+                <Button type="submit" disabled={isLoading || isLoadingGoals} className="w-full font-bold">
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2" />
+                      Gerar Ideias
+                    </>
+                  )}
                 </Button>
               </form>
             </Form>
@@ -108,59 +173,59 @@ export default function SponsoredContentIdeator() {
       </div>
       <div className="md:col-span-2">
         <div className="space-y-6">
-          {isLoading && (
+          {(isLoading || isLoadingGoals) && (
             <Card className="animate-pulse">
-                <CardHeader>
-                    <div className="h-6 w-3/4 bg-muted rounded"></div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="h-16 w-full bg-muted rounded"></div>
-                    <div className="h-10 w-full bg-muted rounded"></div>
-                </CardContent>
+              <CardHeader>
+                <div className="h-6 w-3/4 bg-muted rounded"></div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="h-16 w-full bg-muted rounded"></div>
+                <div className="h-16 w-full bg-muted rounded"></div>
+                <div className="h-16 w-full bg-muted rounded"></div>
+              </CardContent>
             </Card>
           )}
-          {!isLoading && !result && (
-             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
-                <CardHeader>
-                    <div className="mx-auto bg-secondary p-3 rounded-full">
-                        <Sparkles className="size-8 text-muted-foreground" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <h3 className="text-xl font-semibold mt-2">Suas ideias de conteúdo patrocinado aparecerão aqui</h3>
-                    <p className="text-muted-foreground mt-2">Preencha o formulário para começar.</p>
-                </CardContent>
-             </Card>
+          {!isLoading && !isLoadingGoals && !result && (
+            <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+              <CardHeader>
+                <div className="mx-auto bg-secondary p-3 rounded-full">
+                  <Sparkles className="size-8 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <h3 className="text-xl font-semibold mt-2">
+                  Suas ideias de conteúdo patrocinado aparecerão aqui
+                </h3>
+                <p className="text-muted-foreground mt-2">
+                  Preencha o formulário para começar.
+                </p>
+              </CardContent>
+            </Card>
           )}
           {result && (
-            <>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-bold">Ideias de Conteúdo Criativas</CardTitle>
-                  <CardDescription>Aqui estão 3 maneiras autênticas de apresentar o produto.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-4 list-decimal list-inside">
-                    {result.contentIdeas.map((idea, index) => (
-                      <li key={index} className="pl-2">{idea}</li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle className="font-bold">Formatos Sugeridos</CardTitle>
-                  <CardDescription>Esses formatos têm bom desempenho para o seu nicho.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {result.formatSuggestions.map((format, index) => (
-                      <Badge key={index} variant="secondary" className="text-base px-3 py-1">{format}</Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </>
+            <Card>
+              <CardHeader>
+                <CardTitle className="font-bold">
+                  Ideias de Conteúdo Criativas
+                </CardTitle>
+                <CardDescription>
+                  Aqui estão algumas maneiras autênticas de apresentar o produto.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {result.contentIdeas.map((idea, index) => (
+                   <div key={index} className="p-4 rounded-lg border bg-background/50">
+                        <p className="font-medium leading-relaxed">{idea}</p>
+                        <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t">
+                            <span className="text-xs text-muted-foreground font-semibold mr-2">Formatos:</span>
+                             {result.formatSuggestions.map((format, formatIndex) => (
+                                <Badge key={formatIndex} variant="secondary">{format}</Badge>
+                            ))}
+                        </div>
+                   </div>
+                ))}
+              </CardContent>
+            </Card>
           )}
         </div>
       </div>
