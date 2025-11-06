@@ -37,27 +37,11 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Timeline } from "@/components/ui/timeline";
 import { Footer } from "@/components/ui/footer";
-import { CardStack } from "@/components/ui/card-stack";
 import React from "react";
 
 
 export default function LandingPage() {
   const router = useRouter();
-  const targetRef = React.useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ["start end", "end end"],
-  });
-
-  const step = useTransform(scrollYProgress, (pos) => {
-    if (pos <= 0.2) return 0;
-    if (pos <= 0.4) return 1;
-    if (pos <= 0.6) return 2;
-    if (pos <= 0.8) return 3;
-    if (pos <= 1) return 4;
-    return 5;
-  });
-
 
   const demoIcons = [
     {
@@ -101,131 +85,177 @@ export default function LandingPage() {
     const featureCards = [
     {
       id: 0,
-      content: (
-        <div className="flex flex-col text-left p-6 h-full">
-          <div className="mb-4"><Presentation className="w-8 h-8 text-primary" /></div>
-          <h3 className="text-xl font-bold mb-2">Diagnóstico de Vídeo</h3>
-          <p className="text-muted-foreground text-sm mb-4">Análise com IA para otimizar seu conteúdo antes de postar.</p>
-          <ul className="space-y-2 text-sm text-left mb-6">
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Analise ganchos, ritmo e qualidade técnica.</span></li>
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Receba legendas e hashtags otimizadas.</span></li>
-          </ul>
-          <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs">
-              <p className="font-semibold mb-2">Relatório Rápido:</p>
-              <div className="flex items-center gap-2"><CheckCircle2 className="size-3 text-green-500"/> Gancho: <span className="font-medium">Forte</span></div>
-              <div className="flex items-center gap-2"><CheckCircle2 className="size-3 text-green-500"/> Qualidade Técnica: <span className="font-medium">Excelente</span></div>
-          </div>
-        </div>
-      ),
+      icon: Presentation,
+      title: "Diagnóstico de Vídeo",
+      description: "Análise com IA para otimizar seu conteúdo antes de postar.",
+      benefits: [
+        "Analise ganchos, ritmo e qualidade técnica.",
+        "Receba legendas e hashtags otimizadas."
+      ],
+      mockup: {
+        title: "Relatório Rápido:",
+        items: [
+          { text: "Gancho:", value: "Forte", icon: <CheckCircle2 className="size-3 text-green-500"/> },
+          { text: "Qualidade Técnica:", value: "Excelente", icon: <CheckCircle2 className="size-3 text-green-500"/> }
+        ]
+      }
     },
     {
       id: 1,
-      content: (
-        <div className="flex flex-col text-left p-6 h-full">
-          <div className="mb-4"><Lightbulb className="w-8 h-8 text-primary" /></div>
-          <h3 className="text-xl font-bold mb-2">Gerador de Ideias</h3>
-          <p className="text-muted-foreground text-sm mb-4">Gere ideias perenes e de tendência para nunca ficar sem inspiração.</p>
-          <ul className="space-y-2 text-sm text-left mb-6">
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Combine seu nicho com o que está em alta.</span></li>
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Receba esboços de roteiro para cada ideia.</span></li>
-          </ul>
-           <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs space-y-2">
-              <p className="font-semibold">Ideias Sugeridas:</p>
-              <div className="p-2 bg-background rounded-md">1. Unboxing ASMR de produtos de beleza.</div>
-              <div className="p-2 bg-background rounded-md">2. Rotina matinal "arrume-se comigo".</div>
-          </div>
-        </div>
-      ),
+      icon: Lightbulb,
+      title: "Gerador de Ideias",
+      description: "Gere ideias perenes e de tendência para nunca ficar sem inspiração.",
+      benefits: [
+        "Combine seu nicho com o que está em alta.",
+        "Receba esboços de roteiro para cada ideia."
+      ],
+      mockup: {
+        title: "Ideias Sugeridas:",
+        items: [
+          { value: "1. Unboxing ASMR de produtos de beleza." },
+          { value: "2. Rotina matinal \"arrume-se comigo\"." }
+        ],
+        isList: true,
+      }
     },
     {
       id: 2,
-      content: (
-        <div className="flex flex-col text-left p-6 h-full">
-          <div className="mb-4"><BrainCircuit className="w-8 h-8 text-primary" /></div>
-          <h3 className="text-xl font-bold mb-2">IA Coach</h3>
-          <p className="text-muted-foreground text-sm mb-4">Seu treinador pessoal de IA para crescimento acelerado.</p>
-           <ul className="space-y-2 text-sm text-left mb-6">
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Receba insights personalizados com base em suas métricas.</span></li>
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Entenda o que fazer para atingir suas metas mais rápido.</span></li>
-          </ul>
-          <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs">
-              <p className="font-semibold mb-2">Conselho da IA:</p>
-              <p>"Seu engajamento aumentaria em ~15% se você fizesse perguntas no final dos seus vídeos."</p>
-          </div>
-        </div>
-      ),
+      icon: BrainCircuit,
+      title: "IA Coach",
+      description: "Seu treinador pessoal de IA para crescimento acelerado.",
+      benefits: [
+        "Receba insights personalizados com base em suas métricas.",
+        "Entenda o que fazer para atingir suas metas mais rápido."
+      ],
+      mockup: {
+        title: "Conselho da IA:",
+        items: [
+          { value: "\"Seu engajamento aumentaria em ~15% se você fizesse perguntas no final dos seus vídeos.\"" }
+        ]
+      }
     },
     {
       id: 3,
-      content: (
-        <div className="flex flex-col text-left p-6 h-full">
-          <div className="mb-4"><DollarSign className="w-8 h-8 text-primary" /></div>
-          <h3 className="text-xl font-bold mb-2">Mídia Kit Pro</h3>
-          <p className="text-muted-foreground text-sm mb-4">Crie um mídia kit profissional com sugestões de preços.</p>
-           <ul className="space-y-2 text-sm text-left mb-6">
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Gere um texto de apresentação para marcas.</span></li>
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Obtenha uma tabela de preços sugeridos.</span></li>
-          </ul>
-           <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs space-y-2">
-              <p className="font-semibold">Preços Sugeridos:</p>
-              <div className="flex justify-between"><span>1 Reel:</span> <span className="font-mono">R$ 800</span></div>
-              <div className="flex justify-between"><span>3 Stories:</span> <span className="font-mono">R$ 550</span></div>
-          </div>
-        </div>
-      ),
+      icon: DollarSign,
+      title: "Mídia Kit Pro",
+      description: "Crie um mídia kit profissional com sugestões de preços.",
+      benefits: [
+        "Gere um texto de apresentação para marcas.",
+        "Obtenha uma tabela de preços sugeridos."
+      ],
+      mockup: {
+        title: "Preços Sugeridos:",
+        items: [
+          { text: "1 Reel:", value: <span className="font-mono">R$ 800</span> },
+          { text: "3 Stories:", value: <span className="font-mono">R$ 550</span> }
+        ],
+        isKeyValue: true,
+      }
     },
     {
       id: 4,
-      content: (
-        <div className="flex flex-col text-left p-6 h-full">
-          <div className="mb-4"><Star className="w-8 h-8 text-primary" /></div>
-          <h3 className="text-xl font-bold mb-2">Ideias para Publis</h3>
-          <p className="text-muted-foreground text-sm mb-4">Receba ideias criativas e autênticas para suas parcerias.</p>
-           <ul className="space-y-2 text-sm text-left mb-6">
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Integre produtos de forma natural no seu conteúdo.</span></li>
-              <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Sugestões de formatos que mais convertem.</span></li>
-          </ul>
-           <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs space-y-2">
-              <p className="font-semibold">Formatos Sugeridos:</p>
-              <div className="flex flex-wrap gap-2">
-                  <span className="bg-background px-2 py-1 rounded">Review Honesto</span>
-                  <span className="bg-background px-2 py-1 rounded">Tutorial Criativo</span>
-              </div>
-          </div>
-        </div>
-      ),
+      icon: Star,
+      title: "Ideias para Publis",
+      description: "Receba ideias criativas e autênticas para suas parcerias.",
+      benefits: [
+        "Integre produtos de forma natural no seu conteúdo.",
+        "Sugestões de formatos que mais convertem."
+      ],
+      mockup: {
+        title: "Formatos Sugeridos:",
+        items: [
+          { value: <span className="bg-background px-2 py-1 rounded">Review Honesto</span> },
+          { value: <span className="bg-background px-2 py-1 rounded">Tutorial Criativo</span> }
+        ],
+        isBadge: true
+      }
     },
     {
         id: 5,
-        content: (
-            <div className="flex flex-col text-left p-6 h-full">
-                <div className="mb-4"><CalendarDays className="w-8 h-8 text-primary" /></div>
-                <h3 className="text-xl font-bold mb-2">Calendário de Conteúdo</h3>
-                <p className="text-muted-foreground text-sm mb-4">Gere e gerencie um plano semanal de postagens com IA.</p>
-                 <ul className="space-y-2 text-sm text-left mb-6">
-                    <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Planeje sua semana em minutos, não em horas.</span></li>
-                    <li className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>Mantenha a consistência e vença o algoritmo.</span></li>
-                </ul>
-                 <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs space-y-2">
-                    <p className="font-semibold">Checklist da Semana:</p>
-                    <div className="flex items-center gap-2"><input type="checkbox" checked readOnly className="size-3.5 accent-primary" /> <span>Postar "3 mitos sobre moda".</span></div>
-                    <div className="flex items-center gap-2"><input type="checkbox" readOnly className="size-3.5 accent-primary" /> <span>Gravar tutorial de maquiagem.</span></div>
-                </div>
-            </div>
-        )
+        icon: CalendarDays,
+        title: "Calendário de Conteúdo",
+        description: "Gere e gerencie um plano semanal de postagens com IA.",
+        benefits: [
+            "Planeje sua semana em minutos, não em horas.",
+            "Mantenha a consistência e vença o algoritmo."
+        ],
+        mockup: {
+          title: "Checklist da Semana:",
+          items: [
+            { value: <div className="flex items-center gap-2"><input type="checkbox" checked readOnly className="size-3.5 accent-primary" /> <span>Postar "3 mitos sobre moda".</span></div> },
+            { value: <div className="flex items-center gap-2"><input type="checkbox" readOnly className="size-3.5 accent-primary" /> <span>Gravar tutorial de maquiagem.</span></div> }
+          ]
+        }
     }
   ];
+
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.98 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
+
 
   const timelineData = [
     {
       title: "Recursos",
       description: "Ferramentas de IA para cada etapa do seu processo criativo.",
       content: (
-        <div ref={targetRef} className="h-[250vh]">
-          <div className="sticky top-1/4 h-[30rem]">
-            <CardStack items={featureCards} currentStep={step} />
-          </div>
-        </div>
+        <motion.div 
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          {featureCards.map((card) => {
+            const Icon = card.icon;
+            return (
+              <motion.div key={card.id} variants={cardVariants}>
+                <div className="flex flex-col text-left p-6 h-full bg-card/50 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm">
+                  <div className="mb-4"><Icon className="w-8 h-8 text-primary" /></div>
+                  <h3 className="text-xl font-bold mb-2">{card.title}</h3>
+                  <p className="text-muted-foreground text-sm mb-4 flex-grow">{card.description}</p>
+                  <ul className="space-y-2 text-sm text-left mb-6">
+                    {card.benefits.map((benefit, i) => (
+                       <li key={i} className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>{benefit}</span></li>
+                    ))}
+                  </ul>
+                  {card.mockup && (
+                    <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs space-y-2">
+                        <p className="font-semibold mb-2">{card.mockup.title}</p>
+                        <div className={card.mockup.isBadge ? 'flex flex-wrap gap-2' : card.mockup.isList ? 'space-y-1' : ''}>
+                          {card.mockup.items.map((item, i) => (
+                              <div key={i} className={card.mockup.isKeyValue ? 'flex justify-between' : card.mockup.isList ? 'p-2 bg-background rounded-md' : ''}>
+                                  {item.icon}
+                                  {item.text && <span>{item.text}</span>}
+                                  {item.value}
+                              </div>
+                          ))}
+                        </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       )
     },
     {
