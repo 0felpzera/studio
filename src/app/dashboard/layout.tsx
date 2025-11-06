@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { ReactNode, useState } from 'react';
@@ -19,6 +18,7 @@ import {
     LogOut,
     Menu,
     X,
+    FileText,
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
@@ -36,6 +36,7 @@ const resourcesItems = [
     { name: 'Análise de Vídeo', href: '/dashboard/analysis', icon: Presentation },
     { name: 'Monetização', href: '/dashboard/monetization', icon: DollarSign },
     { name: 'Ideias para Publis', href: '/dashboard/sponsored-content', icon: Star },
+    { name: 'Prompts da IA', href: '/dashboard/prompts', icon: FileText },
 ];
 
 const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
