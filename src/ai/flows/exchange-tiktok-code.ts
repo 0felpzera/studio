@@ -137,12 +137,11 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             
             const videoListData = await videoListResponse.json();
             
-            if (videoListData.error.code !== 'ok') {
-              // Non-fatal error, we can still proceed without videos
-              console.warn(`Could not fetch video list: ${videoListData.error.message}`);
+            if (videoListData.error.code !== 'ok' || !videoListData.data?.videos) {
+              throw new Error(`Failed to fetch video list from TikTok: ${videoListData.error.message}`);
             }
             
-            const videos = videoListData.data?.videos || [];
+            const videos = videoListData.data.videos;
 
             // Step 4: Assemble and return all data
             return {
