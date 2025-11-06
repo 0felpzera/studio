@@ -44,7 +44,7 @@ const Sidebar = () => {
                     <span className="text-xl font-bold text-white font-headline">ViralBoost</span>
                 </Link>
             </div>
-            <nav className="flex-grow p-4 space-y-1">
+            <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
                 <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu</p>
                 {[...navItems].map(item => (
                     <Link
@@ -90,13 +90,17 @@ const Sidebar = () => {
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="relative min-h-screen w-full flex bg-background text-foreground">
+        <div className="relative min-h-screen w-full bg-background text-foreground">
             <div className="shape-1"></div>
             <div className="shape-2"></div>
-            <Sidebar />
-            <main className="flex-grow p-8 overflow-auto">
-                {children}
-            </main>
+            <div className="flex h-screen w-full">
+                <Sidebar />
+                <main className="flex-1 overflow-auto">
+                    <div className="p-8">
+                        {children}
+                    </div>
+                </main>
+            </div>
         </div>
     );
 }
