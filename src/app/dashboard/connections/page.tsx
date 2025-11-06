@@ -36,7 +36,7 @@ function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
 
 export default function ConnectionsPage() {
     const { toast } = useToast();
-    const tiktokScope = 'user.info.basic,user.info.profile,user.info.stats,video.list';
+    const tiktokScope = 'user.info.profile,user.info.stats,video.list';
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const [isDeleting, setIsDeleting] = useState(false);
