@@ -95,10 +95,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <div className="shape-2"></div>
             <div className="flex h-screen w-full">
                 <Sidebar />
-                <main className="flex-1 overflow-auto">
-                    <div className="p-8">
-                        {children}
-                    </div>
+                <main className="flex-1 overflow-auto p-8">
+                    {children}
                 </main>
             </div>
         </div>
