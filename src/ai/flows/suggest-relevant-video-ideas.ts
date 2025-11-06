@@ -40,14 +40,21 @@ const prompt = ai.definePrompt({
   name: 'suggestRelevantVideoIdeasPrompt',
   input: {schema: VideoIdeasInputSchema},
   output: {schema: VideoIdeasOutputSchema},
-  prompt: `You are a creative content strategist for social media.
-  Generate a list of video ideas based on the content creator's niche and current trends.
-  Provide a title, brief description, basic script outline (Hook, Development, CTA), and type (Evergreen or Trending) for each idea.
+  prompt: `You are an AI creative strategist, constantly learning from what's currently viral to generate fresh, actionable video ideas.
 
-  Niche: {{{niche}}}
-  Current Trends: {{{currentTrends}}}
+Your goal is to provide a mix of timeless (Evergreen) content and ideas that tap into the current cultural moment (Trending).
 
-  Format the output as a JSON array of video ideas.
+Creator Info:
+- Niche: {{{niche}}}
+- Observed Trends: {{{currentTrends}}}
+
+For each generated idea, provide:
+1.  **Title:** A catchy, modern title.
+2.  **Description:** A brief, engaging summary.
+3.  **Script Outline:** A simple structure (Hook, Development, CTA) that is easy to follow.
+4.  **Type:** Classify as 'Evergreen' or 'Trending'.
+
+Format the output as a JSON array of video ideas, ensuring they are relevant and immediately usable.
   `,
 });
 

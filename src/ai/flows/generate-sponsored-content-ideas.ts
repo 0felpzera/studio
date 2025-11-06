@@ -1,5 +1,3 @@
-// This file defines the Genkit flow for generating sponsored content ideas based on a product and user's niche.
-
 'use server';
 
 /**
@@ -45,14 +43,18 @@ const prompt = ai.definePrompt({
   name: 'generateSponsoredContentIdeasPrompt',
   input: {schema: GenerateSponsoredContentIdeasInputSchema},
   output: {schema: GenerateSponsoredContentIdeasOutputSchema},
-  prompt: `You are a creative marketing strategist specializing in generating sponsored content ideas for social media influencers.
+  prompt: `You are an AI creative strategist, constantly learning from current social media trends to generate authentic and engaging sponsored content ideas.
 
-  Given a product description and the content creator's niche, generate 3 creative and authentic sponsored content ideas that seamlessly integrate the product within the creator's niche.
+Your goal is to seamlessly integrate the product into the creator's niche, avoiding the feel of a traditional ad.
 
-  Also, suggest the best format for each idea based on successful sponsored content in that niche (e.g., honest review, tutorial, transformation, etc.).
+Product Description: {{{productDescription}}}
+User Niche: {{{userNiche}}}
 
-  Product Description: {{{productDescription}}}
-  User Niche: {{{userNiche}}}
+Your tasks:
+1.  **Generate 3 Creative Content Ideas:** Brainstorm three specific, authentic ideas that feel native to the creator's content style and resonate with their audience *today*.
+2.  **Suggest Optimal Formats:** For each idea, suggest the best video format (e.g., 'Honest Review', 'Day in the Life', 'Problem/Solution') based on what is currently performing well and converting for sponsored content in this niche.
+
+The output must conform to the specified JSON schema.
   `,
 });
 

@@ -54,15 +54,14 @@ const analyzeVideoPrompt = ai.definePrompt({
   name: 'analyzeVideoPrompt',
   input: {schema: AnalyzeVideoInputSchema},
   output: {schema: AnalyzeVideoOutputSchema},
-  prompt: `You are an AI video analyst who will give suggestions for video improvement. 
+  prompt: `You are an AI video analyst, constantly learning from current viral trends to provide the most up-to-date and impactful feedback. Your goal is to make this video perform better *now*.
 
-Analyze the video provided, paying attention to the following aspects:
+Analyze the provided video, focusing on elements that drive retention and engagement in today's social media landscape.
 
-*   Hook Effectiveness: Analyze the first 3 seconds of the video to determine the effectiveness of the hook. Provide specific suggestions for alternative hooks if the current one is weak.
-*   Technical Quality: Assess the video for lighting, audio quality and framing issues. Provide specific suggestions for improvement.
-*   Pacing: Evaluate the overall pacing of the video. Suggest faster cuts or the addition of dynamic captions if the video seems slow.
-
-Also, generate an optimized caption and a set of relevant hashtags for the video.
+1.  **Hook Analysis (First 3 Seconds):** Is the hook immediately captivating? Does it align with current attention spans and trending formats? If not, provide three specific, punchier alternatives that are trending right now.
+2.  **Technical Quality:** Assess lighting, audio, and framing. Are they clean and clear, meeting current viewer expectations? Provide actionable improvement tips.
+3.  **Pacing & Rhythm:** Does the video's pace match current trends (e.g., fast cuts, dynamic captions, engaging B-roll)? Is it too slow or too fast? Suggest specific edits to improve flow and hold attention.
+4.  **Caption & Hashtags:** Generate a compelling, algorithm-friendly caption that encourages interaction. Suggest a mix of relevant, high-traffic, and niche hashtags that are currently performing well.
 
 Video: {{media url=videoDataUri}}
 `,

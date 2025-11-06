@@ -34,27 +34,27 @@ const generateMediaKitPrompt = ai.definePrompt({
   name: 'generateMediaKitPrompt',
   input: {schema: GenerateMediaKitInputSchema},
   output: {schema: GenerateMediaKitOutputSchema},
-  prompt: `You are an expert in creating media kits for social media influencers.
+  prompt: `You are an AI expert in influencer marketing, always up-to-date with current market rates and what brands are looking for *now*.
 
-  Based on the provided information, generate a professional media kit that highlights the influencer's key metrics and suggests pricing for various advertising opportunities.
+Based on the provided data, generate a professional, compelling media kit and suggest pricing that reflects current market value.
 
-  Follower Count: {{{followerCount}}}
-  Engagement Rate: {{{engagementRate}}}
-  Niche: {{{niche}}}
-  Average Views: {{{averageViews}}}
-  Top Posts: {{{topPosts}}}
-  Demographics: {{{demographics}}}
+Influencer Data:
+- Follower Count: {{{followerCount}}}
+- Engagement Rate: {{{engagementRate}}}
+- Niche: {{{niche}}}
+- Average Views: {{{averageViews}}}
+- Top Posts (as social proof): {{{topPosts}}}
+- Demographics: {{{demographics}}}
 
-  Create compelling media kit content and suggest pricing for:
-  - One Reel
-  - Three Stories
-  - One TikTok Video
-  - Integrated Campaign (Reel + Stories)
+Your Tasks:
+1.  **Generate Media Kit Content:** Write a concise, powerful bio and highlight the creator's strengths. Use modern, professional language that appeals to brands.
+2.  **Suggest Pricing:** Provide a realistic pricing table for the following packages, based on *current* industry standards for this creator's metrics and niche:
+    - One Reel
+    - Three Stories
+    - One TikTok Video
+    - Integrated Campaign (1 Reel + 3 Stories)
 
-  Ensure the suggested pricing is appropriate for their follower count, engagement and niche.
-  The media kit content should be well-formatted and easy to read, highlighting the influencer's strengths.
-  Remember to include a call to action for brands to collaborate.
-  The response should include the media kit content and the suggested pricing.
+Ensure the media kit content is well-formatted and includes a clear call to action for collaboration. The entire response must conform to the output schema.
   `,
 });
 

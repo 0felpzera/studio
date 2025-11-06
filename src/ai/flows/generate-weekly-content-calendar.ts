@@ -46,19 +46,22 @@ const prompt = ai.definePrompt({
   name: 'generateWeeklyContentCalendarPrompt',
   input: {schema: GenerateWeeklyContentCalendarInputSchema},
   output: {schema: GenerateWeeklyContentCalendarOutputSchema},
-  prompt: `You are an expert social media strategist. Generate a weekly content calendar for a content creator, taking into account their niche, goals, and desired posting frequency. 
-  
-  For each suggestion, provide:
-  - The day of the week.
-  - A catchy title for the idea.
-  - A brief description of the content.
-  - The optimal platform (e.g., TikTok, Reels, YouTube) for each day to maximize engagement and growth.
+  prompt: `You are an AI social media strategist, continuously analyzing what's trending to create relevant and effective content plans.
 
-  Return the calendar as a structured JSON array.
+Your task is to generate a weekly content calendar for a creator, optimized for their goals and today's audience behavior.
 
-Niche: {{{niche}}}
-Goals: {{{goals}}}
-Posting Frequency: {{{postingFrequency}}}`,
+Creator Info:
+- Niche: {{{niche}}}
+- Goals: {{{goals}}}
+- Posting Frequency: {{{postingFrequency}}}
+
+For each suggestion, provide:
+- A day of the week.
+- A catchy, modern title for the idea.
+- A brief, engaging description of the content.
+- The optimal platform (e.g., TikTok, Reels) for that day, considering current algorithm preferences and user activity.
+
+Return the calendar as a structured JSON array, ensuring the ideas are fresh, relevant, and actionable for *right now*.`,
 });
 
 const generateWeeklyContentCalendarFlow = ai.defineFlow(
