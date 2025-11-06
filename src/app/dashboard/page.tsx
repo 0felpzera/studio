@@ -41,6 +41,7 @@ import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
@@ -372,30 +373,32 @@ export default function DashboardPage() {
                     </CardContent>
                 </Card>
 
-                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    
-                    {isPlanPending ? (
-                         <Card className="bg-primary/10 border-primary/20">
-                            <CardHeader>
-                                <CardTitle className="font-bold flex items-center gap-2"><Rocket className="size-5 text-primary"/>Plano de Conteúdo Sugerido!</CardTitle>
-                                <CardDescription>A IA preparou um novo plano semanal para você. Que tal dar uma olhada?</CardDescription>
-                            </CardHeader>
-                             <CardContent>
-                                <p className="text-sm text-muted-foreground">Revise as ideias de vídeo e aceite o plano para adicioná-las ao seu checklist semanal.</p>
-                            </CardContent>
-                            <CardFooter>
-                                <Button asChild>
-                                    <Link href="/dashboard/plan">Revisar e Aprovar</Link>
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ) : (
-                         <Card>
-                            <CardHeader>
+                {isPlanPending ? (
+                    <Card className="bg-primary/10 border-primary/20">
+                    <CardHeader>
+                        <CardTitle className="font-bold flex items-center gap-2"><Rocket className="size-5 text-primary"/>Plano de Conteúdo Sugerido!</CardTitle>
+                        <CardDescription>A IA preparou um novo plano semanal para você. Que tal dar uma olhada?</CardDescription>
+                    </CardHeader>
+                        <CardContent>
+                        <p className="text-sm text-muted-foreground">Revise as ideias de vídeo e aceite o plano para adicioná-las ao seu checklist semanal.</p>
+                    </CardContent>
+                    <CardFooter>
+                        <Button asChild>
+                            <Link href="/dashboard/plan">Revisar e Aprovar</Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+                ) : (
+                <Accordion type="single" collapsible className="w-full space-y-6" defaultValue='item-1'>
+                    <AccordionItem value="item-1" className="border rounded-lg bg-card overflow-hidden">
+                        <AccordionTrigger className="p-6 text-left hover:no-underline data-[state=open]:border-b">
+                            <div className="flex-1 space-y-1.5">
                                 <CardTitle className="font-bold">Checklist da Semana</CardTitle>
                                 <CardDescription>Suas próximas tarefas para manter a consistência.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-3">
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6">
+                            <div className="space-y-3 pt-4">
                                 {isLoadingTasks && (
                                     <div className="space-y-3">
                                         <div className="h-10 bg-muted rounded-lg animate-pulse" />
@@ -432,57 +435,61 @@ export default function DashboardPage() {
                                     </div>
                                 </div>
                                 ))}
-                            </CardContent>
-                            <CardFooter>
+                            </div>
+                            <div className="mt-6">
                                 <Button asChild variant="secondary" className="w-full">
                                 <Link href="/dashboard/plan">Ver Calendário Completo</Link>
                                 </Button>
-                            </CardFooter>
-                        </Card>
-                    )}
-
-
-                    <Card>
-                    <CardHeader>
-                        <CardTitle className="font-bold flex items-center gap-2">
-                        Ideias Salvas <Lightbulb className="h-5 w-5 text-yellow-400" />
-                        </CardTitle>
-                        <CardDescription>Suas próximas grandes ideias de vídeo.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        {isLoadingIdeas && (
-                            <div className="space-y-3">
-                                <div className="h-10 bg-muted rounded-lg animate-pulse" />
-                                <div className="h-10 bg-muted rounded-lg animate-pulse" />
                             </div>
-                        )}
-                        {!isLoadingIdeas && savedIdeas?.length === 0 && (
-                            <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
-                                <Lightbulb className="mx-auto h-8 w-8" />
-                                <h3 className="mt-2 font-semibold">Nenhuma ideia salva</h3>
-                                <p className="text-sm">Gere novas ideias para o seu conteúdo.</p>
+                        </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="item-2" className="border rounded-lg bg-card overflow-hidden">
+                        <AccordionTrigger className="p-6 text-left hover:no-underline data-[state=open]:border-b">
+                             <div className="flex-1 space-y-1.5">
+                                <CardTitle className="font-bold flex items-center gap-2">
+                                Ideias Salvas <Lightbulb className="h-5 w-5 text-yellow-400" />
+                                </CardTitle>
+                                <CardDescription>Suas próximas grandes ideias de vídeo.</CardDescription>
                             </div>
-                        )}
-                        <div className="space-y-2">
-                        {savedIdeas?.map((idea) => (
-                            <Link key={idea.id} href="/dashboard/ideas">
-                            <div
-                                className="flex items-center justify-between rounded-md p-3 hover:bg-muted cursor-pointer"
-                            >
-                                <p className="font-medium truncate">{idea.title}</p>
-                                <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                        </AccordionTrigger>
+                         <AccordionContent className="px-6 pb-6">
+                            <div className="pt-4">
+                            {isLoadingIdeas && (
+                                <div className="space-y-3">
+                                    <div className="h-10 bg-muted rounded-lg animate-pulse" />
+                                    <div className="h-10 bg-muted rounded-lg animate-pulse" />
+                                </div>
+                            )}
+                            {!isLoadingIdeas && savedIdeas?.length === 0 && (
+                                <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
+                                    <Lightbulb className="mx-auto h-8 w-8" />
+                                    <h3 className="mt-2 font-semibold">Nenhuma ideia salva</h3>
+                                    <p className="text-sm">Gere novas ideias para o seu conteúdo.</p>
+                                </div>
+                            )}
+                            <div className="space-y-2">
+                            {savedIdeas?.map((idea) => (
+                                <Link key={idea.id} href="/dashboard/ideas">
+                                <div
+                                    className="flex items-center justify-between rounded-md p-3 hover:bg-muted cursor-pointer"
+                                >
+                                    <p className="font-medium truncate">{idea.title}</p>
+                                    <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                                </div>
+                                </Link>
+                            ))}
                             </div>
-                            </Link>
-                        ))}
-                        </div>
-                    </CardContent>
-                    <CardFooter>
-                        <Button asChild variant="secondary" className="w-full">
-                        <Link href="/dashboard/ideas">Ver Todas as Ideias</Link>
-                        </Button>
-                    </CardFooter>
-                    </Card>
-                </div>
+                            </div>
+                            <div className="mt-6">
+                                <Button asChild variant="secondary" className="w-full">
+                                <Link href="/dashboard/ideas">Ver Todas as Ideias</Link>
+                                </Button>
+                            </div>
+                        </AccordionContent>
+                    </AccordionItem>
+                </Accordion>
+                )}
             </div>
         )}
         
