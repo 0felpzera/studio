@@ -50,9 +50,10 @@ export default function LoginPage() {
         }
     }, [user, isUserLoading, router]);
     
-    const handleSocialLogin = async (provider: GoogleAuthProvider | AppleAuthProvider) => {
+    const handleSocialLogin = async (providerName: 'google' | 'apple') => {
         setIsLoading(true);
         try {
+            const provider = providerName === 'google' ? new GoogleAuthProvider() : new AppleAuthProvider();
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
 
@@ -86,15 +87,6 @@ export default function LoginPage() {
         }
     }
 
-    const handleGoogleLogin = () => {
-        const provider = new GoogleAuthProvider();
-        handleSocialLogin(provider);
-    }
-
-    const handleAppleLogin = () => {
-        const provider = new AppleAuthProvider();
-        handleSocialLogin(provider);
-    }
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -165,10 +157,10 @@ export default function LoginPage() {
                     </div>
 
                      <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" size="icon" className="w-full h-12" onClick={handleGoogleLogin} disabled={isLoading}>
+                        <Button variant="outline" size="icon" className="w-full h-12" onClick={() => handleSocialLogin('google')} disabled={isLoading}>
                             <GoogleIcon className="h-6 w-6" />
                         </Button>
-                        <Button variant="outline" size="icon" className="w-full h-12" onClick={handleAppleLogin} disabled={isLoading}>
+                        <Button variant="outline" size="icon" className="w-full h-12" onClick={() => handleSocialLogin('apple')} disabled={isLoading}>
                             <AppleIcon className="h-6 w-6" />
                         </Button>
                     </div>
