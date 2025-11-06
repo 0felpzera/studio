@@ -91,7 +91,7 @@ export const GenerateGrowthPlanOutputSchema = z.object({
   weeklyPlan: z.string().describe("A recommended weekly posting plan, like '2 Reels, 3 Stories'."),
   hookIdeas: z.array(z.string()).length(3).describe('An array of three specific hook ideas for the given niche.'),
   trendIdeas: z.array(z.object({
-    type: z.enum(['Áudio', 'Formato', 'Desafio']).describe('The type of the trend.'),
+    type: z.string().describe('The type of the trend (e.g., Audio, Format, Challenge).'),
     description: z.string().describe('A brief description of the trend.'),
   })).length(3).describe('An array of three specific, trending ideas for the given niche.'),
 });

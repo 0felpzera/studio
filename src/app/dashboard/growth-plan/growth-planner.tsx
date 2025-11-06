@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -156,7 +157,7 @@ export function GrowthPlanner() {
         <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-xl">
             <form onSubmit={form.handleSubmit(onSubmit)}>
                 <CardHeader>
-                    <CardTitle>Gerador de Plano</CardTitle>
+                    <CardTitle>Gerador de Plano de Crescimento</CardTitle>
                     <CardDescription>Ajuste suas métricas e metas, depois clique em "Gerar Plano" para receber uma estratégia de crescimento personalizada da IA.</CardDescription>
                 </CardHeader>
                 <CardContent className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
@@ -322,7 +323,7 @@ export function GrowthPlanner() {
                 <DialogTrigger asChild>
                     <Button variant="link">Ver como a IA calculou o plano <Info className='ml-2 size-4'/></Button>
                 </DialogTrigger>
-                <DialogContent className="bg-card">
+                <DialogContent>
                     <DialogHeader>
                     <DialogTitle className="font-bold">Metodologia do Plano de IA</DialogTitle>
                     <DialogDescription>

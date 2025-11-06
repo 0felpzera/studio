@@ -6,36 +6,45 @@ import { TrendingUp } from "lucide-react";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, ResponsiveContainer, Line, ComposedChart } from "recharts";
 import type { FollowerHistory } from "@/lib/types";
 
-const parseTimeToMonths = (timeToGoal: string): number => {
-    if (!timeToGoal) return 12;
-    const timeMatch = timeToGoal.match(/~?(\d+(\.\d)?)\s*(months|years|ano|anos|mês|meses)/i);
-    if (!timeMatch) return 12;
+const parseTimeToUnits = (timeToGoal: string): { units: number, unitName: 'week' | 'month' | 'year' } => {
+    if (!timeToGoal) return { units: 12, unitName: 'month' };
+
+    const timeMatch = timeToGoal.match(/~?(\d+(\.\d)?)\s*(weeks?|months?|years?|semanas?|mês|meses|anos?)/i);
+    if (!timeMatch) return { units: 12, unitName: 'month' };
 
     const value = parseFloat(timeMatch[1]);
     const unit = timeMatch[3].toLowerCase();
 
-    if (unit.startsWith('ano') || unit.startsWith('year')) {
-        return Math.round(value * 12);
+    if (unit.startsWith('week') || unit.startsWith('semana')) {
+        return { units: Math.round(value), unitName: 'week' };
     }
-    return Math.round(value);
+    if (unit.startsWith('year') || unit.startsWith('ano')) {
+        return { units: Math.round(value * 12), unitName: 'month' };
+    }
+    // Default to month
+    return { units: Math.round(value), unitName: 'month' };
 };
 
 
 const generateProjectedData = (initialFollowers: number = 1500, goalFollowers: number = 100000, timeToGoal: string = '~12 months') => {
-    const totalMonths = parseTimeToMonths(timeToGoal);
-    if (totalMonths <= 0 || initialFollowers <= 0) return [];
+    const { units, unitName } = parseTimeToUnits(timeToGoal);
+    if (units <= 0 || initialFollowers < 0 || goalFollowers <= initialFollowers) {
+        return [{
+            label: unitName === 'week' ? 'Semana 1' : 'Mês 1',
+            projectedFollowers: goalFollowers
+        }];
+    };
     
     const data = [];
-    // Adjust growth factor to be based on the dynamic number of months
-    const growthFactor = Math.pow(goalFollowers / initialFollowers, 1 / (totalMonths -1));
+    const growthFactor = Math.pow(goalFollowers / initialFollowers, 1 / (units));
 
-    for (let i = 0; i < totalMonths; i++) {
+    for (let i = 0; i <= units; i++) {
         data.push({
-            month: `Mês ${i + 1}`,
+            label: `${unitName === 'week' ? 'Semana' : 'Mês'} ${i + 1}`,
             projectedFollowers: Math.round(initialFollowers * Math.pow(growthFactor, i)),
         });
     }
-    // Ensure the last data point is exactly the goal
+    
     if (data.length > 0) {
         data[data.length - 1].projectedFollowers = goalFollowers;
     }
@@ -48,21 +57,18 @@ const mergeData = (projectedData: any[], realHistory: FollowerHistory[]) => {
         return projectedData.map(d => ({ ...d, realFollowers: null }));
     }
 
-    // Find the start date of the projection (assume it's today)
     const projectionStartDate = new Date();
-    projectionStartDate.setDate(1); // Start of current month
+    projectionStartDate.setDate(1);
 
     const mergedData = projectedData.map((pData, index) => {
         const monthStartDate = new Date(projectionStartDate);
         monthStartDate.setMonth(projectionStartDate.getMonth() + index);
         
-        // Find the closest historical data point for that month
         const historyForMonth = realHistory.filter(h => {
             const historyDate = new Date(h.date);
             return historyDate.getFullYear() === monthStartDate.getFullYear() && historyDate.getMonth() === monthStartDate.getMonth();
         });
 
-        // Get the last record for that month if multiple exist
         const lastRecord = historyForMonth.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
 
         return {
@@ -92,9 +98,11 @@ export function GrowthChart({ initialFollowers = 1500, goalFollowers = 100000, t
         <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-3 text-sm">
           <p className="label font-bold text-foreground">{label}</p>
           {payload.map((pld: any) => (
-            <p key={pld.dataKey} style={{ color: pld.color }}>
-              {`${pld.name}: ${pld.value?.toLocaleString('pt-BR') || 'N/A'}`}
-            </p>
+            pld.value !== null && (
+                <p key={pld.dataKey} style={{ color: pld.color }}>
+                {`${pld.name}: ${pld.value?.toLocaleString('pt-BR') || 'N/A'}`}
+                </p>
+            )
           ))}
         </div>
       );
@@ -114,7 +122,7 @@ export function GrowthChart({ initialFollowers = 1500, goalFollowers = 100000, t
         </defs>
         <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
         <XAxis
-          dataKey="month"
+          dataKey="label"
           stroke="hsl(var(--muted-foreground))"
           fontSize={12}
           tickLine={false}
