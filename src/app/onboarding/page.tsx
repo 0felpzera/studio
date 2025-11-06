@@ -25,12 +25,20 @@ export default function OnboardingPage() {
   const [postingFrequency, setPostingFrequency] = useState('');
 
   const handleConnectTikTok = () => {
+    if (isUserLoading) {
+        toast({
+            title: "Aguarde um momento",
+            description: "Estamos verificando sua sessão. Tente novamente em alguns segundos.",
+        });
+        return;
+    }
     if (!user) {
         toast({
             title: "Usuário não encontrado",
             description: "Você precisa estar logado para conectar sua conta.",
             variant: "destructive"
         });
+        router.push('/login');
         return;
     }
     
@@ -106,7 +114,7 @@ export default function OnboardingPage() {
     }
   };
 
-  if (isUserLoading) {
+  if (isUserLoading && !user) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -164,14 +172,15 @@ export default function OnboardingPage() {
              <div className="space-y-4">
                 <h3 className='font-semibold text-lg flex items-center gap-2'><Share2 className='size-5 text-primary'/> Conecte suas Contas</h3>
                 <p className="text-sm text-muted-foreground">Conecte sua conta do TikTok para importar suas métricas e obter análises mais precisas.</p>
-                <Button className="w-full" variant="outline" onClick={handleConnectTikTok}>
+                <Button className="w-full" variant="outline" onClick={handleConnectTikTok} disabled={isUserLoading}>
+                   {isUserLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                    Conectar TikTok
                 </Button>
             </div>
           
         </CardContent>
         <CardContent>
-            <Button onClick={handleFinishOnboarding} disabled={isLoading} className="w-full font-bold text-lg">
+            <Button onClick={handleFinishOnboarding} disabled={isLoading || isUserLoading} className="w-full font-bold text-lg">
                 {isLoading ? <Loader2 className="animate-spin" /> : <><Check className="mr-2" /> Concluir e ir para o Dashboard</>}
             </Button>
         </CardContent>
