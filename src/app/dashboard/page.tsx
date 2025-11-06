@@ -67,6 +67,12 @@ function formatNumber(value: number | undefined | null): string {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const iconMap: { [key: string]: React.ReactNode } = {
+        'Visualizações': <Film className="size-4" />,
+        'Curtidas': <Heart className="size-4" />,
+        'Engajamento': <Percent className="size-4" />,
+    };
+
     return (
       <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-3 text-sm">
         <p className="label font-bold text-foreground mb-2">{`Mês: ${label}`}</p>
@@ -75,8 +81,8 @@ const CustomTooltip = ({ active, payload, label }: any) => {
                 ? `${pld.value.toFixed(2).replace('.', ',')}%`
                 : formatNumber(pld.value);
             return (
-              <div key={pld.dataKey} className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pld.fill || pld.stroke }}></span>
+              <div key={pld.dataKey} className="flex items-center gap-2" style={{ color: pld.fill || pld.stroke }}>
+                {iconMap[pld.name] || <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pld.fill || pld.stroke }}></span>}
                 <span className="text-muted-foreground">{`${pld.name}:`}</span>
                 <span className="font-bold text-foreground">{value}</span>
               </div>
@@ -150,10 +156,10 @@ export default function DashboardPage() {
     
     const chartData = useMemo(() => {
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; } } = {};
+        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; videoCount: number; } } = {};
         
         months.forEach(m => {
-            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0 };
+            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0, videoCount: 0 };
         });
 
         if (filteredVideos && filteredVideos.length > 0) {
@@ -166,6 +172,7 @@ export default function DashboardPage() {
                         dataByMonth[month].likes += video.like_count || 0;
                         dataByMonth[month].comments += video.comment_count || 0;
                         dataByMonth[month].shares += video.share_count || 0;
+                        dataByMonth[month].videoCount += 1;
                     }
                 }
             });
@@ -761,4 +768,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
