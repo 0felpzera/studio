@@ -2,10 +2,20 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useForm as useManualForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Check, Sparkles, Wand2, X, Trash2, BrainCircuit } from 'lucide-react';
+import {
+  Loader2,
+  Check,
+  Sparkles,
+  Wand2,
+  X,
+  Trash2,
+  BrainCircuit,
+  PlusCircle,
+  CalendarIcon,
+} from 'lucide-react';
 import {
   generateWeeklyContentCalendar,
   GenerateWeeklyContentCalendarOutput,
@@ -51,6 +61,7 @@ import {
   getDocs,
   deleteDoc,
   limit,
+  addDoc,
 } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -64,8 +75,21 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import type { ContentTask, Goal } from '@/lib/types';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { cn } from '@/lib/utils';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { Calendar } from '@/components/ui/calendar';
 
 
 const formSchema = z.object({
@@ -73,6 +97,14 @@ const formSchema = z.object({
   goals: z.string().min(10, 'Por favor, descreva seus objetivos com mais detalhes.'),
   postingFrequency: z.string({
     required_error: 'A frequência de postagem é obrigatória.',
+  }),
+});
+
+const manualTaskSchema = z.object({
+  description: z.string().min(3, "A descrição é obrigatória."),
+  platform: z.string().min(1, "A plataforma é obrigatória."),
+  date: z.date({
+    required_error: "A data da tarefa é obrigatória.",
   }),
 });
 
@@ -98,6 +130,7 @@ export default function ContentCalendar() {
   const [isSaving, setIsSaving] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PendingTask[] | null>(null);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [isManualTaskOpen, setIsManualTaskOpen] = useState(false);
 
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
@@ -128,6 +161,10 @@ export default function ContentCalendar() {
       postingFrequency: '',
     },
   });
+
+  const manualForm = useManualForm<z.infer<typeof manualTaskSchema>>({
+    resolver: zodResolver(manualTaskSchema),
+  });
   
   useEffect(() => {
     if (goal) {
@@ -139,7 +176,7 @@ export default function ContentCalendar() {
     }
   }, [goal, form]);
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onGenerate(values: z.infer<typeof formSchema>) {
     if (!user || !firestore) {
       toast({ title: 'Erro', description: 'Você precisa estar logado.', variant: 'destructive' });
       return;
@@ -176,6 +213,32 @@ export default function ContentCalendar() {
       });
     } finally {
       setIsLoading(false);
+    }
+  }
+
+  async function onManualSubmit(values: z.infer<typeof manualTaskSchema>) {
+    if (!user || !firestore) {
+        toast({ title: "Erro", description: "Você precisa estar logado.", variant: "destructive"});
+        return;
+    }
+
+    setIsSaving(true);
+    try {
+        await addDoc(collection(firestore, 'users', user.uid, 'contentTasks'), {
+            ...values,
+            userId: user.uid,
+            isCompleted: false,
+            status: 'active',
+            date: Timestamp.fromDate(values.date)
+        });
+        toast({ title: "Sucesso!", description: "Sua tarefa foi adicionada ao plano." });
+        manualForm.reset();
+        setIsManualTaskOpen(false);
+    } catch (error) {
+        console.error("Erro ao adicionar tarefa manual:", error);
+        toast({ title: "Erro ao Salvar", description: "Não foi possível adicionar sua tarefa. Tente novamente.", variant: "destructive" });
+    } finally {
+        setIsSaving(false);
     }
   }
 
@@ -276,7 +339,7 @@ export default function ContentCalendar() {
           </CardHeader>
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(onSubmit)}
+              onSubmit={form.handleSubmit(onGenerate)}
               className="space-y-6"
             >
             <CardContent>
@@ -399,10 +462,111 @@ export default function ContentCalendar() {
         ) : (
             <Card>
                 <CardHeader>
-                    <CardTitle className="font-bold">Passo 2: Seu Checklist da Semana</CardTitle>
-                    <CardDescription>
-                        {totalTasks > 0 ? `Progresso da semana: ${completedTasks} de ${totalTasks} tarefas concluídas.` : "Seu plano de conteúdo ativo aparecerá aqui. Gere um plano para começar!"}
-                    </CardDescription>
+                    <div className="flex justify-between items-center">
+                        <div>
+                            <CardTitle className="font-bold">Passo 2: Seu Checklist da Semana</CardTitle>
+                            <CardDescription>
+                                {totalTasks > 0 ? `Progresso da semana: ${completedTasks} de ${totalTasks} tarefas concluídas.` : "Seu plano de conteúdo ativo aparecerá aqui. Gere um plano para começar!"}
+                            </CardDescription>
+                        </div>
+                        <Dialog open={isManualTaskOpen} onOpenChange={setIsManualTaskOpen}>
+                            <DialogTrigger asChild>
+                                <Button variant="outline"><PlusCircle className="mr-2 size-4" />Adicionar Tarefa</Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                                <DialogHeader>
+                                    <DialogTitle>Adicionar Tarefa Manualmente</DialogTitle>
+                                    <DialogDescription>
+                                        Adicione uma nova tarefa ao seu plano de conteúdo.
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <Form {...manualForm}>
+                                    <form onSubmit={manualForm.handleSubmit(onManualSubmit)} className="space-y-4">
+                                        <FormField
+                                            control={manualForm.control}
+                                            name="description"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Descrição da Tarefa</FormLabel>
+                                                    <FormControl>
+                                                        <Textarea placeholder="Ex: Gravar vídeo sobre..." {...field} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                        <div className="grid grid-cols-2 gap-4">
+                                             <FormField
+                                                control={manualForm.control}
+                                                name="platform"
+                                                render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Plataforma</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger>
+                                                            <SelectValue placeholder="Selecione" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            <SelectItem value="TikTok">TikTok</SelectItem>
+                                                            <SelectItem value="Reels">Reels</SelectItem>
+                                                            <SelectItem value="Shorts">Shorts</SelectItem>
+                                                            <SelectItem value="Outro">Outro</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                                )}
+                                            />
+                                             <FormField
+                                                control={manualForm.control}
+                                                name="date"
+                                                render={({ field }) => (
+                                                <FormItem className="flex flex-col">
+                                                    <FormLabel>Data da Tarefa</FormLabel>
+                                                    <Popover>
+                                                    <PopoverTrigger asChild>
+                                                        <FormControl>
+                                                        <Button
+                                                            variant={"outline"}
+                                                            className={cn(
+                                                            "pl-3 text-left font-normal",
+                                                            !field.value && "text-muted-foreground"
+                                                            )}
+                                                        >
+                                                            {field.value ? (
+                                                            format(field.value, "dd/MM/yyyy", { locale: ptBR })
+                                                            ) : (
+                                                            <span>Escolha uma data</span>
+                                                            )}
+                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                        </Button>
+                                                        </FormControl>
+                                                    </PopoverTrigger>
+                                                    <PopoverContent className="w-auto p-0" align="start">
+                                                        <Calendar
+                                                        mode="single"
+                                                        selected={field.value}
+                                                        onSelect={field.onChange}
+                                                        disabled={(date) => date < new Date("1900-01-01")}
+                                                        initialFocus
+                                                        />
+                                                    </PopoverContent>
+                                                    </Popover>
+                                                    <FormMessage />
+                                                </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                        <Button type="submit" disabled={isSaving}>
+                                            {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Tarefa"}
+                                        </Button>
+                                    </form>
+                                </Form>
+                            </DialogContent>
+                        </Dialog>
+                    </div>
                 </CardHeader>
                 <CardContent>
                    {totalTasks > 0 && <Progress value={progress} className="mb-6" />}
@@ -420,7 +584,7 @@ export default function ContentCalendar() {
                           Seu plano de conteúdo aparecerá aqui
                         </h3>
                         <p className="text-muted-foreground max-w-sm">
-                          Preencha o formulário e clique em "Gerar Plano" para que a IA crie sua primeira lista de tarefas.
+                          Preencha o formulário para a IA criar sua lista ou adicione uma tarefa manualmente.
                         </p>
                       </div>
                     )}
