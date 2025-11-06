@@ -18,7 +18,9 @@ import {
   Share,
   Percent,
   LayoutGrid,
-  LineChart
+  LineChart,
+  Check,
+  Rocket
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,11 +34,13 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
 import type { TiktokAccount, TiktokVideo, SavedVideoIdea } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
@@ -143,15 +147,19 @@ export default function DashboardPage() {
     }, [filteredVideos, tiktokAccount]);
 
 
-    const upcomingTasksQuery = useMemoFirebase(() => {
+    const contentTasksQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
         return query(
             collection(firestore, 'users', user.uid, 'contentTasks'),
-            where('isCompleted', '==', false),
-            orderBy('date', 'asc'),
-            limit(2)
+            orderBy('date', 'asc')
         );
     }, [user, firestore]);
+
+    const { data: allTasks, isLoading: isLoadingTasks } = useCollection<ContentTask>(contentTasksQuery);
+
+    const pendingTasks = useMemo(() => allTasks?.filter(task => !task.isCompleted).slice(0, 3) || [], [allTasks]);
+    const isPlanPending = useMemo(() => allTasks?.some(task => task.status === 'pending'), [allTasks]);
+
 
     const savedIdeasQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -229,8 +237,13 @@ export default function DashboardPage() {
         }
     ];
 
-    const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
     const { data: savedIdeas, isLoading: isLoadingIdeas } = useCollection<SavedVideoIdea>(savedIdeasQuery);
+    
+    const toggleTaskCompletion = (taskId: string, currentStatus: boolean) => {
+        if (!user || !firestore) return;
+        const taskRef = doc(firestore, 'users', user.uid, 'contentTasks', taskId);
+        updateDoc(taskRef, { isCompleted: !currentStatus });
+    };
 
   return (
     <div className="space-y-6">
@@ -360,47 +373,74 @@ export default function DashboardPage() {
                 </Card>
 
                 <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                    <Card>
-                    <CardHeader>
-                        <CardTitle className="font-bold">Próximos Posts</CardTitle>
-                        <CardDescription>Suas próximas tarefas agendadas.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {isLoadingTasks && (
-                            <div className="space-y-3">
-                                <div className="h-12 bg-muted rounded-lg animate-pulse" />
-                                <div className="h-12 bg-muted rounded-lg animate-pulse" />
-                            </div>
-                        )}
-                        {!isLoadingTasks && upcomingPosts?.length === 0 && (
-                            <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
-                                <CalendarDays className="mx-auto h-8 w-8" />
-                                <h3 className="mt-2 font-semibold">Nenhum post futuro</h3>
-                                <p className="text-sm">Gere um plano de conteúdo para começar.</p>
-                            </div>
-                        )}
-                        {upcomingPosts?.map((post) => (
-                        <div key={post.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
-                            <div className="rounded-lg bg-background p-3 border">
-                            {post.platform.toLowerCase().includes('tiktok') ? <Video className="h-6 w-6 text-sky-500" /> : <Film className="h-6 w-6 text-rose-500" />}
-                            </div>
-                            <div className="flex-grow">
-                            <p className="font-semibold">
-                                {post.description}
-                            </p>
-                            <p className="text-sm text-muted-foreground capitalize">
-                                {post.platform} &middot; {post.date ? new Date(post.date.toDate()).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit' }) : 'Data pendente'}
-                            </p>
-                            </div>
-                        </div>
-                        ))}
-                    </CardContent>
-                    <CardFooter>
-                        <Button asChild variant="secondary" className="w-full">
-                        <Link href="/dashboard/plan">Ver Calendário Completo</Link>
-                        </Button>
-                    </CardFooter>
-                    </Card>
+                    
+                    {isPlanPending ? (
+                         <Card className="bg-primary/10 border-primary/20">
+                            <CardHeader>
+                                <CardTitle className="font-bold flex items-center gap-2"><Rocket className="size-5 text-primary"/>Plano de Conteúdo Sugerido!</CardTitle>
+                                <CardDescription>A IA preparou um novo plano semanal para você. Que tal dar uma olhada?</CardDescription>
+                            </CardHeader>
+                             <CardContent>
+                                <p className="text-sm text-muted-foreground">Revise as ideias de vídeo e aceite o plano para adicioná-las ao seu checklist semanal.</p>
+                            </CardContent>
+                            <CardFooter>
+                                <Button asChild>
+                                    <Link href="/dashboard/plan">Revisar e Aprovar</Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    ) : (
+                         <Card>
+                            <CardHeader>
+                                <CardTitle className="font-bold">Checklist da Semana</CardTitle>
+                                <CardDescription>Suas próximas tarefas para manter a consistência.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                                {isLoadingTasks && (
+                                    <div className="space-y-3">
+                                        <div className="h-10 bg-muted rounded-lg animate-pulse" />
+                                        <div className="h-10 bg-muted rounded-lg animate-pulse" />
+                                    </div>
+                                )}
+                                {!isLoadingTasks && pendingTasks?.length === 0 && (
+                                    <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
+                                        <CalendarDays className="mx-auto h-8 w-8" />
+                                        <h3 className="mt-2 font-semibold">Tudo em dia!</h3>
+                                        <p className="text-sm">Gere um novo plano de conteúdo para a semana.</p>
+                                    </div>
+                                )}
+                                {pendingTasks?.map((task) => (
+                                <div
+                                    key={task.id}
+                                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors"
+                                    >
+                                     <Checkbox
+                                        id={`task-${task.id}`}
+                                        checked={task.isCompleted}
+                                        onCheckedChange={() => toggleTaskCompletion(task.id, task.isCompleted)}
+                                    />
+                                    <div className="grid gap-1.5 flex-1">
+                                         <label htmlFor={`task-${task.id}`} className="font-medium cursor-pointer">
+                                            {task.description}
+                                         </label>
+                                         <div className="flex items-center gap-2">
+                                            <Badge variant="secondary">{task.platform}</Badge>
+                                             <p className="text-xs text-muted-foreground capitalize">
+                                                {task.date ? new Date(task.date.toDate()).toLocaleDateString('pt-BR', { weekday: 'long' }) : 'Data pendente'}
+                                            </p>
+                                         </div>
+                                    </div>
+                                </div>
+                                ))}
+                            </CardContent>
+                            <CardFooter>
+                                <Button asChild variant="secondary" className="w-full">
+                                <Link href="/dashboard/plan">Ver Calendário Completo</Link>
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    )}
+
 
                     <Card>
                     <CardHeader>
@@ -465,7 +505,7 @@ export default function DashboardPage() {
                                             <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                         </div>
                                     </div>
-                                </a>
+                                a>
                                 <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
                                     <div className="flex items-center gap-1" title={`${formatNumber(video.like_count)} Curtidas`}><Heart className="size-3.5" /> {formatNumber(video.like_count)}</div>
                                     <div className="flex items-center gap-1" title={`${formatNumber(video.comment_count)} Comentários`}><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</div>

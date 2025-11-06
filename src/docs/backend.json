@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -193,6 +194,11 @@
         "isCompleted": {
           "type": "boolean",
           "description": "Indicates if the task has been completed."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["pending", "active"],
+          "description": "The status of the task. 'pending' means it's a suggestion, 'active' means it's part of the current plan."
         }
       },
       "required": [
@@ -200,7 +206,8 @@
         "userId",
         "date",
         "platform",
-        "description"
+        "description",
+        "status"
       ]
     },
     "SavedVideoIdea": {

@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Check } from 'lucide-react';
+import { Loader2, Check, Sparkles, Wand2, X } from 'lucide-react';
 import {
   generateWeeklyContentCalendar,
   GenerateWeeklyContentCalendarOutput,
@@ -48,8 +48,14 @@ import {
   Timestamp,
   query,
   updateDoc,
+  where,
+  getDocs,
+  deleteDoc,
 } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import type { ContentTask } from '@/lib/types';
+
 
 const formSchema = z.object({
   niche: z.string().min(2, 'O nicho é obrigatório.'),
@@ -59,19 +65,12 @@ const formSchema = z.object({
   }),
 });
 
-type ContentTask = {
-  id: string;
-  userId: string;
-  date: Timestamp;
-  platform: string;
-  description: string;
-  isCompleted: boolean;
-};
+type PendingTask = Omit<ContentTask, 'id' | 'date'>;
 
 const parseCalendarString = (
   calendarString: string,
   userId: string
-): Omit<ContentTask, 'id' | 'date'>[] => {
+): PendingTask[] => {
   const lines = calendarString
     .trim()
     .split('\n')
@@ -88,24 +87,30 @@ const parseCalendarString = (
       platform,
       description,
       isCompleted: false,
+      status: 'pending',
     };
   });
 };
 
 export default function ContentCalendar() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [pendingPlan, setPendingPlan] = useState<PendingTask[] | null>(null);
+
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
 
   const contentTasksQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    const contentTasksCollection = collection(firestore, 'users', user.uid, 'contentTasks');
-    return query(contentTasksCollection);
+    return query(collection(firestore, 'users', user.uid, 'contentTasks'));
   }, [firestore, user]);
 
   const { data: calendar, isLoading: isLoadingTasks } =
     useCollection<ContentTask>(contentTasksQuery);
+
+  const activeTasks = useMemo(() => calendar?.filter(t => t.status !== 'pending') || [], [calendar]);
+  const pendingTasksFromDB = useMemo(() => calendar?.filter(t => t.status === 'pending') || [], [calendar]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -117,52 +122,85 @@ export default function ContentCalendar() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!user || !firestore) {
-      toast({
-        title: 'Erro',
-        description: 'Você precisa estar logado para gerar um plano.',
-        variant: 'destructive',
-      });
+    if (!user) {
+      toast({ title: 'Erro', description: 'Você precisa estar logado.', variant: 'destructive' });
       return;
     }
 
     setIsLoading(true);
+    setPendingPlan(null);
 
     try {
       const result: GenerateWeeklyContentCalendarOutput =
         await generateWeeklyContentCalendar(values);
       const newTasks = parseCalendarString(result.calendar, user.uid);
-
-      const batch = writeBatch(firestore);
-      newTasks.forEach((task) => {
-        const docRef = doc(
-          collection(firestore, 'users', user.uid, 'contentTasks')
-        );
-        batch.set(docRef, { ...task, date: serverTimestamp() });
-      });
-      await batch.commit();
+      setPendingPlan(newTasks);
 
       toast({
-        title: 'Sucesso!',
-        description: 'Seu novo plano de conteúdo está pronto e salvo.',
-        variant: 'default',
+        title: 'Sugestão Pronta!',
+        description: 'Um novo plano de conteúdo foi gerado. Revise e aprove.',
       });
     } catch (error: any) {
       console.error('Erro ao gerar o calendário de conteúdo:', error);
-      let description =
-        'Não foi possível gerar seu plano de conteúdo. Por favor, tente novamente.';
-      if (typeof error.message === 'string' && error.message.includes('503')) {
-        description =
-          'O serviço de IA está sobrecarregado. Por favor, tente novamente em alguns minutos.';
-      }
       toast({
         title: 'Oh não! Algo deu errado.',
-        description: description,
+        description: 'Não foi possível gerar seu plano. Tente novamente.',
         variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
+  }
+
+  const acceptPlan = async () => {
+    const planToSave = pendingPlan || pendingTasksFromDB;
+    if (!user || !firestore || !planToSave || planToSave.length === 0) {
+      toast({ title: "Erro", description: "Nenhum plano pendente para salvar.", variant: "destructive" });
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+        const batch = writeBatch(firestore);
+        
+        // Clear any existing tasks
+        if (activeTasks.length > 0) {
+            const existingTasksQuery = query(collection(firestore, 'users', user.uid, 'contentTasks'));
+            const existingDocs = await getDocs(existingTasksQuery);
+            existingDocs.forEach(doc => batch.delete(doc.ref));
+        }
+
+        // Add new tasks
+        planToSave.forEach((task, index) => {
+            const docRef = doc(collection(firestore, 'users', user.uid, 'contentTasks'));
+            const taskDate = new Date();
+            taskDate.setDate(taskDate.getDate() + index); // Stagger dates
+            
+            batch.set(docRef, { ...task, date: Timestamp.fromDate(taskDate), status: 'active' });
+        });
+        
+        await batch.commit();
+        setPendingPlan(null);
+        toast({ title: "Sucesso!", description: "Seu novo plano de conteúdo foi salvo e está ativo!" });
+    } catch (error) {
+        console.error("Erro ao aceitar o plano:", error);
+        toast({ title: "Erro ao Salvar", description: "Não foi possível salvar o plano. Tente novamente.", variant: "destructive"});
+    } finally {
+        setIsSaving(false);
+    }
+  };
+
+  const dismissPlan = async () => {
+      setPendingPlan(null);
+      if(pendingTasksFromDB.length > 0 && user && firestore) {
+           const batch = writeBatch(firestore);
+           pendingTasksFromDB.forEach(task => {
+               const docRef = doc(firestore, 'users', user.uid, 'contentTasks', task.id);
+               batch.delete(docRef);
+           });
+           await batch.commit();
+      }
+      toast({ title: "Plano Dispensado", description: "A sugestão de plano foi removida." });
   }
 
   const toggleTaskCompletion = (taskId: string, currentStatus: boolean) => {
@@ -172,17 +210,20 @@ export default function ContentCalendar() {
   };
   
   const sortedCalendar = useMemo(() => {
-    if (!calendar) return [];
-    return [...calendar].sort((a, b) => {
+    if (!activeTasks) return [];
+    return [...activeTasks].sort((a, b) => {
         const dateA = a.date?.toDate() ?? new Date(0);
         const dateB = b.date?.toDate() ?? new Date(0);
         return dateA.getTime() - dateB.getTime();
     });
-  }, [calendar]);
+  }, [activeTasks]);
 
-  const completedTasks = calendar?.filter((task) => task.isCompleted).length || 0;
-  const totalTasks = calendar?.length || 0;
+  const completedTasks = activeTasks?.filter((task) => task.isCompleted).length || 0;
+  const totalTasks = activeTasks?.length || 0;
   const progress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
+  
+  const displayPlan = pendingPlan || (pendingTasksFromDB.length > 0 ? pendingTasksFromDB : null);
+
 
   return (
     <div className="grid gap-8 md:grid-cols-3">
@@ -269,11 +310,7 @@ export default function ContentCalendar() {
                   disabled={isLoading || isUserLoading}
                   className="w-full font-bold"
                 >
-                  {isLoading ? (
-                    <Loader2 className="animate-spin" />
-                  ) : (
-                    'Gerar Meu Plano'
-                  )}
+                  {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className='mr-2' /> Gerar Novo Plano</> }
                 </Button>
               </form>
             </Form>
@@ -281,76 +318,98 @@ export default function ContentCalendar() {
         </Card>
       </div>
       <div className="md:col-span-2">
-        <Card>
-            <CardHeader>
-              <CardTitle className="font-bold">Progresso Semanal</CardTitle>
-                <CardDescription>
-                  Você completou {completedTasks} de {totalTasks} tarefas esta semana.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-               {totalTasks > 0 && <Progress value={progress} />}
-                {(isLoading || isLoadingTasks) && (
-                  <div className="flex items-center justify-center h-48">
-                    <Loader2 className="size-12 animate-spin text-primary" />
-                  </div>
-                )}
-                {!isLoading && !isLoadingTasks && totalTasks === 0 && (
-                  <div className="flex flex-col items-center justify-center h-48 text-center rounded-lg border-2 border-dashed">
-                    <h3 className="text-xl font-semibold">
-                      Seu plano aparecerá aqui
-                    </h3>
-                    <p className="text-muted-foreground">
-                      Preencha o formulário para começar!
-                    </p>
-                  </div>
-                )}
-            </CardContent>
-            {sortedCalendar.length > 0 && (
-                 <CardContent className="space-y-4">
-                    {sortedCalendar.map((plan) => (
-                      <div
-                        key={plan.id}
-                        className={`transition-all flex items-center justify-between p-4 rounded-lg ${
-                          plan.isCompleted ? 'bg-muted/50' : 'bg-muted/20'
-                        }`}
-                      >
-                        <div className="space-y-1.5">
-                           <span className="text-sm font-medium px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
-                              {plan.platform}
-                            </span>
-                          <p
-                            className={`font-medium ${
-                              plan.isCompleted
-                                ? 'line-through text-muted-foreground/80'
-                                : ''
-                            }`}
-                          >
-                            {plan.description}
-                          </p>
+        
+        {displayPlan ? (
+            <Card className="bg-primary/5 border-primary/20">
+                <CardHeader>
+                    <CardTitle className="font-bold flex items-center gap-2"><Sparkles className='text-primary'/> Sugestão de Plano Semanal</CardTitle>
+                    <CardDescription>A IA gerou o seguinte plano de conteúdo para você. O que acha?</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {displayPlan.map((task, index) => (
+                        <div key={index} className="flex items-center gap-4 p-3 bg-background rounded-lg border">
+                           <div className="flex-1">
+                                <p className="font-medium">{task.description}</p>
+                           </div>
+                           <Badge variant="secondary">{task.platform}</Badge>
                         </div>
-                        <div
-                          className="flex items-center space-x-2 p-2 rounded-lg hover:bg-background transition-colors cursor-pointer"
-                          onClick={() =>
-                            toggleTaskCompletion(plan.id, plan.isCompleted)
-                          }
-                        >
-                          <Checkbox
-                            id={`task-${plan.id}`}
-                            checked={plan.isCompleted}
-                          />
-                          <label
-                            htmlFor={`task-${plan.id}`}
-                            className="text-sm font-medium leading-none cursor-pointer select-none"
-                          >
-                            Feito
-                          </label>
-                        </div>
-                      </div>
                     ))}
-                 </CardContent>
-            )}
-        </Card>
+                </CardContent>
+                <CardFooter className="flex gap-2">
+                    <Button onClick={acceptPlan} disabled={isSaving}>
+                        {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <Check className="mr-2" />}
+                        Aceitar e Salvar Plano
+                    </Button>
+                    <Button variant="ghost" onClick={dismissPlan} disabled={isSaving}>
+                        <X className="mr-2" /> Dispensar
+                    </Button>
+                </CardFooter>
+            </Card>
+        ) : (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="font-bold">Checklist da Semana</CardTitle>
+                    <CardDescription>
+                        {totalTasks > 0 ? `Você completou ${completedTasks} de ${totalTasks} tarefas esta semana.` : "Nenhuma tarefa ativa. Gere um plano para começar!"}
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                   {totalTasks > 0 && <Progress value={progress} className="mb-6" />}
+                    {(isLoading || isLoadingTasks) && !displayPlan && (
+                      <div className="flex items-center justify-center h-48">
+                        <Loader2 className="size-12 animate-spin text-primary" />
+                      </div>
+                    )}
+                    {!isLoading && !isLoadingTasks && totalTasks === 0 && !displayPlan && (
+                      <div className="flex flex-col items-center justify-center h-48 text-center rounded-lg border-2 border-dashed">
+                        <h3 className="text-xl font-semibold">
+                          Seu plano aparecerá aqui
+                        </h3>
+                        <p className="text-muted-foreground">
+                          Preencha o formulário para começar!
+                        </p>
+                      </div>
+                    )}
+                    {sortedCalendar.length > 0 && (
+                         <div className="space-y-4">
+                            {sortedCalendar.map((task) => (
+                              <div
+                                key={task.id}
+                                className={`transition-all flex items-center gap-4 p-4 rounded-lg border ${
+                                  task.isCompleted ? 'bg-muted/50' : 'bg-background'
+                                }`}
+                              >
+                                <Checkbox
+                                    id={`task-${task.id}`}
+                                    checked={task.isCompleted}
+                                    onCheckedChange={() => toggleTaskCompletion(task.id, task.isCompleted)}
+                                    className="size-5"
+                                />
+                                <div className="grid gap-1.5 flex-1">
+                                  <label
+                                    htmlFor={`task-${task.id}`}
+                                    className={`font-medium cursor-pointer ${
+                                      task.isCompleted
+                                        ? 'line-through text-muted-foreground/80'
+                                        : ''
+                                    }`}
+                                  >
+                                    {task.description}
+                                  </label>
+                                  <div className="flex items-center gap-2">
+                                     <Badge variant="outline">{task.platform}</Badge>
+                                      <p className="text-xs text-muted-foreground capitalize">
+                                        {task.date ? new Date(task.date.toDate()).toLocaleDateString('pt-BR', { weekday: 'long' }) : 'Data pendente'}
+                                      </p>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                         </div>
+                    )}
+                </CardContent>
+            </Card>
+        )}
       </div>
     </div>
   );

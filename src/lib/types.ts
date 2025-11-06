@@ -1,3 +1,4 @@
+
 import { Timestamp } from 'firebase/firestore';
 
 export type TiktokVideo = {
@@ -51,4 +52,5 @@ export interface ContentTask {
   platform: string;
   description: string;
   isCompleted: boolean;
+  status: 'pending' | 'active';
 }
