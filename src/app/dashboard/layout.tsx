@@ -90,7 +90,7 @@ const Sidebar = () => {
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     return (
-        <div className="relative min-h-screen w-full bg-background text-foreground">
+        <div className="relative min-h-screen w-full bg-background text-foreground overflow-hidden">
             <div className="shape-1"></div>
             <div className="shape-2"></div>
             <div className="flex h-screen w-full">
