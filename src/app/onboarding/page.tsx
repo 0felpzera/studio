@@ -43,7 +43,7 @@ export default function OnboardingPage() {
         });
         return;
     }
-    const redirectUri = `${window.location.origin}/auth/tiktok/callback`;
+    const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
     const stateValue = crypto.randomUUID();
     const scope = 'user.info.profile,user.info.stats,video.list';
 
@@ -183,5 +183,3 @@ export default function OnboardingPage() {
     </div>
   );
 }
-
-    

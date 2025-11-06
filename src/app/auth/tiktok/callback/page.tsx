@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
@@ -98,7 +99,7 @@ function TikTokCallback() {
         setStatus("Trocando código, buscando perfil e vídeos...");
         
         // Pass the correct redirect URI to the backend flow
-        const redirectUri = `${window.location.origin}/auth/tiktok/callback`;
+        const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
         
         const result = await exchangeTikTokCode({ code: authCode, redirect_uri: redirectUri });
         
@@ -235,5 +236,3 @@ export default function TikTokCallbackPage() {
         </Suspense>
     )
 }
-
-    

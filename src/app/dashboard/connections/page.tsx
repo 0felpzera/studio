@@ -73,7 +73,7 @@ export default function ConnectionsPage() {
             return;
         }
         
-        const redirectUri = `${window.location.origin}/auth/tiktok/callback`;
+        const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
         const stateValue = crypto.randomUUID();
         
         // Store state and user ID for verification in the callback
