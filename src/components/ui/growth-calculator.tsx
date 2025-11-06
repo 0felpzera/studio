@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart } from 'lucide-react';
+import { ArrowRight, ChevronLeft, Calendar, DollarSign, Sparkles, Target, User, Activity, Goal, TrendingUp, Users, Lightbulb, Check, AreaChart, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -274,7 +274,8 @@ export function GrowthCalculator() {
   return (
     <section className="py-20 sm:py-32 overflow-hidden">
       <div className="container mx-auto px-4">
-        {!isCalculated ? (
+        <div className="bg-card/50 p-4 sm:p-8 rounded-2xl border border-border/20">
+          {!isCalculated ? (
             <motion.div 
               className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center"
               initial="hidden"
@@ -292,7 +293,7 @@ export function GrowthCalculator() {
                   visible: { opacity: 1, x: 0, transition: { duration: 0.6, ease: "easeOut" }}
                 }}
               >
-                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance text-foreground">
                   Descubra seu Potencial de Crescimento
                 </h2>
                 <p className="text-lg text-muted-foreground">
@@ -300,15 +301,15 @@ export function GrowthCalculator() {
                 </p>
                 <ul className="space-y-3">
                   <li className="flex items-start gap-3">
-                    <Check className="size-5 text-primary mt-1 flex-shrink-0" />
+                    <CheckCircle2 className="size-5 text-primary mt-1 flex-shrink-0" />
                     <span><span className="font-semibold text-foreground">Visualize seu crescimento</span> com um gráfico de projeção mensal.</span>
                   </li>
-                   <li className="flex items-start gap-3">
-                    <Check className="size-5 text-primary mt-1 flex-shrink-0" />
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="size-5 text-primary mt-1 flex-shrink-0" />
                     <span><span className="font-semibold text-foreground">Estime seu potencial de ganhos</span> com parcerias e publicidade.</span>
                   </li>
-                   <li className="flex items-start gap-3">
-                    <Check className="size-5 text-primary mt-1 flex-shrink-0" />
+                  <li className="flex items-start gap-3">
+                    <CheckCircle2 className="size-5 text-primary mt-1 flex-shrink-0" />
                     <span><span className="font-semibold text-foreground">Receba um plano de ação semanal</span> com ideias de conteúdo para seu nicho.</span>
                   </li>
                 </ul>
@@ -472,6 +473,7 @@ export function GrowthCalculator() {
             </div>
           </div>
         )}
+        </div>
       </div>
     </section>
   );
