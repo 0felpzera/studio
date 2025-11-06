@@ -102,8 +102,8 @@ export function SocialProof() {
                  const avatar = PlaceHolderImages.find(img => img.id === testimonial.avatarId);
                  return (
                     <motion.div key={testimonial.id} variants={cardVariants}>
-                        <Card className="h-full flex flex-col bg-card/50 backdrop-blur-lg border border-border/20 shadow-lg">
-                            <CardContent className="p-6 flex flex-col flex-grow">
+                        <div className="h-full flex flex-col bg-card/60 rounded-2xl border border-border/20 shadow-lg backdrop-blur-md overflow-hidden">
+                            <div className="p-6 flex flex-col flex-grow">
                                 <div className="flex items-center gap-4 mb-4">
                                      <Avatar>
                                         <AvatarImage src={avatar?.imageUrl} alt={testimonial.name} />
@@ -121,8 +121,8 @@ export function SocialProof() {
                                  <div className="flex items-center gap-1 mt-4 text-amber-400">
                                     {[...Array(5)].map((_, i) => <Star key={i} className="size-4 fill-current" />)}
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </div>
                     </motion.div>
                  )
               })}
