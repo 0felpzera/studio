@@ -48,6 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { refreshTiktokData } from '@/ai/flows/refresh-tiktok-data';
 import { useToast } from '@/hooks/use-toast';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 function formatNumber(value: number | undefined | null): string {
@@ -86,6 +87,8 @@ export default function DashboardPage() {
     const [timeRange, setTimeRange] = useState('total');
     const [activeContentTab, setActiveContentTab] = useState('overview');
     const [isSyncing, setIsSyncing] = useState(false);
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+
 
     // Query for the main TikTok account document
     const tiktokAccountsQuery = useMemoFirebase(() => {
@@ -114,14 +117,26 @@ export default function DashboardPage() {
     const { data: goals, isLoading: isLoadingGoals } = useCollection<GoalType>(goalsQuery);
     const goal = useMemo(() => goals?.[0], [goals]);
 
+    const availableYears = useMemo(() => {
+        if (!allVideos) return [new Date().getFullYear()];
+        const years = new Set(allVideos.map(v => new Date((v.create_time || 0) * 1000).getFullYear()));
+        return Array.from(years).sort((a, b) => b - a);
+    }, [allVideos]);
+
     const filteredVideos = useMemo(() => {
         if (!allVideos) return [];
+        
+        const yearFiltered = allVideos.filter(video => {
+            const videoYear = new Date((video.create_time || 0) * 1000).getFullYear();
+            return videoYear === selectedYear;
+        });
+
         if (timeRange === '30d') {
             const thirtyDaysAgo = (Date.now() / 1000) - (30 * 24 * 60 * 60);
-            return allVideos.filter(video => (video.create_time || 0) > thirtyDaysAgo);
+            return yearFiltered.filter(video => (video.create_time || 0) > thirtyDaysAgo);
         }
-        return allVideos;
-    }, [allVideos, timeRange]);
+        return yearFiltered;
+    }, [allVideos, timeRange, selectedYear]);
     
     const chartData = useMemo(() => {
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
@@ -285,7 +300,7 @@ export default function DashboardPage() {
         {
             title: 'Curtidas',
             value: formatNumber(totalLikes),
-            description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de curtidas',
+            description: timeRange === '30d' ? 'Nos últimos 30 dias' : `Total em ${selectedYear}`,
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Heart,
             color: 'text-rose-500',
@@ -294,7 +309,7 @@ export default function DashboardPage() {
         {
             title: 'Visualizações',
             value: formatNumber(totalViews),
-            description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de visualizações',
+            description: timeRange === '30d' ? 'Nos últimos 30 dias' : `Total em ${selectedYear}`,
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Film,
             color: 'text-violet-500',
@@ -303,7 +318,7 @@ export default function DashboardPage() {
         {
             title: 'Taxa de Engajamento',
             value: `${engagementRate.toFixed(2).replace('.', ',')}%`,
-            description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Engajamento total',
+            description: timeRange === '30d' ? 'Nos últimos 30 dias' : `Média em ${selectedYear}`,
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Percent,
             color: 'text-emerald-500',
@@ -372,12 +387,24 @@ export default function DashboardPage() {
                 </TabsList>
             </Tabs>
              {activeContentTab === 'overview' && (
-                <Tabs value={timeRange} onValueChange={setTimeRange}>
-                    <TabsList className="grid w-full sm:w-auto grid-cols-2">
-                        <TabsTrigger value="total">Anual</TabsTrigger>
-                        <TabsTrigger value="30d">Últimos 30 Dias</TabsTrigger>
-                    </TabsList>
-                </Tabs>
+                <div className="flex items-center gap-2">
+                     <Select value={String(selectedYear)} onValueChange={(val) => setSelectedYear(Number(val))}>
+                        <SelectTrigger className="w-[120px]">
+                            <SelectValue placeholder="Ano" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {availableYears.map(year => (
+                                <SelectItem key={year} value={String(year)}>{year}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Tabs value={timeRange} onValueChange={setTimeRange}>
+                        <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                            <TabsTrigger value="total">Anual</TabsTrigger>
+                            <TabsTrigger value="30d">30 Dias</TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </div>
             )}
         </div>
 
