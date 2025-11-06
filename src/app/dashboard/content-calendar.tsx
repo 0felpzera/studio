@@ -89,7 +89,6 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar } from '@/components/ui/calendar';
 
 
 const formSchema = z.object({
@@ -473,15 +472,18 @@ export default function ContentCalendar() {
                             <DialogTrigger asChild>
                                 <Button variant="outline"><PlusCircle className="mr-2 size-4" />Adicionar Tarefa</Button>
                             </DialogTrigger>
-                            <DialogContent>
+                            <DialogContent className="sm:max-w-[425px]">
                                 <DialogHeader>
-                                    <DialogTitle>Adicionar Tarefa Manualmente</DialogTitle>
+                                    <DialogTitle className="flex items-center gap-2">
+                                        <PlusCircle className="text-primary"/>
+                                        Adicionar Tarefa Manualmente
+                                    </DialogTitle>
                                     <DialogDescription>
                                         Adicione uma nova tarefa ao seu plano de conteúdo.
                                     </DialogDescription>
                                 </DialogHeader>
                                 <Form {...manualForm}>
-                                    <form onSubmit={manualForm.handleSubmit(onManualSubmit)} className="space-y-4">
+                                    <form onSubmit={manualForm.handleSubmit(onManualSubmit)} className="space-y-6 pt-4">
                                         <FormField
                                             control={manualForm.control}
                                             name="description"
@@ -489,77 +491,75 @@ export default function ContentCalendar() {
                                                 <FormItem>
                                                     <FormLabel>Descrição da Tarefa</FormLabel>
                                                     <FormControl>
-                                                        <Textarea placeholder="Ex: Gravar vídeo sobre..." {...field} />
+                                                        <Textarea placeholder="Ex: Gravar vídeo sobre 3 dicas de skincare" {...field} />
                                                     </FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
-                                        <div className="grid grid-cols-2 gap-4">
-                                             <FormField
-                                                control={manualForm.control}
-                                                name="platform"
-                                                render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Plataforma</FormLabel>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger>
-                                                            <SelectValue placeholder="Selecione" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            <SelectItem value="TikTok">TikTok</SelectItem>
-                                                            <SelectItem value="Reels">Reels</SelectItem>
-                                                            <SelectItem value="Shorts">Shorts</SelectItem>
-                                                            <SelectItem value="Outro">Outro</SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                                )}
-                                            />
-                                             <FormField
-                                                control={manualForm.control}
-                                                name="date"
-                                                render={({ field }) => (
-                                                <FormItem className="flex flex-col">
-                                                    <FormLabel>Data da Tarefa</FormLabel>
-                                                    <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <FormControl>
-                                                        <Button
-                                                            variant={"outline"}
-                                                            className={cn(
-                                                            "pl-3 text-left font-normal",
-                                                            !field.value && "text-muted-foreground"
-                                                            )}
-                                                        >
-                                                            {field.value ? (
-                                                            format(field.value, "dd/MM/yyyy", { locale: ptBR })
-                                                            ) : (
-                                                            <span>Escolha uma data</span>
-                                                            )}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                        </FormControl>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0" align="start">
-                                                        <Calendar
-                                                        mode="single"
-                                                        selected={field.value}
-                                                        onSelect={field.onChange}
-                                                        disabled={(date) => date < new Date("1900-01-01")}
-                                                        initialFocus
-                                                        />
-                                                    </PopoverContent>
-                                                    </Popover>
-                                                    <FormMessage />
-                                                </FormItem>
-                                                )}
-                                            />
-                                        </div>
-                                        <Button type="submit" disabled={isSaving}>
+                                        <FormField
+                                            control={manualForm.control}
+                                            name="platform"
+                                            render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Plataforma</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione a plataforma" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="TikTok">TikTok</SelectItem>
+                                                        <SelectItem value="Reels">Reels</SelectItem>
+                                                        <SelectItem value="Shorts">Shorts</SelectItem>
+                                                        <SelectItem value="Outro">Outro</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                            )}
+                                        />
+                                         <FormField
+                                            control={manualForm.control}
+                                            name="date"
+                                            render={({ field }) => (
+                                            <FormItem className="flex flex-col">
+                                                <FormLabel>Data da Tarefa</FormLabel>
+                                                <Popover>
+                                                <PopoverTrigger asChild>
+                                                    <FormControl>
+                                                    <Button
+                                                        variant={"outline"}
+                                                        className={cn(
+                                                        "pl-3 text-left font-normal",
+                                                        !field.value && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        {field.value ? (
+                                                        format(field.value, "dd/MM/yyyy", { locale: ptBR })
+                                                        ) : (
+                                                        <span>Escolha uma data</span>
+                                                        )}
+                                                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                                    </Button>
+                                                    </FormControl>
+                                                </PopoverTrigger>
+                                                <PopoverContent className="w-auto p-0" align="start">
+                                                    <Calendar
+                                                    mode="single"
+                                                    selected={field.value}
+                                                    onSelect={field.onChange}
+                                                    disabled={(date) => date < new Date("1900-01-01")}
+                                                    initialFocus
+                                                    />
+                                                </PopoverContent>
+                                                </Popover>
+                                                <FormMessage />
+                                            </FormItem>
+                                            )}
+                                        />
+                                        <Button type="submit" disabled={isSaving} className="w-full">
                                             {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Salvar Tarefa"}
                                         </Button>
                                     </form>
@@ -658,3 +658,5 @@ export default function ContentCalendar() {
     </div>
   );
 }
+
+    
