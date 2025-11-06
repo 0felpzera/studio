@@ -8,25 +8,25 @@ body {
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%; /* Preto Suave */
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
-    --primary: 330 80% 55%; /* Rosa Magenta */
+    --background: 240 6% 10%; /* Fundo Escuro */
+    --foreground: 0 0% 98%;
+    --card: 240 6% 12%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 6% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 197 71% 52%; /* Azul Elétrico para Destaque */
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 96%; /* Cinza Neutro Claro */
-    --secondary-foreground: 240 5% 35%;
-    --muted: 300 25% 96%; /* Lilás um pouco mais escuro para contraste */
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 270 90% 98%; /* Lilás Suave */
-    --accent-foreground: 270 50% 40%;
-    --destructive: 0 84.2% 60.2%;
+    --secondary: 240 5% 18%; /* Cinza Escuro para Elementos Secundários */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5% 22%; /* Cinza Um Pouco Mais Claro para Hover e BG */
+    --muted-foreground: 240 5% 65%;
+    --accent: 260 80% 30%; /* Violeta para Acentos sutis */
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 45.6%; /* Vermelho para Ações Destrutivas */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5.9% 90%; /* Cinza Neutro para Bordas */
-    --input: 240 5.9% 90%;
-    --ring: 260 80% 65%; /* Azul Violeta */
+    --border: 240 5% 25%; /* Bordas sutis */
+    --input: 240 5% 25%;
+    --ring: 197 71% 52%; /* Cor do Anel de Foco */
     --chart-1: 197 71% 52%;
     --chart-2: 152 65% 52%;
     --chart-3: 197 37% 24%;
@@ -42,19 +42,19 @@ body {
     --card-foreground: 0 0% 98%;
     --popover: 240 6% 10%;
     --popover-foreground: 0 0% 98%;
-    --primary: 330 80% 60%; /* Rosa Magenta (um pouco mais claro) */
+    --primary: 197 71% 52%; /* Azul Elétrico para Destaque */
     --primary-foreground: 0 0% 98%;
-    --secondary: 240 5% 18%;
+    --secondary: 240 5% 18%; /* Cinza Escuro para Elementos Secundários */
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 5% 18%;
+    --muted: 240 5% 22%; /* Cinza Um Pouco Mais Claro para Hover e BG */
     --muted-foreground: 240 5% 65%;
-    --accent: 260 80% 25%; /* Lilás/Violeta mais escuro */
+    --accent: 260 80% 30%; /* Violeta para Acentos sutis */
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+    --destructive: 0 62.8% 45.6%; /* Vermelho para Ações Destrutivas */
     --destructive-foreground: 0 0% 98%;
-    --border: 240 5% 20%;
-    --input: 240 5% 20%;
-    --ring: 260 80% 65%; /* Azul Violeta */
+    --border: 240 5% 25%; /* Bordas sutis */
+    --input: 240 5% 25%;
+    --ring: 197 71% 52%; /* Cor do Anel de Foco */
     --chart-1: 197 71% 52%;
     --chart-2: 152 65% 52%;
     --chart-3: 30 80% 55%;
@@ -69,10 +69,50 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-     background-image: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--accent)));
   }
 }
 
 .perspective {
   perspective: 800px;
+}
+
+/* Glassmorphism Styles */
+.glass-effect {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background-color: hsl(var(--primary) / 0.15);
+    color: hsl(var(--primary));
+    font-weight: 600;
+}
+
+.content-card {
+    @apply glass-effect p-6 rounded-2xl;
+}
+
+/* Decorative Shapes */
+.shape-1, .shape-2 {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    z-index: 0;
+}
+
+.shape-1 {
+    width: 400px;
+    height: 400px;
+    background: rgba(41, 171, 226, 0.2);
+    top: -150px;
+    left: -150px;
+}
+
+.shape-2 {
+    width: 300px;
+    height: 300px;
+    background: rgba(144, 238, 144, 0.15);
+    bottom: -100px;
+    right: -100px;
 }

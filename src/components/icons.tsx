@@ -13,9 +13,26 @@ export function TrendifyLogo({ className, ...props }: React.SVGProps<SVGSVGEleme
       className={cn("size-6", className)}
       {...props}
     >
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="8 12 12 8 16 12" />
-        <line x1="12" y1="16" x2="12" y2="8" />
+      <path d="M2.5 14.5A2.5 2.5 0 0 1 5 12h14a2.5 2.5 0 0 1 2.5 2.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z" />
+      <path d="M6.5 12V4a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v8" />
+    </svg>
+  );
+}
+
+export function ViralBoostLogo({ className, ...props }: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-6", className)}
+      {...props}
+    >
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
     </svg>
   );
 }

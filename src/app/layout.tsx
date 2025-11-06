@@ -2,23 +2,26 @@ import type { Metadata } from 'next';
 import { Toaster } from '@/components/ui/toaster';
 import { FirebaseClientProvider } from '@/firebase';
 import './globals.css';
-import { Inter, EB_Garamond } from 'next/font/google';
+import { Inter, Poppins } from 'next/font/google';
 import Script from 'next/script';
 
 const inter = Inter({
   subsets: ['latin'],
+  display: 'swap',
   variable: '--font-inter',
 });
 
-const garamond = EB_Garamond({
+const poppins = Poppins({
   subsets: ['latin'],
-  variable: '--font-garamond',
+  display: 'swap',
+  variable: '--font-poppins',
+  weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900']
 });
 
 
 export const metadata: Metadata = {
-  title: 'Trendify',
-  description: 'Transforme conteúdo em tendência.',
+  title: 'ViralBoost AI',
+  description: 'Sua plataforma de IA para viralizar nas redes sociais.',
 };
 
 export default function RootLayout({
@@ -27,10 +30,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${garamond.variable} scroll-mt-24 scroll-smooth`}>
-      <head />
-      <body className="font-body antialiased">
-        <Script id="metamask-error-suppression" strategy="beforeInteractive">
+    <html lang="pt-BR" className={`${inter.variable} ${poppins.variable} scroll-mt-24 scroll-smooth`}>
+      <head>
+          <Script id="metamask-error-suppression" strategy="beforeInteractive">
           {`
             window.addEventListener('error', (event) => {
               if (event.message.includes('MetaMask') || (event.error && event.error.message && event.error.message.includes('MetaMask'))) {
@@ -40,6 +42,8 @@ export default function RootLayout({
             });
           `}
         </Script>
+      </head>
+      <body className="font-body antialiased bg-background text-foreground">
         <FirebaseClientProvider>
           {children}
           <Toaster />
