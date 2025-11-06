@@ -20,7 +20,10 @@ import {
   LayoutGrid,
   LineChart,
   Check,
-  Rocket
+  Rocket,
+  Goal,
+  Calendar,
+  Repeat
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +39,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianG
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
-import type { TiktokAccount, TiktokVideo, SavedVideoIdea } from '@/lib/types';
+import type { TiktokAccount, TiktokVideo, SavedVideoIdea, Goal as GoalType } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -95,6 +98,15 @@ export default function DashboardPage() {
     }, [firestore, user, tiktokAccount]);
 
     const { data: allVideos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
+    
+    // Query for user goals
+    const goalsQuery = useMemoFirebase(() => {
+        if (!user || !firestore) return null;
+        return query(collection(firestore, 'users', user.uid, 'goals'), limit(1));
+    }, [user, firestore]);
+
+    const { data: goals, isLoading: isLoadingGoals } = useCollection<GoalType>(goalsQuery);
+    const goal = useMemo(() => goals?.[0], [goals]);
 
     const filteredVideos = useMemo(() => {
         if (!allVideos) return [];
@@ -390,6 +402,41 @@ export default function DashboardPage() {
                 </Card>
                 ) : (
                 <Accordion type="single" collapsible className="w-full space-y-6" defaultValue='item-1'>
+                     <AccordionItem value="item-0" className="border rounded-lg bg-card overflow-hidden">
+                        <AccordionTrigger className="p-6 text-left hover:no-underline data-[state=open]:border-b">
+                            <div className="flex-1 space-y-1.5">
+                                <CardTitle className="font-bold">Suas Metas Atuais</CardTitle>
+                                <CardDescription>Seus objetivos principais definidos no onboarding.</CardDescription>
+                            </div>
+                        </AccordionTrigger>
+                        <AccordionContent className="px-6 pb-6">
+                           {isLoadingGoals ? (
+                               <div className='pt-4'><Loader2 className="animate-spin text-muted-foreground"/></div>
+                           ) : goal ? (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
+                                <div className="p-4 bg-muted/50 rounded-lg">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><Goal className="size-4"/>Nicho</div>
+                                    <p className="font-bold text-lg">{goal.niche}</p>
+                                </div>
+                                <div className="p-4 bg-muted/50 rounded-lg">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><TrendingUp className="size-4"/>Meta de Seguidores</div>
+                                    <p className="font-bold text-lg">{goal.followerGoal.toLocaleString('pt-BR')}</p>
+                                </div>
+                                <div className="p-4 bg-muted/50 rounded-lg">
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><Repeat className="size-4"/>Frequência</div>
+                                    <p className="font-bold text-lg">{goal.postingFrequency}</p>
+                                </div>
+                            </div>
+                           ) : (
+                            <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
+                                <Goal className="mx-auto h-8 w-8" />
+                                <h3 className="mt-2 font-semibold">Nenhuma meta definida</h3>
+                                <p className="text-sm">Vá para o onboarding para definir suas metas.</p>
+                            </div>
+                           )}
+                        </AccordionContent>
+                    </AccordionItem>
+
                     <AccordionItem value="item-1" className="border rounded-lg bg-card overflow-hidden">
                         <AccordionTrigger className="p-6 text-left hover:no-underline data-[state=open]:border-b">
                             <div className="flex-1 space-y-1.5">
@@ -537,5 +584,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

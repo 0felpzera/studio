@@ -56,6 +56,14 @@ export interface ContentTask {
   status: 'pending' | 'active';
 }
 
+export interface Goal {
+    id: string;
+    userId: string;
+    niche: string;
+    followerGoal: number;
+    postingFrequency: string;
+}
+
 export const GenerateGrowthPlanInputSchema = z.object({
   niche: z.string().describe("The creator's primary niche (e.g., 'Fashion', 'Fitness')."),
   country: z.string().describe("The creator's primary country of operation (e.g., 'Brazil')."),

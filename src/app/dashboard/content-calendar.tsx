@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -50,6 +50,7 @@ import {
   where,
   getDocs,
   deleteDoc,
+  limit,
 } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
@@ -64,7 +65,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { ContentTask } from '@/lib/types';
+import type { ContentTask, Goal } from '@/lib/types';
 
 
 const formSchema = z.object({
@@ -106,9 +107,15 @@ export default function ContentCalendar() {
     if (!firestore || !user) return null;
     return query(collection(firestore, 'users', user.uid, 'contentTasks'));
   }, [firestore, user]);
+  
+  const goalsQuery = useMemoFirebase(() => {
+    if (!firestore || !user) return null;
+    return query(collection(firestore, 'users', user.uid, 'goals'), limit(1));
+  }, [firestore, user]);
 
-  const { data: calendar, isLoading: isLoadingTasks } =
-    useCollection<ContentTask>(contentTasksQuery);
+  const { data: calendar, isLoading: isLoadingTasks } = useCollection<ContentTask>(contentTasksQuery);
+  const { data: goals, isLoading: isLoadingGoals } = useCollection<Goal>(goalsQuery);
+  const goal = useMemo(() => goals?.[0], [goals]);
 
   const activeTasks = useMemo(() => calendar?.filter(t => t.status !== 'pending') || [], [calendar]);
   const pendingTasksFromDB = useMemo(() => calendar?.filter(t => t.status === 'pending') || [], [calendar]);
@@ -116,11 +123,21 @@ export default function ContentCalendar() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      niche: 'Moda Sustentável',
-      goals: 'Alcançar 10.000 seguidores e aumentar o engajamento em 5%',
-      postingFrequency: '3-5 times per week',
+      niche: '',
+      goals: '',
+      postingFrequency: '',
     },
   });
+  
+  useEffect(() => {
+    if (goal) {
+        form.reset({
+            niche: goal.niche || '',
+            postingFrequency: goal.postingFrequency || '',
+            goals: goal.followerGoal ? `Alcançar ${goal.followerGoal.toLocaleString('pt-BR')} seguidores` : ''
+        });
+    }
+  }, [goal, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !firestore) {
@@ -263,6 +280,13 @@ export default function ContentCalendar() {
               className="space-y-6"
             >
             <CardContent>
+             {(isLoadingGoals || isUserLoading) ? (
+                 <div className="space-y-4">
+                    <div className="h-10 bg-muted rounded-md animate-pulse" />
+                    <div className="h-20 bg-muted rounded-md animate-pulse" />
+                    <div className="h-10 bg-muted rounded-md animate-pulse" />
+                 </div>
+             ) : (
               <div className="space-y-6">
                  <FormField
                   control={form.control}
@@ -305,7 +329,7 @@ export default function ContentCalendar() {
                       <FormLabel>Frequência de Postagem</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        defaultValue={field.value}
+                        value={field.value}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -331,11 +355,12 @@ export default function ContentCalendar() {
                   )}
                 />
               </div>
+              )}
             </CardContent>
             <CardFooter>
                  <Button
                   type="submit"
-                  disabled={isLoading || isUserLoading}
+                  disabled={isLoading || isUserLoading || isLoadingGoals}
                   className="w-full font-bold"
                 >
                   {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className='mr-2' /> Gerar Novo Plano</> }
@@ -468,5 +493,3 @@ export default function ContentCalendar() {
     </div>
   );
 }
-
-    
