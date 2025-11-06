@@ -2,21 +2,19 @@
 'use client';
 
 import { useState, useEffect, useMemo, Suspense } from 'react';
-import { useUser, useFirestore, useAuth } from '@/firebase';
+import { useFirestore, useAuth } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Loader2, Goal, Check, Share2, UserCheck } from 'lucide-react';
+import { Loader2, Goal, Check, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { SiTiktok } from 'react-icons/si';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 function OnboardingComponent() {
-  const { user, isUserLoading: isAuthLoading } = useUser();
   const firestore = useFirestore();
   const auth = useAuth();
   const router = useRouter();
@@ -27,11 +25,31 @@ function OnboardingComponent() {
   const [niche, setNiche] = useState('');
   const [followerGoal, setFollowerGoal] = useState('');
   const [postingFrequency, setPostingFrequency] = useState('');
+  const [isAuthReady, setIsAuthReady] = useState(false);
 
   // Get sign-up data from URL, ensuring it's decoded.
   const signupName = useMemo(() => searchParams.get('name') ? decodeURIComponent(searchParams.get('name')!) : '', [searchParams]);
   const signupEmail = useMemo(() => searchParams.get('email') ? decodeURIComponent(searchParams.get('email')!) : '', [searchParams]);
   const signupPassword = useMemo(() => searchParams.get('password') ? decodeURIComponent(searchParams.get('password')!) : '', [searchParams]);
+
+
+  useEffect(() => {
+    if (auth && firestore) {
+      setIsAuthReady(true);
+    }
+  }, [auth, firestore]);
+
+  useEffect(() => {
+    // If we land on this page without signup data, something is wrong.
+    if (isAuthReady && (!signupEmail || !signupName || !signupPassword)) {
+        toast({
+            title: "Sessão Inválida",
+            description: "Por favor, inicie o processo de cadastro novamente.",
+            variant: "destructive"
+        });
+        router.push('/signup');
+    }
+  }, [isAuthReady, router, signupEmail, signupName, signupPassword, toast]);
 
 
   const handleFinishOnboarding = async () => {
@@ -101,33 +119,15 @@ function OnboardingComponent() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    // If a user is somehow already logged in, redirect them.
-    if (!isAuthLoading && user) {
-        router.push('/dashboard');
-        return;
-    }
-    // If we land on this page without signup data, something is wrong.
-    if (!isAuthLoading && !user && (!signupEmail || !signupName || !signupPassword)) {
-        toast({
-            title: "Sessão Inválida",
-            description: "Por favor, inicie o processo de cadastro novamente.",
-            variant: "destructive"
-        });
-        router.push('/signup');
-    }
-  }, [user, isAuthLoading, router, signupEmail, signupName, signupPassword, toast]);
-
-
-  // This is a special case for onboarding. We want to show loading until auth state is confirmed false.
-  if (isAuthLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-      </div>
+  
+  if (!isAuthReady) {
+      return (
+        <div className="flex h-screen w-full items-center justify-center bg-background">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        </div>
     );
   }
+
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -175,18 +175,9 @@ function OnboardingComponent() {
                     </Select>
                 </div>
             </div>
-
-            <div className="space-y-4">
-                <h3 className='font-semibold text-lg flex items-center gap-2'><Share2 className='size-5 text-primary'/> Conecte suas Contas (Opcional)</h3>
-                <p className="text-sm text-muted-foreground">Você poderá fazer isso mais tarde no seu dashboard.</p>
-                 <Button className="w-full" variant="outline" disabled={true}>
-                    <SiTiktok className="mr-2" />
-                    Conectar TikTok
-                </Button>
-            </div>
         </CardContent>
         <CardFooter>
-            <Button onClick={handleFinishOnboarding} disabled={isLoading || isAuthLoading} className="w-full font-bold text-lg">
+            <Button onClick={handleFinishOnboarding} disabled={isLoading || !isAuthReady} className="w-full font-bold text-lg">
                 {isLoading ? <Loader2 className="animate-spin" /> : <><Check className="mr-2" /> Criar Conta e ir para o Dashboard</>}
             </Button>
         </CardFooter>

@@ -377,31 +377,13 @@ export default function DashboardPage() {
         )}
       </header>
 
-       {!isLoading && !tiktokAccount && (
-        <Card className="bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800/50 dark:text-amber-200">
-          <CardHeader className="flex-row gap-4 items-center">
-            <AlertTriangle className="size-8 flex-shrink-0" />
-            <div>
-              <CardTitle className="text-amber-950 dark:text-amber-100">Conecte sua conta TikTok</CardTitle>
-              <CardDescription className="text-amber-800 dark:text-amber-300/80">Para ver seu dashboard completo, você precisa conectar sua conta do TikTok.</CardDescription>
+       {isLoading && !tiktokAccount && (
+            <div className="text-center text-muted-foreground py-10">
+              <Loader2 className="mx-auto animate-spin h-8 w-8" />
+              <p className="mt-2">Carregando seus dados...</p>
             </div>
-          </CardHeader>
-          <CardFooter>
-            <Button asChild variant="default" className="bg-amber-900 hover:bg-amber-950 text-white dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-amber-950">
-              <Link href="/dashboard/connections">Conectar Agora</Link>
-            </Button>
-          </CardFooter>
-        </Card>
        )}
 
-        {(isLoadingTiktok || isLoadingVideos) && !tiktokAccount && (
-          <div className="text-center text-muted-foreground py-10">
-              <Loader2 className="mx-auto animate-spin h-8 w-8" />
-              <p className="mt-2">Carregando seus dados do TikTok...</p>
-          </div>
-        )}
-
-      {tiktokAccount && (
       <div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <Tabs value={activeContentTab} onValueChange={setActiveContentTab} className='w-full sm:w-auto'>
@@ -410,7 +392,7 @@ export default function DashboardPage() {
                     <TabsTrigger value="videos"><LayoutGrid className='w-4 h-4 mr-2'/>Vídeos Recentes</TabsTrigger>
                 </TabsList>
             </Tabs>
-             {activeContentTab === 'overview' && (
+             {activeContentTab === 'overview' && tiktokAccount && (
                 <div className="flex items-center gap-2">
                      <Select value={String(selectedYear)} onValueChange={(val) => setSelectedYear(Number(val))}>
                         <SelectTrigger className="w-[120px]">
@@ -434,7 +416,7 @@ export default function DashboardPage() {
 
         {activeContentTab === 'overview' && (
             <div className='mt-6 space-y-6'>
-                {goal && (
+                {goal && tiktokAccount && (
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 font-bold"><Goal className="size-5 text-primary"/> Sua Meta de Seguidores</CardTitle>
@@ -456,80 +438,101 @@ export default function DashboardPage() {
                         </CardFooter>
                     </Card>
                 )}
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {businessCards.map((card, i) => {
-                        const Icon = card.icon;
-                        return (
-                        <Card key={i}>
-                            <CardContent className="p-4 flex items-center gap-4">
-                                <div className='flex-1 space-y-1'>
-                                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
-                                     {card.isLoading ? (
-                                        <div className="h-8 w-2/3 bg-muted animate-pulse rounded-md" />
-                                    ) : (
-                                        <p className="text-2xl font-bold text-foreground">{card.value}</p>
-                                    )}
-                                </div>
-                                <div className={`flex items-center justify-center rounded-full size-12 ${card.bgColor}`}>
-                                   <Icon className={`size-6 ${card.color}`} />
-                                </div>
-                            </CardContent>
-                        </Card>
-                        );
-                    })}
-                </div>
-                
-                <Card>
-                    <CardHeader>
-                        <CardTitle className='font-bold'>Visão Geral da Performance</CardTitle>
-                        <CardDescription>Visualizações, curtidas e engajamento dos seus vídeos ao longo do tempo.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="h-[350px] pl-0">
-                        <ResponsiveContainer width="100%" height="100%">
-                             <ComposedChart data={chartData}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
-                                <XAxis 
-                                    dataKey="month" 
-                                    stroke="hsl(var(--muted-foreground))"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                />
-                                <YAxis 
-                                    yAxisId="left"
-                                    stroke="hsl(var(--muted-foreground))"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(value) => formatNumber(value)}
-                                />
-                                <YAxis 
-                                    yAxisId="right"
-                                    orientation="right"
-                                    stroke="hsl(var(--muted-foreground))"
-                                    fontSize={12}
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickFormatter={(value) => `${value.toFixed(1)}%`}
-                                />
-                                <Tooltip content={<CustomTooltip />} />
-                                <defs>
-                                    <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
-                                        <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
-                                    </linearGradient>
-                                     <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4}/>
-                                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                                <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorLikes)" />
-                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
-                            </ComposedChart>
-                        </ResponsiveContainer>
-                    </CardContent>
-                </Card>
+                {tiktokAccount && (
+                    <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {businessCards.map((card, i) => {
+                            const Icon = card.icon;
+                            return (
+                            <Card key={i}>
+                                <CardContent className="p-4 flex items-center gap-4">
+                                    <div className='flex-1 space-y-1'>
+                                        <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
+                                        {card.isLoading ? (
+                                            <div className="h-8 w-2/3 bg-muted animate-pulse rounded-md" />
+                                        ) : (
+                                            <p className="text-2xl font-bold text-foreground">{card.value}</p>
+                                        )}
+                                    </div>
+                                    <div className={`flex items-center justify-center rounded-full size-12 ${card.bgColor}`}>
+                                    <Icon className={`size-6 ${card.color}`} />
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            );
+                        })}
+                    </div>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className='font-bold'>Visão Geral da Performance</CardTitle>
+                            <CardDescription>Visualizações, curtidas e engajamento dos seus vídeos ao longo do tempo.</CardDescription>
+                        </CardHeader>
+                        <CardContent className="h-[350px] pl-0">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <ComposedChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                                    <XAxis 
+                                        dataKey="month" 
+                                        stroke="hsl(var(--muted-foreground))"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <YAxis 
+                                        yAxisId="left"
+                                        stroke="hsl(var(--muted-foreground))"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(value) => formatNumber(value)}
+                                    />
+                                    <YAxis 
+                                        yAxisId="right"
+                                        orientation="right"
+                                        stroke="hsl(var(--muted-foreground))"
+                                        fontSize={12}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickFormatter={(value) => `${value.toFixed(1)}%`}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} />
+                                    <defs>
+                                        <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
+                                            <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4}/>
+                                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                                    <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorLikes)" />
+                                    <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
+                                </ComposedChart>
+                            </ResponsiveContainer>
+                        </CardContent>
+                    </Card>
+                    </>
+                )}
+
+                {!isLoading && !tiktokAccount && (
+                    <Card className="bg-amber-50 border-amber-200 text-amber-900 dark:bg-amber-950/30 dark:border-amber-800/50 dark:text-amber-200">
+                        <CardHeader className="flex-row gap-4 items-center">
+                            <AlertTriangle className="size-8 flex-shrink-0" />
+                            <div>
+                            <CardTitle className="text-amber-950 dark:text-amber-100">Conecte sua conta TikTok para começar</CardTitle>
+                            <CardDescription className="text-amber-800 dark:text-amber-300/80">Para ver seu dashboard completo com gráficos e métricas, você precisa conectar sua conta do TikTok.</CardDescription>
+                            </div>
+                        </CardHeader>
+                        <CardFooter>
+                            <Button asChild variant="default" className="bg-amber-900 hover:bg-amber-950 text-white dark:bg-amber-600 dark:hover:bg-amber-500 dark:text-amber-950">
+                                <Link href="/dashboard/connections">Conectar Agora</Link>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                )}
+
 
                 {isPlanPending ? (
                     <Card className="bg-primary/10 border-primary/20">
@@ -754,7 +757,6 @@ export default function DashboardPage() {
             </div>
         )}
       </div>
-      )}
 
     </div>
   );
