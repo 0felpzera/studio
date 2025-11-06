@@ -32,7 +32,7 @@ body {
     --chart-2: 326 90% 55%; /* Magenta Pink */
     --chart-3: 260 80% 75%; /* Soft Lilac */
     --chart-4: 247 70% 70%;
-    --chart-5: 326 90% 70%;
+    --chart-5: 142 76% 36%; /* Emerald Green */
   }
 
   .dark {
@@ -59,7 +59,7 @@ body {
     --chart-2: 326 90% 55%; /* Magenta Pink */
     --chart-3: 260 80% 75%; /* Soft Lilac */
     --chart-4: 247 70% 70%;
-    --chart-5: 326 90% 70%;
+    --chart-5: 142 76% 42%; /* Emerald Green */
   }
 }
 
