@@ -262,7 +262,16 @@ export default function LandingPage() {
         title: "Calculadora",
         description: "Simule seu crescimento e veja o potencial do seu perfil.",
         content: (
-            <GrowthCalculator />
+            <motion.div
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.2 }}
+            >
+              <motion.div variants={cardVariants}>
+                <GrowthCalculator />
+              </motion.div>
+            </motion.div>
         )
     },
     {
