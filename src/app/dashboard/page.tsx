@@ -666,7 +666,7 @@ export default function DashboardPage() {
                              const videoDate = video.create_time ? new Date(video.create_time * 1000).toLocaleDateString('pt-BR') : 'Data Indisponível';
                              return (
                             <a key={video.id} href={video.share_url} target="_blank" rel="noopener noreferrer" className="block group">
-                                <Card className="overflow-hidden h-full">
+                                <Card className="overflow-hidden h-full flex flex-col">
                                     <div className="relative aspect-[9/16]">
                                         <Image 
                                             src={video.cover_image_url || '/placeholder.png'} 
@@ -688,7 +688,7 @@ export default function DashboardPage() {
                                             <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                         </div>
                                     </div>
-                                    <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
+                                    <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t mt-auto">
                                         <UITooltip>
                                             <TooltipTrigger className="flex items-center gap-1"><Heart className="size-3.5" /> {formatNumber(video.like_count)}</TooltipTrigger>
                                             <TooltipContent>{(video.like_count || 0).toLocaleString('pt-BR')} Curtidas</TooltipContent>
