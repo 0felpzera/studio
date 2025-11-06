@@ -16,6 +16,7 @@ import {
   Heart,
   MessageCircle,
   Share,
+  Percent,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -105,6 +106,21 @@ export default function DashboardPage() {
       return filteredVideos.reduce((sum, video) => sum + (video.like_count || 0), 0);
     }, [filteredVideos]);
 
+    const totalComments = useMemo(() => {
+      return filteredVideos.reduce((sum, video) => sum + (video.comment_count || 0), 0);
+    }, [filteredVideos]);
+
+    const totalShares = useMemo(() => {
+      return filteredVideos.reduce((sum, video) => sum + (video.share_count || 0), 0);
+    }, [filteredVideos]);
+
+    const engagementRate = useMemo(() => {
+        if (totalViews === 0) return 0;
+        const totalEngagements = totalLikes + totalComments + totalShares;
+        return (totalEngagements / totalViews) * 100;
+    }, [totalLikes, totalComments, totalShares, totalViews]);
+
+
     // Follower count is a total, so it doesn't change with time range filter.
     const followerCount = tiktokAccount?.followerCount;
 
@@ -170,6 +186,16 @@ export default function DashboardPage() {
             color: getTrendColor(viewsData),
             gradientId: 'viewsGradient',
         },
+        {
+            title: 'Taxa de Engajamento',
+            value: `${engagementRate.toFixed(2).replace('.', ',')}%`,
+            description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Engajamento total',
+            isLoading: isLoadingTiktok || isLoadingVideos,
+            icon: Percent,
+            data: viewsData.length > 0 ? viewsData : [{value: 0}], // Mock data, can be improved
+            color: 'hsl(var(--chart-4))',
+            gradientId: 'engagementGradient',
+        }
     ];
 
     const { data: upcomingPosts, isLoading: isLoadingTasks } = useCollection<ContentTask>(upcomingTasksQuery);
@@ -195,14 +221,14 @@ export default function DashboardPage() {
 
 
       <div className="w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {businessCards.map((card, i) => {
             const Icon = card.icon;
             return (
               <Card key={i}>
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-base font-semibold">{card.title}</CardTitle>
+                    <CardTitle className="text-sm font-semibold">{card.title}</CardTitle>
                     <Icon className="size-5" style={{ color: card.color }} />
                   </div>
                 </CardHeader>
@@ -214,7 +240,7 @@ export default function DashboardPage() {
                         ) : (
                             <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
                         )}
-                      <div className="text-sm text-muted-foreground whitespace-nowrap">{card.description}</div>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">{card.description}</div>
                     </div>
 
                     <div className="max-w-40 h-16 w-full relative">
@@ -237,7 +263,7 @@ export default function DashboardPage() {
                                 const value = payload[0].value as number;
                                 return (
                                   <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-2 pointer-events-none">
-                                    <p className="text-sm font-semibold text-foreground">{formatNumber(value)}</p>
+                                    <p className="text-sm font-semibold text-foreground">{card.title === 'Taxa de Engajamento' ? `${value.toFixed(2)}%` : formatNumber(value)}</p>
                                   </div>
                                 );
                               }
@@ -418,5 +444,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
