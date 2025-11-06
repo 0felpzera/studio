@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,6 +13,10 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
+import { collection, query, limit } from 'firebase/firestore';
+import type { TiktokAccount } from "@/lib/types";
+
 
 const formSchema = z.object({
   followerCount: z.coerce.number().min(1, "O número de seguidores é obrigatório."),
@@ -27,11 +31,21 @@ export default function MonetizationAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<GenerateMediaKitOutput | null>(null);
   const { toast } = useToast();
+  const { user } = useUser();
+  const firestore = useFirestore();
+
+  const tiktokAccountsQuery = useMemoFirebase(() => {
+    if (!user || !firestore) return null;
+    return query(collection(firestore, 'users', user.uid, 'tiktokAccounts'), limit(1));
+  }, [user, firestore]);
+
+  const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
+  const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      followerCount: 25000,
+      followerCount: 0,
       engagementRate: 0.05,
       niche: "Beleza e Skincare",
       averageViews: 50000,
@@ -39,6 +53,13 @@ export default function MonetizationAssistant() {
       topPosts: "https://tiktok.com/post1, https://instagram.com/post2",
     },
   });
+
+  useEffect(() => {
+    if (tiktokAccount) {
+      form.setValue('followerCount', tiktokAccount.followerCount);
+    }
+  }, [tiktokAccount, form]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
@@ -80,7 +101,9 @@ export default function MonetizationAssistant() {
                 <FormField control={form.control} name="followerCount" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Número de Seguidores</FormLabel>
-                    <FormControl><Input type="number" {...field} /></FormControl>
+                    <FormControl><Input type="number" {...field} disabled={!!tiktokAccount || isLoadingTiktok} /></FormControl>
+                    {isLoadingTiktok && <p className="text-xs text-muted-foreground">Buscando dados do TikTok...</p>}
+                    {tiktokAccount && <p className="text-xs text-muted-foreground">Preenchido com dados do TikTok.</p>}
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -172,7 +195,7 @@ export default function MonetizationAssistant() {
                   <CardDescription>Copie este conteúdo para o seu mídia kit profissional.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground whitespace-pre-wrap font-sans bg-muted/50 p-4 rounded-md">
+                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md">
                      {result.mediaKitContent}
                    </div>
                 </CardContent>
