@@ -27,6 +27,17 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -118,8 +129,7 @@ export default function VideoIdeasGenerator() {
     }
   };
 
-  const handleDeleteIdea = async (e: React.MouseEvent, ideaId: string) => {
-    e.stopPropagation(); // Prevent dialog from opening
+  const handleDeleteIdea = async (ideaId: string) => {
     if (!user || !firestore) return;
     setIsDeleting(ideaId);
     try {
@@ -154,9 +164,12 @@ export default function VideoIdeasGenerator() {
                 </div>
                 <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="sm">
+                    <Button variant="secondary" size="sm">
                       <Bookmark className="mr-2 h-4 w-4" />
                       Salvos
+                      {savedIdeas && savedIdeas.length > 0 && (
+                          <Badge variant="primary" className="ml-2">{savedIdeas.length}</Badge>
+                      )}
                     </Button>
                   </SheetTrigger>
                   <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
@@ -181,25 +194,54 @@ export default function VideoIdeasGenerator() {
                       {!isLoadingSaved && savedIdeas && savedIdeas.length > 0 ? (
                         <div className="space-y-4 mt-4">
                           {savedIdeas.map((idea) => (
-                            <DialogTrigger key={idea.id} asChild>
-                              <div className="p-4 rounded-lg border bg-muted/50 group hover:bg-muted/80 cursor-pointer transition-colors">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <h4 className="font-semibold text-foreground">{idea.title}</h4>
-                                    <p className="text-sm text-muted-foreground line-clamp-1">{idea.description}</p>
+                            <div key={idea.id} className="p-4 rounded-lg border bg-muted/50 group hover:bg-muted/80 transition-colors relative">
+                                <DialogTrigger asChild>
+                                  <div className="cursor-pointer">
+                                      <h4 className="font-semibold text-foreground">{idea.title}</h4>
+                                      <p className="text-sm text-muted-foreground line-clamp-1">{idea.description}</p>
                                   </div>
-                                   <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="size-7 opacity-0 group-hover:opacity-100"
-                                      onClick={(e) => handleDeleteIdea(e, idea.id)}
-                                      disabled={isDeleting === idea.id}
-                                    >
-                                      {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : <Trash2 className="size-4 text-destructive" />}
-                                    </Button>
-                                </div>
-                              </div>
-                            </DialogTrigger>
+                                </DialogTrigger>
+                               <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="absolute top-2 right-2 size-7 opacity-0 group-hover:opacity-100"
+                                      >
+                                        <Trash2 className="size-4 text-destructive" />
+                                      </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Você tem certeza absoluta?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Esta ação não pode ser desfeita. Isso excluirá permanentemente esta ideia salva.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDeleteIdea(idea.id)} disabled={isDeleting === idea.id}>
+                                         {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : "Continuar"}
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
+                                <DialogContent>
+                                    <DialogHeader>
+                                    <DialogTitle className="flex items-center gap-2">
+                                        <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
+                                            {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
+                                        </Badge>
+                                        {idea.title}
+                                    </DialogTitle>
+                                    <DialogDescription>{idea.description}</DialogDescription>
+                                    </DialogHeader>
+                                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
+                                        <h4 className="font-semibold">Esboço do Roteiro:</h4>
+                                        <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
+                                    </div>
+                                </DialogContent>
+                            </div>
                           ))}
                         </div>
                       ) : (
@@ -210,23 +252,6 @@ export default function VideoIdeasGenerator() {
                         </div>
                       )}
                     </div>
-                     {savedIdeas?.map(idea => (
-                        <DialogContent key={idea.id}>
-                            <DialogHeader>
-                            <DialogTitle className="flex items-center gap-2">
-                                <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
-                                    {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
-                                </Badge>
-                                {idea.title}
-                            </DialogTitle>
-                            <DialogDescription>{idea.description}</DialogDescription>
-                            </DialogHeader>
-                            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
-                                <h4 className="font-semibold">Esboço do Roteiro:</h4>
-                                <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
-                            </div>
-                        </DialogContent>
-                        ))}
                     </Dialog>
                   </SheetContent>
                 </Sheet>
