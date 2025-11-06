@@ -4,15 +4,14 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+import { GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Loader2 } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -30,113 +29,33 @@ export default function SignUpPage() {
     const firestore = useFirestore();
     const { user, isUserLoading } = useUser();
     const router = useRouter();
-    const { toast } = useToast();
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    // Start with loading true to handle the redirect check
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
     // Effect to handle redirection for already logged-in users
     useEffect(() => {
         if (!isUserLoading && user) {
-            router.push('/onboarding');
-        }
-    }, [user, isUserLoading, router]);
-
-    // Centralized effect to handle Google Redirect result
-    useEffect(() => {
-        // Don't run if auth is not ready, or if a user is already signed in.
-        if (!auth || user) {
-            setIsLoading(false); // Stop loading if we already have a user
-            return;
-        }
-
-        getRedirectResult(auth)
-            .then(async (result) => {
-                if (result) {
-                    // This means a user has successfully signed in via Google redirect.
-                    const user = result.user;
-                    const userDocRef = doc(firestore, 'users', user.uid);
-                    const userDoc = await getDoc(userDocRef);
-
-                    // Create user doc only if it's their first time
-                    if (!userDoc.exists()) {
-                        await setDoc(userDocRef, {
-                            id: user.uid,
-                            email: user.email,
-                            name: user.displayName,
-                        });
-                        toast({ title: "Cadastro bem-sucedido!", description: "Vamos configurar seu perfil." });
-                    }
-                    // The main useEffect will now handle the redirect to onboarding.
-                    // The isLoading state remains true until that happens.
+            const checkUserDoc = async () => {
+                const userDocRef = doc(firestore, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    router.push('/dashboard');
                 } else {
-                    // No redirect result, which is the normal case on first load.
-                    // We can now show the form.
-                    setIsLoading(false);
+                    router.push('/onboarding');
                 }
-            })
-            .catch((error) => {
-                console.error("Redirect result error:", error);
-                toast({
-                    title: "Erro no Cadastro",
-                    description: "Não foi possível criar sua conta com o Google.",
-                    variant: 'destructive'
-                });
-                setIsLoading(false);
-            });
-    }, [auth, firestore, router, toast, user]);
-
-
-    const handleSocialSignUp = async (providerName: 'google') => {
-        setIsLoading(true);
-        try {
-            let provider;
-            if (providerName === 'google') {
-                provider = new GoogleAuthProvider();
-            } else {
-                throw new Error('Provedor de cadastro desconhecido');
-            }
-            await signInWithRedirect(auth, provider);
-            // The result is now handled by the central useEffect.
-        } catch (error: any) {
-            toast({
-                title: "Erro no Cadastro",
-                description: "Não foi possível iniciar o cadastro. Tente novamente.",
-                variant: 'destructive'
-            });
-            setIsLoading(false);
+            };
+            checkUserDoc();
         }
-    }
+    }, [user, isUserLoading, router, firestore]);
 
-    const handleSignUp = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSocialSignUp = async () => {
+        if (!auth) return;
         setIsLoading(true);
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            const newUser = userCredential.user;
-
-            await updateProfile(newUser, { displayName: name });
-            
-            const userDocRef = doc(firestore, 'users', newUser.uid);
-            await setDoc(userDocRef, {
-                id: newUser.uid,
-                email: newUser.email,
-                name: name,
-            });
-            // On success, the main useEffect will redirect to onboarding
-        } catch (error: any) {
-             toast({
-                title: "Erro no Cadastro",
-                description: error.message || "Não foi possível criar sua conta.",
-                variant: 'destructive'
-            });
-            setIsLoading(false);
-        }
+        const provider = new GoogleAuthProvider();
+        // Just initiate the redirect. The login page will handle the result.
+        await signInWithRedirect(auth, provider);
     };
-    
+
     if (isUserLoading || isLoading) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
@@ -144,7 +63,7 @@ export default function SignUpPage() {
             </div>
         );
     }
-
+    
     return (
        <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
             <div className="flex items-center justify-center py-12">
@@ -158,36 +77,11 @@ export default function SignUpPage() {
                             Comece a transformar sua estratégia de conteúdo hoje mesmo.
                         </p>
                     </div>
-                    <form onSubmit={handleSignUp} className="grid gap-4">
-                        <div className="grid gap-2">
-                            <Label htmlFor="name">Nome</Label>
-                            <Input id="name" placeholder="Seu nome" required value={name} onChange={(e) => setName(e.target.value)} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="email">E-mail</Label>
-                            <Input id="email" type="email" placeholder="criador@exemplo.com" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                        </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="password">Senha</Label>
-                            <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                        </div>
-                        <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                             {isLoading ? <Loader2 className="animate-spin" /> : 'Cadastrar'}
-                        </Button>
-                    </form>
-                     <div className="relative my-2">
-                        <div className="absolute inset-0 flex items-center">
-                            <span className="w-full border-t" />
-                        </div>
-                        <div className="relative flex justify-center text-xs uppercase">
-                            <span className="bg-background px-2 text-muted-foreground">Ou cadastre-se com</span>
-                        </div>
-                    </div>
-                     <div className="grid grid-cols-1 gap-4">
-                        <Button variant="outline" className="w-full" onClick={() => handleSocialSignUp('google')} disabled={isLoading}>
-                            {isLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon className="mr-2 h-6 w-6" /> Google</>}
-                        </Button>
-                    </div>
+                    
+                    <Button variant="outline" className="w-full" onClick={handleSocialSignUp} disabled={isLoading}>
+                        {isLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon className="mr-2 h-6 w-6" /> Cadastre-se com o Google</>}
+                    </Button>
+
                     <div className="mt-4 text-center text-sm">
                         Já tem uma conta?{" "}
                         <Link href="/login" className="underline">
@@ -217,5 +111,3 @@ export default function SignUpPage() {
         </div>
     );
 }
-
-    
