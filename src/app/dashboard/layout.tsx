@@ -16,7 +16,7 @@ import {
     Star,
     Share2,
 } from 'lucide-react';
-import { TrendifyLogo } from '@/components/icons';
+import { ViralBoostLogo } from '@/components/icons';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -40,12 +40,12 @@ const Sidebar = () => {
         <aside className="glass-effect w-64 flex-shrink-0 flex-col z-10 hidden md:flex">
             <div className="h-20 flex items-center justify-center border-b border-white/10">
                 <Link href="/dashboard" className="flex items-center gap-2">
-                    <TrendifyLogo className="w-8 h-8 text-primary" />
+                    <ViralBoostLogo className="w-8 h-8 text-primary" />
                     <span className="text-xl font-bold text-white font-headline">ViralBoost</span>
                 </Link>
             </div>
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                <p className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Menu</p>
+                <p className="px-4 py-2 text-xs font-semibold text-gray-300 tracking-wider">Menu</p>
                 {[...navItems].map(item => (
                     <Link
                         key={item.name}
@@ -58,7 +58,7 @@ const Sidebar = () => {
                         <span>{item.name}</span>
                     </Link>
                 ))}
-                <p className="px-4 pt-4 pb-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">Ferramentas de IA</p>
+                <p className="px-4 pt-4 pb-2 text-xs font-semibold text-gray-300 tracking-wider">Ferramentas de IA</p>
                  {resourcesItems.map(item => (
                     <Link
                         key={item.name}
