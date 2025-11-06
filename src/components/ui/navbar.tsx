@@ -4,7 +4,6 @@ import { Equal, X, Home, Star, Calculator, MessageSquareQuote } from 'lucide-rea
 import { Button } from '@/components/ui/liquid-glass-button'
 import React from 'react'
 import { cn } from '@/lib/utils'
-import { TrendifyLogo } from '../icons'
 import { useRouter } from 'next/navigation'
 
 const menuItems = [
@@ -31,14 +30,13 @@ export const Header = () => {
             <nav
                 data-state={menuState && 'active'}
                 className="fixed left-0 w-full z-50 px-2">
-                <div className={cn('mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12', isScrolled && 'bg-background/50 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5')}>
+                <div className={cn('mx-auto mt-2 max-w-6xl px-6 transition-all duration-300 lg:px-12', isScrolled && 'bg-background/80 max-w-4xl rounded-2xl border backdrop-blur-lg lg:px-5')}>
                     <div className="relative flex flex-wrap items-center justify-between gap-6 lg:gap-0 py-2">
                         <div className="flex w-full justify-between lg:w-auto">
                             <Link
                                 href="/"
                                 aria-label="home"
                                 className="flex gap-2 items-center">
-                                <TrendifyLogo className="size-6 text-primary" />
                              <p className='font-bold text-xl tracking-tighter'>Trendify</p>
                             </Link>
 
