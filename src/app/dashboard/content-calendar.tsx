@@ -149,6 +149,19 @@ export default function ContentCalendar() {
     setPendingPlan(null);
 
     try {
+      // Send data to webhook
+      const webhookUrl = 'https://n8n.srv1061126.hstgr.cloud/webhook-test/254b320b-9320-42a1-81b9-384c5909899e';
+      fetch(webhookUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(values),
+      }).catch(error => {
+        console.error('Webhook error:', error);
+        // We don't block the user flow if the webhook fails.
+      });
+      
       // Clear any previous pending tasks from DB before generating a new plan
       const pendingQuery = query(collection(firestore, 'users', user.uid, 'contentTasks'), where('status', '==', 'pending'));
       const pendingDocs = await getDocs(pendingQuery);
