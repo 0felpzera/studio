@@ -197,6 +197,8 @@ export default function DashboardPage() {
             description: 'Número total de seguidores',
             isLoading: isLoadingTiktok,
             icon: UserPlus,
+            color: 'text-sky-500',
+            bgColor: 'bg-sky-500/10'
         },
         {
             title: 'Curtidas',
@@ -204,6 +206,8 @@ export default function DashboardPage() {
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de curtidas',
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Heart,
+            color: 'text-rose-500',
+            bgColor: 'bg-rose-500/10'
         },
         {
             title: 'Visualizações',
@@ -211,6 +215,8 @@ export default function DashboardPage() {
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de visualizações',
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Film,
+            color: 'text-violet-500',
+            bgColor: 'bg-violet-500/10'
         },
         {
             title: 'Taxa de Engajamento',
@@ -218,6 +224,8 @@ export default function DashboardPage() {
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Engajamento total',
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Percent,
+            color: 'text-emerald-500',
+            bgColor: 'bg-emerald-500/10'
         }
     ];
 
@@ -261,8 +269,8 @@ export default function DashboardPage() {
 
       {tiktokAccount && (
       <div>
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <Tabs value={activeContentTab} onValueChange={setActiveContentTab}>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <Tabs value={activeContentTab} onValueChange={setActiveContentTab} className='w-full sm:w-auto'>
                 <TabsList>
                     <TabsTrigger value="overview"><LineChart className='w-4 h-4 mr-2'/>Visão Geral</TabsTrigger>
                     <TabsTrigger value="videos"><LayoutGrid className='w-4 h-4 mr-2'/>Vídeos Recentes</TabsTrigger>
@@ -280,22 +288,23 @@ export default function DashboardPage() {
 
         {activeContentTab === 'overview' && (
             <div className='mt-6 space-y-6'>
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {businessCards.map((card, i) => {
                         const Icon = card.icon;
                         return (
                         <Card key={i}>
-                            <CardHeader className="flex flex-row items-center justify-between pb-2">
-                               <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-                               <Icon className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                 {card.isLoading ? (
+                            <CardContent className="p-4 flex items-center gap-4">
+                                <div className='flex-1 space-y-1'>
+                                    <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
+                                     {card.isLoading ? (
                                         <div className="h-8 w-2/3 bg-muted animate-pulse rounded-md" />
                                     ) : (
-                                        <div className="text-2xl font-bold text-foreground">{card.value}</div>
+                                        <p className="text-2xl font-bold text-foreground">{card.value}</p>
                                     )}
-                                <p className="text-xs text-muted-foreground">{card.description}</p>
+                                </div>
+                                <div className={`flex items-center justify-center rounded-full size-12 ${card.bgColor}`}>
+                                   <Icon className={`size-6 ${card.color}`} />
+                                </div>
                             </CardContent>
                         </Card>
                         );
@@ -481,5 +490,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
