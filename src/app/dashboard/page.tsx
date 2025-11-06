@@ -38,7 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc } from 'firebase/firestore';
-import type { ContentTask } from '@/app/dashboard/content-calendar';
+import type { ContentTask } from '@/lib/types';
 import type { TiktokAccount, TiktokVideo, SavedVideoIdea, Goal as GoalType } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import Image from 'next/image';
@@ -118,44 +118,48 @@ export default function DashboardPage() {
     }, [allVideos, timeRange]);
     
     const chartData = useMemo(() => {
-      if (!filteredVideos) return [];
+      if (!filteredVideos || !tiktokAccount) return [];
 
       const sortedVideos = [...filteredVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
-      const followerCount = tiktokAccount?.followerCount || 0;
+      const followerCount = tiktokAccount.followerCount || 0;
 
-      if (sortedVideos.length === 0) {
-        return [{ month: 'Início', Seguidores: followerCount, Visualizações: 0, Curtidas: 0 }];
+      // Handle case for new users with no video data
+      if (sortedVideos.length < 2) {
+          const firstMonth = sortedVideos.length > 0 ? new Date((sortedVideos[0].create_time || 0) * 1000).toLocaleString('pt-BR', { month: 'short' }) : 'Início';
+          const lastFollowerCount = followerCount; // just use the current count
+          return [
+              { month: 'Começo', Seguidores: Math.max(0, lastFollowerCount - 10), Visualizações: 0, Curtidas: 0 },
+              { month: firstMonth, Seguidores: lastFollowerCount, Visualizações: sortedVideos[0]?.view_count || 0, Curtidas: sortedVideos[0]?.like_count || 0 }
+          ];
       }
 
-      const dataByMonth: { [key: string]: { views: number; likes: number; count: number } } = {};
+      const dataByMonth: { [key: string]: { views: number; likes: number; videos: number } } = {};
+      let cumulativeFollowers = followerCount - (filteredVideos.length * 10); // Simplified simulation base
+
       sortedVideos.forEach(video => {
-        const date = new Date((video.create_time || 0) * 1000);
-        const month = date.toLocaleString('pt-BR', { month: 'short' });
-        
-        if (!dataByMonth[month]) {
-            dataByMonth[month] = { views: 0, likes: 0, count: 0 };
-        }
-        dataByMonth[month].views += video.view_count || 0;
-        dataByMonth[month].likes += video.like_count || 0;
-        dataByMonth[month].count += 1;
+          const date = new Date((video.create_time || 0) * 1000);
+          const month = date.toLocaleString('pt-BR', { month: 'short' });
+          
+          if (!dataByMonth[month]) {
+              dataByMonth[month] = { views: 0, likes: 0, videos: 0 };
+          }
+          dataByMonth[month].views += video.view_count || 0;
+          dataByMonth[month].likes += video.like_count || 0;
+          dataByMonth[month].videos += 1;
       });
 
       const months = Object.keys(dataByMonth);
+      let runningFollowers = Math.max(0, followerCount - (months.length * (followerCount * 0.05))); // Start from a lower base
 
-      if (months.length === 1) {
-        const month = months[0];
-        return [
-          { month: 'Início', Seguidores: Math.max(0, followerCount - (dataByMonth[month].likes / 10)), Visualizações: 0, Curtidas: 0 },
-          { month, Seguidores: followerCount, Visualizações: dataByMonth[month].views, Curtidas: dataByMonth[month].likes }
-        ];
-      }
-      
-      return months.map((month, index) => ({
-        month,
-        Seguidores: Math.round(followerCount - (months.length - 1 - index) * (followerCount * 0.05)), // Simulate 5% growth steps
-        Visualizações: dataByMonth[month].views,
-        Curtidas: dataByMonth[month].likes,
-      }));
+      return months.map((month) => {
+        runningFollowers += (followerCount * 0.05); // Simulate steady growth
+        return {
+          month,
+          Seguidores: Math.round(runningFollowers),
+          Visualizações: dataByMonth[month].views,
+          Curtidas: dataByMonth[month].likes,
+        }
+      });
 
     }, [filteredVideos, tiktokAccount]);
 
@@ -584,3 +588,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
