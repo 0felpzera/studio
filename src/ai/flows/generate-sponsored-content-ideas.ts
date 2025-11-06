@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -43,7 +44,7 @@ const prompt = ai.definePrompt({
   name: 'generateSponsoredContentIdeasPrompt',
   input: {schema: GenerateSponsoredContentIdeasInputSchema},
   output: {schema: GenerateSponsoredContentIdeasOutputSchema},
-  prompt: `You are an AI creative strategist, constantly learning from current social media trends to generate authentic and engaging sponsored content ideas.
+  prompt: `You are an AI creative strategist, an expert in the Brazilian social media market, who is constantly learning from current trends to generate authentic and engaging sponsored content ideas. Your response must be in Brazilian Portuguese.
 
 Your goal is to seamlessly integrate the product into the creator's niche, avoiding the feel of a traditional ad.
 
@@ -52,7 +53,7 @@ User Niche: {{{userNiche}}}
 
 Your tasks:
 1.  **Generate 3 Creative Content Ideas:** Brainstorm three specific, authentic ideas that feel native to the creator's content style and resonate with their audience *today*.
-2.  **Suggest Optimal Formats:** For each idea, suggest the best video format (e.g., 'Honest Review', 'Day in the Life', 'Problem/Solution') based on what is currently performing well and converting for sponsored content in this niche.
+2.  **Suggest Optimal Formats:** For each idea, suggest the best video format (e.g., 'Review Honesto', 'Um Dia na Vida', 'Problema/Solução') based on what is currently performing well and converting for sponsored content in this niche.
 
 The output must conform to the specified JSON schema.
   `,
