@@ -100,7 +100,7 @@ export function NavBar({ items, className }: NavBarProps) {
                 <Skeleton className="h-9 w-24" />
             </div>
         ) : user ? (
-           <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard')} className="whitespace-nowrap bg-card shadow-lg rounded-full p-2 h-auto border border-border">
+           <Button variant="ghost" onClick={() => router.push('/dashboard')} className="whitespace-nowrap bg-card shadow-lg rounded-full py-2 px-4 h-auto border border-border">
                 <ArrowLeft className="size-4 mr-2" />
                 Voltar ao App
             </Button>
