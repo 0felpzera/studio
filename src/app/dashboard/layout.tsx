@@ -138,7 +138,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
                 <div className="flex flex-1 flex-col">
                     {/* Mobile Header */}
-                    <header className="md:hidden sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
+                    <header className="md:hidden sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
                         <Link href="/dashboard" className="flex items-center gap-2">
                             <TrendifyLogo className="size-7 text-primary" />
                             <span className="text-lg font-bold font-headline">Trendify</span>

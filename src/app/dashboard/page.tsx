@@ -259,15 +259,15 @@ export default function DashboardPage() {
         )}
 
       {tiktokAccount && (
-      <Tabs defaultValue="overview">
-        <div className="flex justify-between items-center">
+      <Tabs defaultValue="overview" onValueChange={value => setTimeRange(value === "30d" ? "30d" : "total")}>
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <TabsList>
                 <TabsTrigger value="overview"><LineChart className='w-4 h-4 mr-2'/>Visão Geral</TabsTrigger>
                 <TabsTrigger value="videos"><LayoutGrid className='w-4 h-4 mr-2'/>Vídeos Recentes</TabsTrigger>
             </TabsList>
-            <TabsList className="grid w-full grid-cols-2 max-w-xs">
-                <TabsTrigger value="total" onClick={() => setTimeRange('total')}>Total</TabsTrigger>
-                <TabsTrigger value="30d" onClick={() => setTimeRange('30d')}>Últimos 30 Dias</TabsTrigger>
+            <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                <TabsTrigger value="total">Total</TabsTrigger>
+                <TabsTrigger value="30d">Últimos 30 Dias</TabsTrigger>
             </TabsList>
         </div>
         <TabsContent value="overview" className='mt-6 space-y-6'>
