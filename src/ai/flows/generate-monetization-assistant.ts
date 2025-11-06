@@ -21,8 +21,8 @@ const GenerateMediaKitInputSchema = z.object({
 export type GenerateMediaKitInput = z.infer<typeof GenerateMediaKitInputSchema>;
 
 const GenerateMediaKitOutputSchema = z.object({
-  mediaKitContent: z.string().describe('The generated media kit content in a readable format.'),
-  suggestedPricing: z.string().describe('Suggested pricing for different advertising opportunities.'),
+  mediaKitContent: z.string().describe('The generated media kit content in a readable format, using Markdown for structure (headings, lists, etc.).'),
+  suggestedPricing: z.string().describe('Suggested pricing for different advertising opportunities, formatted as a readable string.'),
 });
 export type GenerateMediaKitOutput = z.infer<typeof GenerateMediaKitOutputSchema>;
 
@@ -47,14 +47,20 @@ Influencer Data:
 - Demographics: {{{demographics}}}
 
 Your Tasks:
-1.  **Generate Media Kit Content:** Write a concise, powerful bio and highlight the creator's strengths. Use modern, professional language that appeals to brands.
+1.  **Generate Media Kit Content:** Write a concise and powerful text for a media kit. Use Markdown for clear formatting. Include sections for:
+    - A powerful bio/introduction.
+    - Key statistics (followers, engagement, views).
+    - Audience demographics.
+    - A clear call to action for collaboration.
+    Ensure there are clear spacings between sections.
+
 2.  **Suggest Pricing:** Provide a realistic pricing table for the following packages, based on *current* industry standards for this creator's metrics and niche:
     - One Reel
     - Three Stories
     - One TikTok Video
     - Integrated Campaign (1 Reel + 3 Stories)
 
-Ensure the media kit content is well-formatted and includes a clear call to action for collaboration. The entire response must conform to the output schema.
+The entire response must conform to the output schema.
   `,
 });
 

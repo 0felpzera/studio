@@ -51,16 +51,21 @@ export default function MonetizationAssistant() {
 
 
   const engagementRate = useMemo(() => {
-    if (!allVideos || allVideos.length === 0) return 0;
-    const totalViews = allVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    if (!allVideos || allVideos.length === 0 || !tiktokAccount?.followerCount) return 0;
+    
     const totalLikes = allVideos.reduce((sum, video) => sum + (video.like_count || 0), 0);
     const totalComments = allVideos.reduce((sum, video) => sum + (video.comment_count || 0), 0);
     const totalShares = allVideos.reduce((sum, video) => sum + (video.share_count || 0), 0);
 
-    if (totalViews === 0) return 0;
+    // Using total interactions divided by followers for a common engagement rate calculation
     const totalEngagements = totalLikes + totalComments + totalShares;
-    return (totalEngagements / totalViews); // Keep as decimal for the form
-  }, [allVideos]);
+    
+    // Check if totalVideos.length is not zero to avoid division by zero
+    if (tiktokAccount.followerCount === 0 || totalVideos.length === 0) return 0;
+    
+    // Engagement rate per post = (total engagements / number of posts) / followers
+    return (totalEngagements / totalVideos.length) / tiktokAccount.followerCount;
+  }, [allVideos, tiktokAccount?.followerCount]);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -224,7 +229,7 @@ export default function MonetizationAssistant() {
                   <CardDescription>Copie este conteúdo para o seu mídia kit profissional.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md">
+                   <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md whitespace-pre-wrap font-sans">
                      {result.mediaKitContent}
                    </div>
                 </CardContent>
