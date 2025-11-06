@@ -12,6 +12,7 @@ import { createUserWithEmailAndPassword, updateProfile, GoogleAuthProvider, sign
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Loader2 } from 'lucide-react';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -33,31 +34,29 @@ export default function SignUpPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [isLoading, setIsLoading] = useState(true); // Start as true to handle redirect
+    // Start with loading true to handle the redirect check
+    const [isLoading, setIsLoading] = useState(true);
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
-    // Effect to handle existing users or redirect after signup
+    // Effect to handle redirection for already logged-in users
     useEffect(() => {
-        if (!isUserLoading) {
-            if (user) {
-                // If a user is logged in, they should be in onboarding or dashboard.
-                // Redirecting to onboarding is safer.
-                router.push('/onboarding');
-            } else {
-                // No user, ready to sign up.
-                setIsLoading(false);
-            }
+        if (!isUserLoading && user) {
+            router.push('/onboarding');
         }
     }, [user, isUserLoading, router]);
 
-    // Effect to handle the result of Google's redirect
+    // Centralized effect to handle Google Redirect result
     useEffect(() => {
-        if (!auth || isUserLoading || user) return;
+        // Don't run if auth is not ready, or if a user is already signed in.
+        if (!auth || user) {
+            setIsLoading(false); // Stop loading if we already have a user
+            return;
+        }
 
         getRedirectResult(auth)
             .then(async (result) => {
                 if (result) {
-                    setIsLoading(true); // Process the result
+                    // This means a user has successfully signed in via Google redirect.
                     const user = result.user;
                     const userDocRef = doc(firestore, 'users', user.uid);
                     const userDoc = await getDoc(userDocRef);
@@ -69,11 +68,13 @@ export default function SignUpPage() {
                             email: user.email,
                             name: user.displayName,
                         });
+                        toast({ title: "Cadastro bem-sucedido!", description: "Vamos configurar seu perfil." });
                     }
-                    toast({ title: "Cadastro bem-sucedido!", description: "Vamos configurar seu perfil." });
-                    // Redirect is handled by the other useEffect
+                    // The main useEffect will now handle the redirect to onboarding.
+                    // The isLoading state remains true until that happens.
                 } else {
-                    // This can be null if the page is loaded without a redirect flow in progress.
+                    // No redirect result, which is the normal case on first load.
+                    // We can now show the form.
                     setIsLoading(false);
                 }
             })
@@ -86,7 +87,7 @@ export default function SignUpPage() {
                 });
                 setIsLoading(false);
             });
-    }, [auth, firestore, router, toast, isUserLoading, user]);
+    }, [auth, firestore, router, toast, user]);
 
 
     const handleSocialSignUp = async (providerName: 'google') => {
@@ -99,6 +100,7 @@ export default function SignUpPage() {
                 throw new Error('Provedor de cadastro desconhecido');
             }
             await signInWithRedirect(auth, provider);
+            // The result is now handled by the central useEffect.
         } catch (error: any) {
             toast({
                 title: "Erro no Cadastro",
@@ -124,7 +126,6 @@ export default function SignUpPage() {
                 email: newUser.email,
                 name: name,
             });
-
             // On success, the main useEffect will redirect to onboarding
         } catch (error: any) {
              toast({
@@ -139,7 +140,7 @@ export default function SignUpPage() {
     if (isUserLoading || isLoading) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
-                <p>Carregando...</p>
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
         );
     }
@@ -171,7 +172,7 @@ export default function SignUpPage() {
                             <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                         </div>
                         <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                             {isLoading ? 'Cadastrando...' : 'Cadastrar'}
+                             {isLoading ? <Loader2 className="animate-spin" /> : 'Cadastrar'}
                         </Button>
                     </form>
                      <div className="relative my-2">
@@ -184,8 +185,7 @@ export default function SignUpPage() {
                     </div>
                      <div className="grid grid-cols-1 gap-4">
                         <Button variant="outline" className="w-full" onClick={() => handleSocialSignUp('google')} disabled={isLoading}>
-                            <GoogleIcon className="mr-2 h-6 w-6" />
-                            Google
+                            {isLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon className="mr-2 h-6 w-6" /> Google</>}
                         </Button>
                     </div>
                     <div className="mt-4 text-center text-sm">
@@ -204,7 +204,7 @@ export default function SignUpPage() {
                             alt={heroImage.description}
                             data-ai-hint={heroImage.imageHint}
                             fill
-                            objectFit="cover"
+                            style={{ objectFit: 'cover' }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-10 left-10 text-white max-w-md">
@@ -217,3 +217,5 @@ export default function SignUpPage() {
         </div>
     );
 }
+
+    

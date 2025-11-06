@@ -6,11 +6,12 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useAuth, useUser, useFirestore } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, getRedirectResult } from 'firebase/auth';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Loader2 } from 'lucide-react';
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
     return (
@@ -33,11 +34,36 @@ export default function LoginPage() {
     const [isLoading, setIsLoading] = useState(false);
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
 
+    // This effect handles redirection for already logged-in users.
     useEffect(() => {
         if (!isUserLoading && user) {
             router.push('/dashboard');
         }
     }, [user, isUserLoading, router]);
+
+    // This effect handles the result of a redirect from a social login that might land here.
+    useEffect(() => {
+        if (!auth || isUserLoading) return;
+        
+        getRedirectResult(auth).then((result) => {
+            if (result) {
+                // A user has successfully logged in via redirect.
+                // The onAuthStateChanged listener will now pick them up,
+                // and the first useEffect will handle the redirection to the dashboard.
+                // We just show a loading state.
+                setIsLoading(true);
+            }
+        }).catch(error => {
+            console.error("Redirect Error on Login Page: ", error);
+            toast({
+                title: "Erro de Login",
+                description: "Não foi possível completar o login. Por favor, tente novamente.",
+                variant: 'destructive'
+            });
+            setIsLoading(false);
+        });
+
+    }, [auth, isUserLoading, router, toast]);
 
     const handleSocialLogin = async (providerName: 'google') => {
         setIsLoading(true);
@@ -48,9 +74,8 @@ export default function LoginPage() {
             } else {
                 throw new Error('Provedor de login desconhecido');
             }
+            // Simply initiate the redirect. The result will be handled by the signup page or here.
             await signInWithRedirect(auth, provider);
-            // After redirect, the result is handled on the signup page
-            // to unify new user creation logic.
         } catch (error: any) {
              toast({
                 title: "Erro no Login",
@@ -81,7 +106,7 @@ export default function LoginPage() {
     if (isUserLoading || isLoading) {
         return (
             <div className="flex min-h-screen w-full items-center justify-center bg-background">
-                <p>Carregando...</p>
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
             </div>
         );
     }
@@ -116,7 +141,7 @@ export default function LoginPage() {
                                 <Input id="password" type="password" required value={password} onChange={(e) => setPassword(e.target.value)} />
                             </div>
                             <Button type="submit" className="w-full font-bold" disabled={isLoading}>
-                                {isLoading ? 'Entrando...' : 'Entrar'}
+                                {isLoading ? <Loader2 className="animate-spin" /> : 'Entrar'}
                             </Button>
                         </form>
 
@@ -131,8 +156,7 @@ export default function LoginPage() {
 
                         <div className="grid grid-cols-1 gap-4">
                             <Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')} disabled={isLoading}>
-                                <GoogleIcon className="mr-2 h-6 w-6" />
-                                Google
+                                {isLoading ? <Loader2 className="animate-spin" /> : <><GoogleIcon className="mr-2 h-6 w-6" /> Google </>}
                             </Button>
                         </div>
 
@@ -152,7 +176,7 @@ export default function LoginPage() {
                                 alt={heroImage.description}
                                 data-ai-hint={heroImage.imageHint}
                                 fill
-                                objectFit="cover"
+                                style={{ objectFit: 'cover' }}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                             <div className="absolute bottom-10 left-10 text-white max-w-md">
@@ -166,11 +190,12 @@ export default function LoginPage() {
         );
     }
     
-    // This part should ideally not be reached if the main useEffect works correctly,
-    // but it's a fallback.
+    // Fallback loading state
     return (
         <div className="flex min-h-screen w-full items-center justify-center bg-background">
-            <p>Redirecionando...</p>
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </div>
     );
 }
+
+    
