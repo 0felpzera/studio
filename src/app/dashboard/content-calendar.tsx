@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Loader2, Check, Sparkles, Wand2, X } from 'lucide-react';
+import { Loader2, Check, Sparkles, Wand2, X, Trash2 } from 'lucide-react';
 import {
   generateWeeklyContentCalendar,
   GenerateWeeklyContentCalendarOutput,
@@ -53,6 +53,17 @@ import {
 } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { ContentTask } from '@/lib/types';
 
 
@@ -85,6 +96,7 @@ export default function ContentCalendar() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [pendingPlan, setPendingPlan] = useState<PendingTask[] | null>(null);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const { toast } = useToast();
   const { user, isUserLoading } = useUser();
@@ -197,6 +209,28 @@ export default function ContentCalendar() {
     if (!user || !firestore) return;
     const taskRef = doc(firestore, 'users', user.uid, 'contentTasks', taskId);
     updateDoc(taskRef, { isCompleted: !currentStatus });
+  };
+  
+  const deleteTask = async (taskId: string) => {
+    if (!user || !firestore) return;
+    setIsDeleting(taskId);
+    try {
+      const taskRef = doc(firestore, 'users', user.uid, 'contentTasks', taskId);
+      await deleteDoc(taskRef);
+      toast({
+        title: "Tarefa Removida",
+        description: "A tarefa foi removida do seu plano.",
+      });
+    } catch (error) {
+      console.error("Erro ao remover tarefa:", error);
+      toast({
+        title: "Erro ao Remover",
+        description: "Não foi possível remover a tarefa.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(null);
+    }
   };
   
   const sortedCalendar = useMemo(() => {
@@ -369,7 +403,7 @@ export default function ContentCalendar() {
                             {sortedCalendar.map((task) => (
                               <div
                                 key={task.id}
-                                className={`transition-all flex items-center gap-4 p-4 rounded-lg border ${
+                                className={`group transition-all flex items-center gap-4 p-4 rounded-lg border ${
                                   task.isCompleted ? 'bg-muted/50' : 'bg-background'
                                 }`}
                               >
@@ -397,6 +431,32 @@ export default function ContentCalendar() {
                                       </p>
                                   </div>
                                 </div>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-8 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                                    >
+                                      <Trash2 className="size-4" />
+                                    </Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                      <AlertDialogDescription>
+                                        Esta ação não pode ser desfeita. Isso removerá permanentemente a tarefa do seu plano.
+                                      </AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => deleteTask(task.id)} disabled={isDeleting === task.id} className="bg-destructive hover:bg-destructive/90">
+                                         {isDeleting === task.id ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
+                                         Sim, excluir
+                                      </AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </div>
                             ))}
                          </div>
@@ -408,3 +468,5 @@ export default function ContentCalendar() {
     </div>
   );
 }
+
+    
