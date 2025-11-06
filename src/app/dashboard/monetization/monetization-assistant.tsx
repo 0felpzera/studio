@@ -51,21 +51,18 @@ export default function MonetizationAssistant() {
 
 
   const engagementRate = useMemo(() => {
-    if (!allVideos || allVideos.length === 0 || !tiktokAccount?.followerCount) return 0;
-    
+    if (!allVideos || allVideos.length === 0) return 0;
+
+    const totalViews = allVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
     const totalLikes = allVideos.reduce((sum, video) => sum + (video.like_count || 0), 0);
     const totalComments = allVideos.reduce((sum, video) => sum + (video.comment_count || 0), 0);
     const totalShares = allVideos.reduce((sum, video) => sum + (video.share_count || 0), 0);
+    
+    if (totalViews === 0) return 0;
 
-    // Using total interactions divided by followers for a common engagement rate calculation
     const totalEngagements = totalLikes + totalComments + totalShares;
-    
-    // Check if allVideos.length is not zero to avoid division by zero
-    if (tiktokAccount.followerCount === 0 || allVideos.length === 0) return 0;
-    
-    // Engagement rate per post = (total engagements / number of posts) / followers
-    return (totalEngagements / allVideos.length) / tiktokAccount.followerCount;
-  }, [allVideos, tiktokAccount?.followerCount]);
+    return (totalEngagements / totalViews) * 100;
+  }, [allVideos]);
 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -86,7 +83,7 @@ export default function MonetizationAssistant() {
     }
     if (engagementRate > 0) {
         // Format to a reasonable number of decimal places for the input
-        form.setValue('engagementRate', parseFloat(engagementRate.toFixed(4)));
+        form.setValue('engagementRate', parseFloat(engagementRate.toFixed(2)));
     }
   }, [tiktokAccount, engagementRate, form]);
 
@@ -97,6 +94,8 @@ export default function MonetizationAssistant() {
     try {
       const formattedInput = {
         ...values,
+        // The AI prompt expects a decimal, so we convert the percentage back
+        engagementRate: values.engagementRate / 100, 
         topPosts: values.topPosts.split(',').map(s => s.trim()),
       };
       const response: GenerateMediaKitOutput = await generateMediaKit(formattedInput);
@@ -141,8 +140,8 @@ export default function MonetizationAssistant() {
                 )} />
                 <FormField control={form.control} name="engagementRate" render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Taxa de Engajamento (ex: 0.05 para 5%)</FormLabel>
-                    <FormControl><Input type="number" step="0.0001" {...field} disabled={engagementRate > 0} /></FormControl>
+                    <FormLabel>Taxa de Engajamento (%)</FormLabel>
+                    <FormControl><Input type="number" step="0.01" {...field} disabled={engagementRate > 0} /></FormControl>
                      {isLoadingData && <p className="text-xs text-muted-foreground">Calculando com dados do TikTok...</p>}
                     {engagementRate > 0 && !isLoadingData && <p className="text-xs text-muted-foreground">Calculado com dados do TikTok.</p>}
                     <FormMessage />
