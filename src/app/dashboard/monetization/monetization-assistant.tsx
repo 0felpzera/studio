@@ -60,11 +60,11 @@ export default function MonetizationAssistant() {
     // Using total interactions divided by followers for a common engagement rate calculation
     const totalEngagements = totalLikes + totalComments + totalShares;
     
-    // Check if totalVideos.length is not zero to avoid division by zero
-    if (tiktokAccount.followerCount === 0 || totalVideos.length === 0) return 0;
+    // Check if allVideos.length is not zero to avoid division by zero
+    if (tiktokAccount.followerCount === 0 || allVideos.length === 0) return 0;
     
     // Engagement rate per post = (total engagements / number of posts) / followers
-    return (totalEngagements / totalVideos.length) / tiktokAccount.followerCount;
+    return (totalEngagements / allVideos.length) / tiktokAccount.followerCount;
   }, [allVideos, tiktokAccount?.followerCount]);
 
 
