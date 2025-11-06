@@ -27,6 +27,7 @@ import {
   CheckCircle2,
   TrendingUp,
   BrainCircuit,
+  PanelTop,
 } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
@@ -38,6 +39,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Timeline } from "@/components/ui/timeline";
 import { Footer } from "@/components/ui/footer";
 import React from "react";
+import { Badge } from "@/components/ui/badge";
 
 
 export default function LandingPage() {
@@ -164,8 +166,8 @@ export default function LandingPage() {
       mockup: {
         title: "Formatos Sugeridos:",
         items: [
-          { value: <span className="bg-background px-2 py-1 rounded">Review Honesto</span> },
-          { value: <span className="bg-background px-2 py-1 rounded">Tutorial Criativo</span> }
+          { value: <Badge variant="secondary">Review Honesto</Badge> },
+          { value: <Badge variant="secondary">Tutorial Criativo</Badge> }
         ],
         isBadge: true
       }
@@ -228,29 +230,47 @@ export default function LandingPage() {
             const Icon = card.icon;
             return (
               <motion.div key={card.id} variants={cardVariants}>
-                <div className="flex flex-col text-left p-6 h-full bg-card/50 rounded-2xl border border-border/50 shadow-lg backdrop-blur-sm">
-                  <div className="mb-4"><Icon className="w-8 h-8 text-primary" /></div>
-                  <h3 className="text-xl font-bold mb-2">{card.title}</h3>
-                  <p className="text-muted-foreground text-sm mb-4 flex-grow">{card.description}</p>
-                  <ul className="space-y-2 text-sm text-left mb-6">
-                    {card.benefits.map((benefit, i) => (
-                       <li key={i} className="flex items-start gap-2"><CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" /><span>{benefit}</span></li>
-                    ))}
-                  </ul>
-                  {card.mockup && (
-                    <div className="mt-auto bg-muted/50 p-4 rounded-lg border border-border/50 text-xs space-y-2">
-                        <p className="font-semibold mb-2">{card.mockup.title}</p>
-                        <div className={card.mockup.isBadge ? 'flex flex-wrap gap-2' : card.mockup.isList ? 'space-y-1' : ''}>
-                          {card.mockup.items.map((item, i) => (
-                              <div key={i} className={card.mockup.isKeyValue ? 'flex justify-between' : card.mockup.isList ? 'p-2 bg-background rounded-md' : ''}>
-                                  {item.icon}
-                                  {item.text && <span>{item.text}</span>}
-                                  {item.value}
-                              </div>
-                          ))}
+                <div className="flex flex-col text-left h-full bg-card/60 rounded-2xl border border-border/20 shadow-lg backdrop-blur-md overflow-hidden">
+                    {/* Header */}
+                    <div className="p-6 border-b border-border/20">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                                <Icon className="w-6 h-6 text-primary" />
+                            </div>
+                            <h3 className="text-xl font-bold text-foreground">{card.title}</h3>
                         </div>
+                        <p className="text-muted-foreground text-sm mt-2">{card.description}</p>
                     </div>
-                  )}
+
+                    {/* Benefits */}
+                    <div className="p-6 flex-grow">
+                      <ul className="space-y-3 text-sm">
+                        {card.benefits.map((benefit, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                              <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
+                              <span className="text-muted-foreground">{benefit}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    {/* Mockup */}
+                    {card.mockup && (
+                        <div className="mt-auto p-4 bg-muted/30 border-t border-border/20">
+                            <div className="p-4 rounded-lg bg-background/50 border border-border/20 text-xs space-y-2">
+                                <p className="font-semibold text-foreground/80 flex items-center gap-2"><PanelTop className="size-3"/>{card.mockup.title}</p>
+                                <div className={card.mockup.isBadge ? 'flex flex-wrap gap-2 pt-1' : card.mockup.isList ? 'space-y-1' : 'space-y-1'}>
+                                {card.mockup.items.map((item, i) => (
+                                    <div key={i} className={card.mockup.isKeyValue ? 'flex justify-between items-center text-muted-foreground' : card.mockup.isList ? 'p-2 bg-muted/50 rounded text-muted-foreground' : 'text-muted-foreground'}>
+                                        {item.icon && <div className="flex items-center gap-1">{item.icon} {item.text}</div>}
+                                        {!item.icon && item.text && <span>{item.text}</span>}
+                                        <span className={item.icon ? 'font-medium text-foreground/90' : ''}>{item.value}</span>
+                                    </div>
+                                ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
               </motion.div>
             );
@@ -321,3 +341,5 @@ export default function LandingPage() {
     </div>
   );
 }
+
+    
