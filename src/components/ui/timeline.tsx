@@ -34,7 +34,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
   const opacityTransform = useTransform(scrollYProgress, [0, 0.1], [0, 1]);
 
   return (
-    <div className="w-full font-sans md:px-10">
+    <div className="w-full font-sans">
       <div ref={ref} className="relative max-w-7xl mx-auto py-20">
         {data.map((item, index) => (
           <div
@@ -46,7 +46,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
                 <div className="h-4 w-4 rounded-full bg-secondary dark:bg-neutral-800 border border-border dark:border-neutral-700 p-2" />
               </div>
               <div className="hidden md:block md:pl-20">
-                <h3 className="text-xl md:text-5xl font-bold text-foreground dark:text-neutral-300">
+                <h3 className="text-xl md:text-5xl font-bold text-foreground">
                   {item.title}
                 </h3>
                 <p className="text-foreground mt-2 font-bold">{item.description}</p>
@@ -55,7 +55,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
 
             <div className="relative pl-20 pr-4 md:pl-4 w-full">
                <div className="md:hidden mb-8">
-                  <h3 className="text-2xl mb-2 text-left font-bold text-foreground dark:text-neutral-300">
+                  <h3 className="text-2xl mb-2 text-left font-bold text-foreground">
                     {item.title}
                   </h3>
                   <p className="text-foreground font-bold">{item.description}</p>
@@ -68,7 +68,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
           style={{
             height: height + "px",
           }}
-          className="absolute md:left-8 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-border dark:via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
+          className="absolute md:left-4 left-8 top-0 overflow-hidden w-[2px] bg-[linear-gradient(to_bottom,var(--tw-gradient-stops))] from-transparent from-[0%] via-border dark:via-neutral-700 to-transparent to-[99%]  [mask-image:linear-gradient(to_bottom,transparent_0%,black_10%,black_90%,transparent_100%)] "
         >
           <motion.div
             style={{
