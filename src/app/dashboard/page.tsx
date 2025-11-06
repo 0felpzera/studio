@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import Link from 'next/link';
@@ -26,6 +27,7 @@ import {
   Repeat,
   RefreshCw,
   PlayCircle,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -51,6 +53,7 @@ import { refreshTiktokData } from '@/ai/flows/refresh-tiktok-data';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Progress } from '@/components/ui/progress';
 
 
 function formatNumber(value: number | undefined | null): string {
@@ -301,6 +304,10 @@ export default function DashboardPage() {
 
     // Follower count is a total, so it doesn't change with time range filter.
     const followerCount = tiktokAccount?.followerCount;
+    const goalProgress = useMemo(() => {
+        if (!followerCount || !goal?.followerGoal || goal.followerGoal === 0) return 0;
+        return (followerCount / goal.followerGoal) * 100;
+    }, [followerCount, goal?.followerGoal]);
     
     const isLoading = isUserLoading || isLoadingTiktok;
 
@@ -427,6 +434,28 @@ export default function DashboardPage() {
 
         {activeContentTab === 'overview' && (
             <div className='mt-6 space-y-6'>
+                {goal && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2 font-bold"><Goal className="size-5 text-primary"/> Sua Meta de Seguidores</CardTitle>
+                            <CardDescription>Acompanhe seu progresso para alcançar o objetivo definido.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-2">
+                                <Progress value={goalProgress} />
+                                <div className="flex justify-between text-sm font-medium text-muted-foreground">
+                                    <span>{formatNumber(followerCount)} Seguidores</span>
+                                    <span className="text-primary font-bold">{goal.followerGoal.toLocaleString('pt-BR')} (Meta)</span>
+                                </div>
+                            </div>
+                        </CardContent>
+                        <CardFooter>
+                             <p className="text-sm text-muted-foreground">
+                                Você está a <span className="font-bold text-primary">{goalProgress.toFixed(1)}%</span> de atingir sua meta. Continue assim!
+                            </p>
+                        </CardFooter>
+                    </Card>
+                )}
                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {businessCards.map((card, i) => {
                         const Icon = card.icon;
@@ -536,7 +565,7 @@ export default function DashboardPage() {
                                     <p className="font-bold text-lg">{goal.niche}</p>
                                 </div>
                                 <div className="p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><TrendingUp className="size-4"/>Meta de Seguidores</div>
+                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><Users className="size-4"/>Meta de Seguidores</div>
                                     <p className="font-bold text-lg">{goal.followerGoal.toLocaleString('pt-BR')}</p>
                                 </div>
                                 <div className="p-4 bg-muted/50 rounded-lg">
@@ -688,7 +717,7 @@ export default function DashboardPage() {
                                             <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                         </div>
                                     </div>
-                                    <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t mt-auto transition-colors">
+                                    <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t mt-auto transition-colors group-hover:bg-muted/50">
                                         <UITooltip>
                                             <TooltipTrigger className="flex items-center gap-1"><Heart className="size-3.5" /> {formatNumber(video.like_count)}</TooltipTrigger>
                                             <TooltipContent>{(video.like_count || 0).toLocaleString('pt-BR')} Curtidas</TooltipContent>

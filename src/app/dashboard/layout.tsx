@@ -19,6 +19,7 @@ import {
     Menu,
     X,
     FileText,
+    Users,
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Plano de Conteúdo', href: '/dashboard/plan', icon: CalendarCheck },
   { name: 'Conexões', href: '/dashboard/connections', icon: Share2 },
+  { name: 'Perfil', href: '/dashboard/profile', icon: Users },
 ];
 
 const resourcesItems = [
