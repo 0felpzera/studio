@@ -25,6 +25,7 @@ import {
   Calendar,
   Repeat,
   RefreshCw,
+  PlayCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -36,7 +37,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line, Bar } from 'recharts';
+import { ComposedChart, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import type { ContentTask } from '@/lib/types';
@@ -49,6 +50,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { refreshTiktokData } from '@/ai/flows/refresh-tiktok-data';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 
 function formatNumber(value: number | undefined | null): string {
@@ -145,10 +147,10 @@ export default function DashboardPage() {
     
     const chartData = useMemo(() => {
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number } } = {};
+        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; count: number } } = {};
         
         months.forEach(m => {
-            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0 };
+            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0, count: 0 };
         });
 
         if (filteredVideos && filteredVideos.length > 0) {
@@ -161,6 +163,7 @@ export default function DashboardPage() {
                         dataByMonth[month].likes += video.like_count || 0;
                         dataByMonth[month].comments += video.comment_count || 0;
                         dataByMonth[month].shares += video.share_count || 0;
+                        dataByMonth[month].count += 1;
                     }
                 }
             });
@@ -486,10 +489,14 @@ export default function DashboardPage() {
                                         <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
                                         <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
                                     </linearGradient>
+                                     <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.4}/>
+                                        <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
+                                    </linearGradient>
                                 </defs>
                                 <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                                 <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorLikes)" />
-                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }}/>
+                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: 'hsl(var(--background))' }} activeDot={{ r: 6 }}/>
                             </ComposedChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -653,10 +660,13 @@ export default function DashboardPage() {
         {activeContentTab === 'videos' && (
             <div className='mt-6'>
                 {filteredVideos && filteredVideos.length > 0 ? (
+                    <TooltipProvider>
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-                        {filteredVideos.map(video => (
+                        {filteredVideos.map(video => {
+                             const videoDate = video.create_time ? new Date(video.create_time * 1000).toLocaleDateString('pt-BR') : 'Data Indisponível';
+                             return (
                             <Card key={video.id} className="overflow-hidden group">
-                                <a href={video.share_url} target="_blank" rel="noopener noreferrer">
+                                <a href={video.share_url} target="_blank" rel="noopener noreferrer" className="block relative">
                                     <div className="relative aspect-[9/16]">
                                         <Image 
                                             src={video.cover_image_url || '/placeholder.png'} 
@@ -664,21 +674,44 @@ export default function DashboardPage() {
                                             fill
                                             className="object-cover transition-transform duration-300 group-hover:scale-105"
                                         />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent transition-colors group-hover:from-black/80" />
+                                        
+                                        <Badge variant="secondary" className="absolute top-2 right-2 text-xs bg-black/50 text-white border-white/20">
+                                            {videoDate}
+                                        </Badge>
+                                        
+                                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            <PlayCircle className="size-12 text-white/80" />
+                                        </div>
+
                                         <div className="absolute bottom-3 left-3 right-3">
                                             <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                         </div>
                                     </div>
                                 </a>
                                 <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
-                                    <div className="flex items-center gap-1" title={`${formatNumber(video.like_count)} Curtidas`}><Heart className="size-3.5" /> {formatNumber(video.like_count)}</div>
-                                    <div className="flex items-center gap-1" title={`${formatNumber(video.comment_count)} Comentários`}><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</div>
-                                    <div className="flex items-center gap-1" title={`${formatNumber(video.share_count)} Compartilhamentos`}><Share className="size-3.5" /> {formatNumber(video.share_count)}</div>
-                                    <div className="flex items-center gap-1" title={`${formatNumber(video.view_count)} Visualizações`}><TrendingUp className="size-3.5" /> {formatNumber(video.view_count)}</div>
+                                     <UITooltip>
+                                        <TooltipTrigger className="flex items-center gap-1"><Heart className="size-3.5" /> {formatNumber(video.like_count)}</TooltipTrigger>
+                                        <TooltipContent>{(video.like_count || 0).toLocaleString('pt-BR')} Curtidas</TooltipContent>
+                                    </UITooltip>
+                                      <UITooltip>
+                                        <TooltipTrigger className="flex items-center gap-1"><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</TooltipTrigger>
+                                        <TooltipContent>{(video.comment_count || 0).toLocaleString('pt-BR')} Comentários</TooltipContent>
+                                    </UITooltip>
+                                     <UITooltip>
+                                        <TooltipTrigger className="flex items-center gap-1"><Share className="size-3.5" /> {formatNumber(video.share_count)}</TooltipTrigger>
+                                        <TooltipContent>{(video.share_count || 0).toLocaleString('pt-BR')} Compartilhamentos</TooltipContent>
+                                    </UITooltip>
+                                     <UITooltip>
+                                        <TooltipTrigger className="flex items-center gap-1"><TrendingUp className="size-3.5" /> {formatNumber(video.view_count)}</TooltipTrigger>
+                                        <TooltipContent>{(video.view_count || 0).toLocaleString('pt-BR')} Visualizações</TooltipContent>
+                                    </UITooltip>
                                 </CardContent>
                             </Card>
-                        ))}
+                             )
+                        })}
                     </div>
+                    </TooltipProvider>
                 ) : (
                     <div className="text-center text-muted-foreground p-8 border-2 border-dashed rounded-lg mt-6">
                         <Video className="mx-auto h-12 w-12" />
@@ -694,7 +727,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
-
-    
