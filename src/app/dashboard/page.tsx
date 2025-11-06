@@ -23,7 +23,8 @@ import {
   Rocket,
   Goal,
   Calendar,
-  Repeat
+  Repeat,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -37,7 +38,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
-import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc } from 'firebase/firestore';
+import { collection, query, where, limit, orderBy, Timestamp, updateDoc, doc, writeBatch, setDoc } from 'firebase/firestore';
 import type { ContentTask } from '@/lib/types';
 import type { TiktokAccount, TiktokVideo, SavedVideoIdea, Goal as GoalType } from '@/lib/types';
 import { useMemo, useState } from 'react';
@@ -45,6 +46,9 @@ import Image from 'next/image';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { refreshTiktokData } from '@/ai/flows/refresh-tiktok-data';
+import { useToast } from '@/hooks/use-toast';
+
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
@@ -78,8 +82,10 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
+    const { toast } = useToast();
     const [timeRange, setTimeRange] = useState('total');
     const [activeContentTab, setActiveContentTab] = useState('overview');
+    const [isSyncing, setIsSyncing] = useState(false);
 
     // Query for the main TikTok account document
     const tiktokAccountsQuery = useMemoFirebase(() => {
@@ -128,7 +134,7 @@ export default function DashboardPage() {
           const firstMonth = sortedVideos.length > 0 ? new Date((sortedVideos[0].create_time || 0) * 1000).toLocaleString('pt-BR', { month: 'short' }) : 'Início';
           const lastFollowerCount = followerCount; // just use the current count
           return [
-              { month: 'Começo', Seguidores: Math.max(0, lastFollowerCount - 10), Visualizações: 0, Curtidas: 0 },
+              { month: 'Começo', Seguidores: Math.max(0, lastFollowerCount > 10 ? lastFollowerCount - 10 : 0), Visualizações: 0, Curtidas: 0 },
               { month: firstMonth, Seguidores: lastFollowerCount, Visualizações: sortedVideos[0]?.view_count || 0, Curtidas: sortedVideos[0]?.like_count || 0 }
           ];
       }
@@ -149,10 +155,14 @@ export default function DashboardPage() {
       });
 
       const months = Object.keys(dataByMonth);
-      let runningFollowers = Math.max(0, followerCount - (months.length * (followerCount * 0.05))); // Start from a lower base
+      const followerGrowthRate = 0.05; // 5% growth per period
+      const periods = months.length;
+      const initialSimulatedFollowers = followerCount / Math.pow(1 + followerGrowthRate, periods);
+
+      let runningFollowers = initialSimulatedFollowers;
 
       return months.map((month) => {
-        runningFollowers += (followerCount * 0.05); // Simulate steady growth
+        runningFollowers *= (1 + followerGrowthRate);
         return {
           month,
           Seguidores: Math.round(runningFollowers),
@@ -186,6 +196,74 @@ export default function DashboardPage() {
             limit(2)
         );
     }, [user, firestore]);
+    
+    const handleSyncTikTok = async () => {
+        if (!user || !firestore || !tiktokAccount) {
+            toast({
+                title: "Erro",
+                description: "Nenhuma conta do TikTok para sincronizar.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsSyncing(true);
+
+        try {
+            const result = await refreshTiktokData({ refreshToken: tiktokAccount.refreshToken });
+            
+            const batch = writeBatch(firestore);
+
+            const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
+            const accountData = {
+                // ...existing data is preserved by merge
+                followerCount: result.follower_count,
+                followingCount: result.following_count,
+                likesCount: result.likes_count,
+                videoCount: result.video_count,
+                accessToken: result.access_token,
+                refreshToken: result.refresh_token,
+                tokenExpiresAt: Date.now() + result.expires_in * 1000,
+                refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
+                lastSyncStatus: 'success',
+                lastSyncTime: new Date().toISOString(),
+                lastSyncError: '', // Clear any previous error
+            };
+            batch.set(tiktokAccountRef, accountData, { merge: true });
+
+            if (result.videos && result.videos.length > 0) {
+                const videosCollectionRef = collection(tiktokAccountRef, 'videos');
+                result.videos.forEach(video => {
+                    const videoDocRef = doc(videosCollectionRef, video.id);
+                    batch.set(videoDocRef, video, { merge: true });
+                });
+            }
+
+            await batch.commit();
+
+            toast({
+                title: "Sincronização Concluída!",
+                description: `Seus dados do TikTok foram atualizados. ${result.videos.length} vídeos sincronizados.`,
+            });
+
+        } catch (error: any) {
+            console.error("Erro ao sincronizar dados do TikTok:", error);
+            const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
+            await setDoc(tiktokAccountRef, { 
+                lastSyncStatus: 'error',
+                lastSyncError: error.message || 'Unknown error'
+            }, { merge: true });
+            
+            toast({
+                title: "Erro na Sincronização",
+                description: error.message || "Não foi possível atualizar seus dados do TikTok. Tente novamente.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
 
     const totalViews = useMemo(() => {
       return filteredVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
@@ -264,13 +342,21 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
-        </h1>
-        <p className="text-muted-foreground">
-          Seu painel de comando para dominar as redes sociais.
-        </p>
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
+          </h1>
+          <p className="text-muted-foreground">
+             {tiktokAccount?.lastSyncTime ? `Última sincronização: ${new Date(tiktokAccount.lastSyncTime).toLocaleString('pt-BR')}` : 'Seu painel de comando para dominar as redes sociais.'}
+          </p>
+        </div>
+        {tiktokAccount && (
+            <Button onClick={handleSyncTikTok} disabled={isSyncing}>
+                {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                {isSyncing ? 'Sincronizando...' : 'Sincronizar Agora'}
+            </Button>
+        )}
       </header>
 
        {!isLoading && !tiktokAccount && (
@@ -588,5 +674,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

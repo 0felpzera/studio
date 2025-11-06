@@ -41,7 +41,7 @@ export default function ConnectionsPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const [isDeleting, setIsDeleting] = useState(false);
-    const [isSyncing, setIsSyncing] = useState(false);
+    
 
     const tiktokAccountsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
@@ -92,74 +92,6 @@ export default function ConnectionsPage() {
 
         window.location.href = tiktokAuthUrl.toString();
     };
-
-    const handleSyncTikTok = async () => {
-        if (!user || !firestore || !tiktokAccount) {
-            toast({
-                title: "Erro",
-                description: "Nenhuma conta do TikTok para sincronizar.",
-                variant: "destructive",
-            });
-            return;
-        }
-
-        setIsSyncing(true);
-
-        try {
-            const result = await refreshTiktokData({ refreshToken: tiktokAccount.refreshToken });
-            
-            const batch = writeBatch(firestore);
-
-            const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
-            const accountData = {
-                // ...existing data is preserved by merge
-                followerCount: result.follower_count,
-                followingCount: result.following_count,
-                likesCount: result.likes_count,
-                videoCount: result.video_count,
-                accessToken: result.access_token,
-                refreshToken: result.refresh_token,
-                tokenExpiresAt: Date.now() + result.expires_in * 1000,
-                refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-                lastSyncStatus: 'success',
-                lastSyncTime: new Date().toISOString(),
-                lastSyncError: '', // Clear any previous error
-            };
-            batch.set(tiktokAccountRef, accountData, { merge: true });
-
-            if (result.videos && result.videos.length > 0) {
-                const videosCollectionRef = collection(tiktokAccountRef, 'videos');
-                result.videos.forEach(video => {
-                    const videoDocRef = doc(videosCollectionRef, video.id);
-                    batch.set(videoDocRef, video, { merge: true });
-                });
-            }
-
-            await batch.commit();
-
-            toast({
-                title: "Sincronização Concluída!",
-                description: `Seus dados do TikTok foram atualizados. ${result.videos.length} vídeos sincronizados.`,
-            });
-
-        } catch (error: any) {
-            console.error("Erro ao sincronizar dados do TikTok:", error);
-            const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
-            await setDoc(tiktokAccountRef, { 
-                lastSyncStatus: 'error',
-                lastSyncError: error.message || 'Unknown error'
-            }, { merge: true });
-            
-            toast({
-                title: "Erro na Sincronização",
-                description: error.message || "Não foi possível atualizar seus dados do TikTok. Tente novamente.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsSyncing(false);
-        }
-    };
-
 
     const handleDisconnectTikTok = async () => {
         if (!user || !firestore || !tiktokAccounts || tiktokAccounts.length === 0) {
@@ -263,11 +195,7 @@ export default function ConnectionsPage() {
                     </CardContent>
                     <CardFooter className="flex flex-col gap-2">
                         {isTiktokConnected ? (
-                             <div className="w-full grid grid-cols-2 gap-2">
-                                 <Button variant="outline" className="w-full" onClick={handleSyncTikTok} disabled={isSyncing}>
-                                    {isSyncing ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw className="mr-2" />}
-                                    Sincronizar
-                                </Button>
+                             <div className="w-full">
                                 <AlertDialog>
                                     <AlertDialogTrigger asChild>
                                         <Button variant="destructive" className="w-full" disabled={isDeleting}>
@@ -321,5 +249,3 @@ export default function ConnectionsPage() {
         </div>
     );
 }
-
-    
