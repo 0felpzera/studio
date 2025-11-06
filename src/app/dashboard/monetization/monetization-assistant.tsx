@@ -15,12 +15,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
 import { collection, query, limit } from 'firebase/firestore';
-import type { TiktokAccount } from "@/lib/types";
+import type { TiktokAccount, TiktokVideo } from "@/lib/types";
 
 
 const formSchema = z.object({
   followerCount: z.coerce.number().min(1, "O número de seguidores é obrigatório."),
-  engagementRate: z.coerce.number().min(0.01, "A taxa de engajamento deve ser de pelo menos 0.01."),
+  engagementRate: z.coerce.number().min(0.0001, "A taxa de engajamento é obrigatória."),
   niche: z.string().min(2, "O nicho é obrigatório."),
   averageViews: z.coerce.number().min(1, "A média de visualizações é obrigatória."),
   demographics: z.string().min(10, "A descrição da demografia é obrigatória."),
@@ -41,12 +41,33 @@ export default function MonetizationAssistant() {
 
   const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
   const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
+  
+  const videosQuery = useMemoFirebase(() => {
+      if (!firestore || !user || !tiktokAccount) return null;
+      return query(collection(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id, 'videos'));
+  }, [firestore, user, tiktokAccount]);
+
+  const { data: allVideos, isLoading: isLoadingVideos } = useCollection<TiktokVideo>(videosQuery);
+
+
+  const engagementRate = useMemo(() => {
+    if (!allVideos || allVideos.length === 0) return 0;
+    const totalViews = allVideos.reduce((sum, video) => sum + (video.view_count || 0), 0);
+    const totalLikes = allVideos.reduce((sum, video) => sum + (video.like_count || 0), 0);
+    const totalComments = allVideos.reduce((sum, video) => sum + (video.comment_count || 0), 0);
+    const totalShares = allVideos.reduce((sum, video) => sum + (video.share_count || 0), 0);
+
+    if (totalViews === 0) return 0;
+    const totalEngagements = totalLikes + totalComments + totalShares;
+    return (totalEngagements / totalViews); // Keep as decimal for the form
+  }, [allVideos]);
+
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       followerCount: 0,
-      engagementRate: 0.05,
+      engagementRate: 0.0,
       niche: "Beleza e Skincare",
       averageViews: 50000,
       demographics: "Mulheres, 18-24 anos, localizadas no Brasil, interessadas em produtos cruelty-free.",
@@ -58,7 +79,11 @@ export default function MonetizationAssistant() {
     if (tiktokAccount) {
       form.setValue('followerCount', tiktokAccount.followerCount);
     }
-  }, [tiktokAccount, form]);
+    if (engagementRate > 0) {
+        // Format to a reasonable number of decimal places for the input
+        form.setValue('engagementRate', parseFloat(engagementRate.toFixed(4)));
+    }
+  }, [tiktokAccount, engagementRate, form]);
 
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -86,6 +111,8 @@ export default function MonetizationAssistant() {
       setIsLoading(false);
     }
   }
+  
+  const isLoadingData = isLoadingTiktok || isLoadingVideos;
 
   return (
     <div className="grid gap-8 md:grid-cols-3">
@@ -101,16 +128,18 @@ export default function MonetizationAssistant() {
                 <FormField control={form.control} name="followerCount" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Número de Seguidores</FormLabel>
-                    <FormControl><Input type="number" {...field} disabled={!!tiktokAccount || isLoadingTiktok} /></FormControl>
-                    {isLoadingTiktok && <p className="text-xs text-muted-foreground">Buscando dados do TikTok...</p>}
-                    {tiktokAccount && <p className="text-xs text-muted-foreground">Preenchido com dados do TikTok.</p>}
+                    <FormControl><Input type="number" {...field} disabled={!!tiktokAccount} /></FormControl>
+                    {isLoadingData && <p className="text-xs text-muted-foreground">Buscando dados do TikTok...</p>}
+                    {tiktokAccount && !isLoadingData && <p className="text-xs text-muted-foreground">Preenchido com dados do TikTok.</p>}
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="engagementRate" render={({ field }) => (
                   <FormItem>
                     <FormLabel>Taxa de Engajamento (ex: 0.05 para 5%)</FormLabel>
-                    <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                    <FormControl><Input type="number" step="0.0001" {...field} disabled={engagementRate > 0} /></FormControl>
+                     {isLoadingData && <p className="text-xs text-muted-foreground">Calculando com dados do TikTok...</p>}
+                    {engagementRate > 0 && !isLoadingData && <p className="text-xs text-muted-foreground">Calculado com dados do TikTok.</p>}
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -142,7 +171,7 @@ export default function MonetizationAssistant() {
                     <FormMessage />
                   </FormItem>
                 )} />
-                 <Button type="submit" disabled={isLoading} className="w-full font-bold">
+                 <Button type="submit" disabled={isLoading || isLoadingData} className="w-full font-bold">
                   {isLoading ? <Loader2 className="animate-spin" /> : <> <DollarSign className="mr-2" />Gerar Mídia Kit</>}
                 </Button>
               </form>
@@ -152,7 +181,7 @@ export default function MonetizationAssistant() {
       </div>
       <div className="md:col-span-2">
         <div className="space-y-6">
-          {isLoading && (
+          {(isLoading || isLoadingData) && (
             <Card className="animate-pulse">
                 <CardHeader>
                     <div className="h-6 w-3/4 bg-muted rounded"></div>
@@ -163,7 +192,7 @@ export default function MonetizationAssistant() {
                 </CardContent>
             </Card>
           )}
-          {!isLoading && !result && (
+          {!isLoading && !isLoadingData && !result && (
             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
                 <CardHeader>
                     <div className="mx-auto bg-secondary p-3 rounded-full">
