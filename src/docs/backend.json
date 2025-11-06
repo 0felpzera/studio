@@ -113,6 +113,17 @@
         "videoCount": {
           "type": "number",
           "description": "Total number of videos the user has posted."
+        },
+        "lastSyncStatus": {
+          "type": "string",
+          "enum": ["pending", "syncing", "success", "error"]
+        },
+        "lastSyncTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "lastSyncError": {
+            "type": "string"
         }
       },
       "required": [
@@ -191,6 +202,38 @@
         "platform",
         "description"
       ]
+    },
+    "SavedVideoIdea": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SavedVideoIdea",
+      "type": "object",
+      "description": "Represents a video idea saved by the user.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "scriptOutline": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["Evergreen", "Trending"]
+        },
+        "savedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": ["id", "userId", "title"]
     }
   },
   "auth": {
@@ -320,8 +363,28 @@
             }
           ]
         }
+      },
+       {
+        "path": "/users/{userId}/savedVideoIdeas/{ideaId}",
+        "definition": {
+          "entityName": "SavedVideoIdea",
+          "schema": {
+            "$ref": "#/entities/SavedVideoIdea"
+          },
+          "description": "Stores video ideas saved by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "ideaId",
+              "description": "The unique identifier of the saved idea."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\n\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\n*   The `goals` and `contentTasks` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\n*   The `videos` subcollection under `tiktokAccounts` allows for scalable storage of a user's video history.\n\nThis structure supports the required QAPs by:\n\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks or goals is restricted to the authenticated user associated with the `/users/{userId}` path.\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
+    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\\n\\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount, SavedVideoIdeas) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\\n*   The `goals`, `contentTasks`, and `savedVideoIdeas` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\\n*   The `videos` subcollection under `tiktokAccounts` allows for scalable storage of a user's video history.\\n\\nThis structure supports the required QAPs by:\\n\\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks or goals is restricted to the authenticated user associated with the `/users/{userId}` path.\\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
   }
 }

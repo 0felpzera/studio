@@ -3,12 +3,13 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Share2, Settings, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Share2, Settings, Loader2, CheckCircle, XCircle, RefreshCw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, setDoc, collection, deleteDoc } from "firebase/firestore";
-import type { TiktokAccount } from "@/lib/types";
+import { doc, setDoc, collection, deleteDoc, writeBatch } from "firebase/firestore";
+import type { TiktokAccount, TiktokVideo } from "@/lib/types";
+import { refreshTiktokData } from "@/ai/flows/refresh-tiktok-data";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,7 @@ export default function ConnectionsPage() {
     const { user, isUserLoading } = useUser();
     const firestore = useFirestore();
     const [isDeleting, setIsDeleting] = useState(false);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const tiktokAccountsQuery = useMemoFirebase(() => {
         if (!firestore || !user) return null;
@@ -49,6 +51,7 @@ export default function ConnectionsPage() {
     const { data: tiktokAccounts, isLoading: isLoadingTiktok } = useCollection<TiktokAccount>(tiktokAccountsQuery);
 
     const isTiktokConnected = useMemo(() => tiktokAccounts && tiktokAccounts.length > 0, [tiktokAccounts]);
+    const tiktokAccount = useMemo(() => tiktokAccounts?.[0], [tiktokAccounts]);
 
     const handleConnectTikTok = () => {
         const clientKey = 'sbaw8kkl7ahscrla44'; // TikTok Client Key
@@ -65,6 +68,74 @@ export default function ConnectionsPage() {
         window.location.href = tiktokAuthUrl.toString();
     };
 
+    const handleSyncTikTok = async () => {
+        if (!user || !firestore || !tiktokAccount) {
+            toast({
+                title: "Erro",
+                description: "Nenhuma conta do TikTok para sincronizar.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        setIsSyncing(true);
+
+        try {
+            const result = await refreshTiktokData({ refreshToken: tiktokAccount.refreshToken });
+            
+            const batch = writeBatch(firestore);
+
+            const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
+            const accountData = {
+                // ...existing data is preserved by merge
+                followerCount: result.follower_count,
+                followingCount: result.following_count,
+                likesCount: result.likes_count,
+                videoCount: result.video_count,
+                accessToken: result.access_token,
+                refreshToken: result.refresh_token,
+                tokenExpiresAt: Date.now() + result.expires_in * 1000,
+                refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
+                lastSyncStatus: 'success',
+                lastSyncTime: new Date().toISOString(),
+                lastSyncError: '', // Clear any previous error
+            };
+            batch.set(tiktokAccountRef, accountData, { merge: true });
+
+            if (result.videos && result.videos.length > 0) {
+                const videosCollectionRef = collection(tiktokAccountRef, 'videos');
+                result.videos.forEach(video => {
+                    const videoDocRef = doc(videosCollectionRef, video.id);
+                    batch.set(videoDocRef, video, { merge: true });
+                });
+            }
+
+            await batch.commit();
+
+            toast({
+                title: "Sincronização Concluída!",
+                description: `Seus dados do TikTok foram atualizados. ${result.videos.length} vídeos sincronizados.`,
+            });
+
+        } catch (error: any) {
+            console.error("Erro ao sincronizar dados do TikTok:", error);
+            const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
+            await setDoc(tiktokAccountRef, { 
+                lastSyncStatus: 'error',
+                lastSyncError: error.message || 'Unknown error'
+            }, { merge: true });
+            
+            toast({
+                title: "Erro na Sincronização",
+                description: error.message || "Não foi possível atualizar seus dados do TikTok. Tente novamente.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
+
     const handleDisconnectTikTok = async () => {
         if (!user || !firestore || !tiktokAccounts || tiktokAccounts.length === 0) {
             toast({
@@ -76,7 +147,6 @@ export default function ConnectionsPage() {
         }
 
         setIsDeleting(true);
-        // Assuming only one TikTok account can be connected at a time.
         const tiktokAccountId = tiktokAccounts[0].id; 
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccountId);
 
@@ -149,8 +219,13 @@ export default function ConnectionsPage() {
                             <>
                                 <div className="text-lg font-bold text-green-500 flex items-center gap-2"><CheckCircle className="h-5 w-5"/>Conectado</div>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    Sua conta <span className='font-bold'>{tiktokAccounts?.[0].username}</span> está sincronizada.
+                                    Sua conta <span className='font-bold'>{tiktokAccount?.username}</span> está sincronizada.
                                 </p>
+                                {tiktokAccount?.lastSyncTime && (
+                                     <p className="text-xs text-muted-foreground mt-1">
+                                        Última sinc: {new Date(tiktokAccount.lastSyncTime).toLocaleString('pt-BR')}
+                                    </p>
+                                )}
                             </>
                         ) : (
                             <>
@@ -161,30 +236,36 @@ export default function ConnectionsPage() {
                             </>
                         )}
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex flex-col gap-2">
                         {isTiktokConnected ? (
-                             <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button variant="destructive" className="w-full" disabled={isDeleting}>
-                                        {isDeleting ? <Loader2 className="mr-2 animate-spin" /> : <XCircle className="mr-2" />}
-                                        Desconectar
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Esta ação irá desconectar sua conta do TikTok. Você precisará se conectar novamente para sincronizar seus dados.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction onClick={handleDisconnectTikTok} className="bg-destructive hover:bg-destructive/90">
-                                            Sim, Desconectar
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                             <div className="w-full grid grid-cols-2 gap-2">
+                                 <Button variant="outline" className="w-full" onClick={handleSyncTikTok} disabled={isSyncing}>
+                                    {isSyncing ? <Loader2 className="mr-2 animate-spin" /> : <RefreshCw className="mr-2" />}
+                                    Sincronizar
+                                </Button>
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" className="w-full" disabled={isDeleting}>
+                                            {isDeleting ? <Loader2 className="mr-2 animate-spin" /> : <XCircle className="mr-2" />}
+                                            Desconectar
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta ação irá desconectar sua conta do TikTok. Você precisará se conectar novamente para sincronizar seus dados.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDisconnectTikTok} className="bg-destructive hover:bg-destructive/90">
+                                                Sim, Desconectar
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </div>
                         ) : (
                             <Button className="w-full" onClick={handleConnectTikTok} disabled={isUserLoading || isLoadingTiktok}>
                                 <Share2 className="mr-2" /> Conectar TikTok
