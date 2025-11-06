@@ -110,7 +110,7 @@ export default function ContentCalendar() {
   
   const goalsQuery = useMemoFirebase(() => {
     if (!firestore || !user) return null;
-    return query(collection(firestore, 'users', user.uid, 'goals'), limit(1));
+    return collection(firestore, 'users', user.uid, 'goals');
   }, [firestore, user]);
 
   const { data: calendar, isLoading: isLoadingTasks } = useCollection<ContentTask>(contentTasksQuery);

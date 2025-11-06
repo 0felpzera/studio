@@ -121,7 +121,7 @@ export default function DashboardPage() {
     // Query for user goals
     const goalsQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
-        return query(collection(firestore, 'users', user.uid, 'goals'), limit(1));
+        return collection(firestore, 'users', user.uid, 'goals');
     }, [user, firestore]);
 
     const { data: goals, isLoading: isLoadingGoals } = useCollection<GoalType>(goalsQuery);
@@ -578,6 +578,9 @@ export default function DashboardPage() {
                                 <Goal className="mx-auto h-8 w-8" />
                                 <h3 className="mt-2 font-semibold">Nenhuma meta definida</h3>
                                 <p className="text-sm">Vá para o onboarding para definir suas metas.</p>
+                                <Button asChild variant="link">
+                                    <Link href="/onboarding">Definir Metas</Link>
+                                </Button>
                             </div>
                            )}
                         </AccordionContent>

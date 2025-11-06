@@ -1,9 +1,10 @@
 
+
 'use client';
 
 import { useState } from 'react';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc, collection } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
 import { Loader2, UserPlus, Goal, Check, Share2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -87,11 +88,12 @@ export default function OnboardingPage() {
         followerGoal: parseInt(followerGoal, 10),
         postingFrequency,
       };
+      
+      // Use a predictable ID for the goal document
+      const goalDocRef = doc(firestore, 'users', user.uid, 'goals', 'user-goal');
+      await setDoc(goalDocRef, goalData, { merge: true });
 
-      const goalDocRef = doc(collection(firestore, 'users', user.uid, 'goals'));
-      await setDoc(goalDocRef, goalData);
-
-      // Also update the main user doc with the niche
+      // Also update the main user doc with the niche for easy access
       const userDocRef = doc(firestore, 'users', user.uid);
       await setDoc(userDocRef, { niche }, { merge: true });
 
