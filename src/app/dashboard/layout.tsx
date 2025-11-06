@@ -45,7 +45,7 @@ const Sidebar = () => {
                 </Link>
             </div>
             <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-                <p className="px-4 py-2 text-xs font-semibold text-gray-300 tracking-wider">Menu</p>
+                <p className="px-4 py-2 text-xs font-semibold text-white/80 tracking-wider">Menu</p>
                 {[...navItems].map(item => (
                     <Link
                         key={item.name}
@@ -58,7 +58,7 @@ const Sidebar = () => {
                         <span>{item.name}</span>
                     </Link>
                 ))}
-                <p className="px-4 pt-4 pb-2 text-xs font-semibold text-gray-300 tracking-wider">Ferramentas de IA</p>
+                <p className="px-4 pt-4 pb-2 text-xs font-semibold text-white/80 tracking-wider">Ferramentas de IA</p>
                  {resourcesItems.map(item => (
                     <Link
                         key={item.name}
