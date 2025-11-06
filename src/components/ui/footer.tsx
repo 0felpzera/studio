@@ -58,7 +58,7 @@ export function Footer() {
             <div>
               <h3 className="font-semibold mb-4">Newsletter</h3>
               <p className="text-sm text-muted-foreground mb-3">Receba dicas e tendências no seu e-mail.</p>
-              <form className="flex">
+              <form className="flex w-full">
                 <Input type="email" placeholder="seu@email.com" className="rounded-r-none" />
                 <Button type="submit" className="rounded-l-none">Inscrever</Button>
               </form>
