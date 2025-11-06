@@ -59,9 +59,6 @@ import { Progress } from '@/components/ui/progress';
 
 function formatNumber(value: number | undefined | null): string {
     if (value === undefined || value === null) return 'N/A';
-    if (value >= 1000000) {
-        return (value / 1000000).toFixed(1).replace('.', ',') + 'M';
-    }
     if (value >= 10000) {
         return (value / 1000).toFixed(1).replace('.', ',') + 'k';
     }
@@ -72,15 +69,17 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-3 text-sm">
-        <p className="label font-bold text-foreground">{`Mês: ${label}`}</p>
+        <p className="label font-bold text-foreground mb-2">{`Mês: ${label}`}</p>
         {payload.map((pld: any) => {
             const value = pld.dataKey === 'Engajamento' 
                 ? `${pld.value.toFixed(2).replace('.', ',')}%`
                 : formatNumber(pld.value);
             return (
-              <p key={pld.dataKey} style={{ color: pld.fill || pld.stroke }}>
-                {`${pld.name}: ${value}`}
-              </p>
+              <div key={pld.dataKey} className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pld.fill || pld.stroke }}></span>
+                <span className="text-muted-foreground">{`${pld.name}:`}</span>
+                <span className="font-bold text-foreground">{value}</span>
+              </div>
             )
         })}
       </div>
