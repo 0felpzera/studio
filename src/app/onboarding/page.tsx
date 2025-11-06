@@ -12,7 +12,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { TrendifyLogo } from '@/components/icons';
 
 export default function OnboardingPage() {
   const { user, isUserLoading } = useUser();
@@ -100,7 +99,7 @@ export default function OnboardingPage() {
       <Card className="w-full max-w-lg shadow-2xl">
         <CardHeader className="text-center">
             <div className="mx-auto mb-4">
-                <TrendifyLogo className="h-10 w-10 text-primary" />
+                <span className="text-2xl font-bold text-foreground font-headline">Trendify</span>
             </div>
           <CardTitle className="text-2xl font-bold">Bem-vindo(a) ao Trendify!</CardTitle>
           <CardDescription>Vamos configurar seu perfil para começar a crescer.</CardDescription>

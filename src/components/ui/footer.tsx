@@ -3,7 +3,6 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { TrendifyLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Github, Twitter, Instagram } from 'lucide-react';
@@ -15,7 +14,6 @@ export function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16">
           <div className="lg:col-span-4 space-y-4">
             <Link href="/" className="flex items-center gap-2">
-                <TrendifyLogo className="h-7 w-7 text-primary" />
                 <span className="font-bold text-lg">Trendify</span>
             </Link>
             <p className="text-muted-foreground text-sm">

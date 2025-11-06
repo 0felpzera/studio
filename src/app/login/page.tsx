@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { TrendifyLogo } from '@/components/icons';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -82,7 +81,6 @@ export default function LoginPage() {
                 <div className="mx-auto grid w-[350px] gap-6">
                     <div className="grid gap-2 text-center">
                          <div className="inline-flex justify-center items-center gap-3 mb-4">
-                            <TrendifyLogo className="h-8 w-8 text-primary" />
                             <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
                         </div>
                         <h1 className="text-3xl font-bold">Boas-vindas de volta!</h1>
