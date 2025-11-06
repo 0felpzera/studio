@@ -505,7 +505,7 @@ export default function DashboardPage() {
                                             <p className="text-white text-sm font-bold truncate">{video.title || 'Sem título'}</p>
                                         </div>
                                     </div>
-                                a>
+                                </a>
                                 <CardContent className="p-3 text-xs text-muted-foreground flex justify-around items-center gap-2 border-t">
                                     <div className="flex items-center gap-1" title={`${formatNumber(video.like_count)} Curtidas`}><Heart className="size-3.5" /> {formatNumber(video.like_count)}</div>
                                     <div className="flex items-center gap-1" title={`${formatNumber(video.comment_count)} Comentários`}><MessageCircle className="size-3.5" /> {formatNumber(video.comment_count)}</div>
@@ -530,3 +530,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
