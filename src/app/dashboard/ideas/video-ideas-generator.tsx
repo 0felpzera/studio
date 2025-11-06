@@ -26,6 +26,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const formSchema = z.object({
   niche: z.string().min(2, "O nicho é obrigatório."),
@@ -110,7 +118,8 @@ export default function VideoIdeasGenerator() {
     }
   };
 
-  const handleDeleteIdea = async (ideaId: string) => {
+  const handleDeleteIdea = async (e: React.MouseEvent, ideaId: string) => {
+    e.stopPropagation(); // Prevent dialog from opening
     if (!user || !firestore) return;
     setIsDeleting(ideaId);
     try {
@@ -134,178 +143,198 @@ export default function VideoIdeasGenerator() {
 
 
   return (
-    <div className="grid gap-8 md:grid-cols-3">
-      <div className="md:col-span-1">
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="font-bold">Inspire-se</CardTitle>
-                <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
-              </div>
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Bookmark className="mr-2 h-4 w-4" />
-                    Salvos
-                  </Button>
-                </SheetTrigger>
-                <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
-                  <SheetHeader>
-                    <SheetTitle>Suas Ideias Salvas</SheetTitle>
-                    <SheetDescription>
-                      Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
-                    </SheetDescription>
-                  </SheetHeader>
-                  <div className="flex-1 overflow-y-auto pr-4">
-                    {isLoadingSaved && (
-                       <div className="space-y-4 mt-4">
-                         {Array.from({ length: 5 }).map((_, i) => (
-                           <div key={i} className="p-4 rounded-lg border bg-muted/50 space-y-2 animate-pulse">
-                             <div className="h-4 w-3/4 bg-muted-foreground/20 rounded"></div>
-                             <div className="h-3 w-full bg-muted-foreground/20 rounded"></div>
-                           </div>
-                         ))}
-                       </div>
-                    )}
-                    {!isLoadingSaved && savedIdeas && savedIdeas.length > 0 ? (
-                      <div className="space-y-4 mt-4">
-                        {savedIdeas.map((idea) => (
-                          <div key={idea.id} className="p-4 rounded-lg border bg-muted/50 group">
-                            <div className="flex justify-between items-start">
-                              <div>
-                                <h4 className="font-semibold text-foreground">{idea.title}</h4>
-                                <p className="text-sm text-muted-foreground">{idea.description}</p>
+    <Dialog>
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="font-bold">Inspire-se</CardTitle>
+                  <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
+                </div>
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Bookmark className="mr-2 h-4 w-4" />
+                      Salvos
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
+                    <SheetHeader>
+                      <SheetTitle>Suas Ideias Salvas</SheetTitle>
+                      <SheetDescription>
+                        Seu banco de ideias para nunca mais sofrer com bloqueio criativo.
+                      </SheetDescription>
+                    </SheetHeader>
+                    <div className="flex-1 overflow-y-auto pr-4">
+                      {isLoadingSaved && (
+                         <div className="space-y-4 mt-4">
+                           {Array.from({ length: 5 }).map((_, i) => (
+                             <div key={i} className="p-4 rounded-lg border bg-muted/50 space-y-2 animate-pulse">
+                               <div className="h-4 w-3/4 bg-muted-foreground/20 rounded"></div>
+                               <div className="h-3 w-full bg-muted-foreground/20 rounded"></div>
+                             </div>
+                           ))}
+                         </div>
+                      )}
+                      {!isLoadingSaved && savedIdeas && savedIdeas.length > 0 ? (
+                        <div className="space-y-4 mt-4">
+                          {savedIdeas.map((idea) => (
+                            <DialogTrigger key={idea.id} asChild>
+                              <div className="p-4 rounded-lg border bg-muted/50 group hover:bg-muted/80 cursor-pointer transition-colors">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <h4 className="font-semibold text-foreground">{idea.title}</h4>
+                                    <p className="text-sm text-muted-foreground line-clamp-1">{idea.description}</p>
+                                  </div>
+                                   <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="size-7 opacity-0 group-hover:opacity-100"
+                                      onClick={(e) => handleDeleteIdea(e, idea.id)}
+                                      disabled={isDeleting === idea.id}
+                                    >
+                                      {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : <Trash2 className="size-4 text-destructive" />}
+                                    </Button>
+                                </div>
                               </div>
-                               <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="size-7 opacity-0 group-hover:opacity-100"
-                                  onClick={() => handleDeleteIdea(idea.id)}
-                                  disabled={isDeleting === idea.id}
-                                >
-                                  {isDeleting === idea.id ? <Loader2 className="size-4 animate-spin"/> : <Trash2 className="size-4 text-destructive" />}
-                                </Button>
-                            </div>
-                           <pre className="text-xs text-muted-foreground mt-2 whitespace-pre-wrap font-sans bg-background/50 p-2 rounded-md">{idea.scriptOutline}</pre>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full text-center">
-                        <Bookmark className="size-12 text-muted-foreground/50" />
-                        <h3 className="text-lg font-semibold mt-4">Nenhuma Ideia Salva</h3>
-                        <p className="text-sm text-muted-foreground mt-1">Clique em "Salvar Ideia" para começar a construir seu banco.</p>
-                      </div>
-                    )}
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <FormField
-                  control={form.control}
-                  name="niche"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Seu Nicho</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Ex: Fitness, Games, Beleza" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="currentTrends"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tendências Atuais que Você Notou</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Ex: Áudios específicos, desafios, formatos de vídeo" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit" disabled={isLoading} className="w-full font-bold">
-                  {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" />Sugerir Ideias</>}
-                </Button>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      </div>
-      <div className="md:col-span-2">
-        <div className="space-y-4">
-          {isLoading && (
-             Array.from({ length: 3 }).map((_, index) => (
-                <Card key={index} className="animate-pulse">
-                    <CardHeader>
-                        <div className="h-6 bg-muted rounded w-3/4"></div>
-                        <div className="h-4 bg-muted rounded w-1/2 mt-2"></div>
-                    </CardHeader>
-                </Card>
-            ))
-          )}
-          {!isLoading && videoIdeas.length === 0 && (
-             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
-                <CardHeader>
-                    <div className="mx-auto bg-secondary p-3 rounded-full">
-                        <Wand2 className="size-8 text-muted-foreground" />
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <h3 className="text-xl font-semibold mt-2">Suas ideias de vídeo aparecerão aqui</h3>
-                    <p className="text-muted-foreground mt-2">Preencha o formulário para ter um brainstorm com a IA!</p>
-                </CardContent>
-             </Card>
-          )}
-          {videoIdeas.length > 0 && (
-            <Accordion type="single" collapsible className="w-full space-y-4">
-              {videoIdeas.map((idea, index) => (
-                <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg bg-card/80">
-                  <AccordionTrigger className="p-6 text-left hover:no-underline">
-                    <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">{idea.title}</h3>
-                            <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
-                                {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
-                            </Badge>
+                            </DialogTrigger>
+                          ))}
                         </div>
-                        <p className="text-sm text-muted-foreground">{idea.description}</p>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-full text-center">
+                          <Bookmark className="size-12 text-muted-foreground/50" />
+                          <h3 className="text-lg font-semibold mt-4">Nenhuma Ideia Salva</h3>
+                          <p className="text-sm text-muted-foreground mt-1">Clique em "Salvar Ideia" para começar a construir seu banco.</p>
+                        </div>
+                      )}
                     </div>
-                  </AccordionTrigger>
-                  <AccordionContent className="px-6 pb-6">
-                    <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md">
-                        <h4 className="font-semibold">Esboço do Roteiro:</h4>
-                        <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
-                    </div>
-                    <div className="mt-4 text-right">
-                        <Button
-                            size="sm"
-                            onClick={() => handleSaveIdea(idea)}
-                            disabled={savingId === idea.title}
-                        >
-                            {savingId === idea.title ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Save className="mr-2 h-4 w-4" />
-                            )}
-                            Salvar Ideia
-                        </Button>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
+                  </SheetContent>
+                </Sheet>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <FormField
+                    control={form.control}
+                    name="niche"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Seu Nicho</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Fitness, Games, Beleza" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="currentTrends"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Tendências Atuais que Você Notou</FormLabel>
+                        <FormControl>
+                          <Textarea placeholder="Ex: Áudios específicos, desafios, formatos de vídeo" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="submit" disabled={isLoading} className="w-full font-bold">
+                    {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className="mr-2" />Sugerir Ideias</>}
+                  </Button>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
+        <div className="md:col-span-2">
+          <div className="space-y-4">
+            {isLoading && (
+               Array.from({ length: 3 }).map((_, index) => (
+                  <Card key={index} className="animate-pulse">
+                      <CardHeader>
+                          <div className="h-6 bg-muted rounded w-3/4"></div>
+                          <div className="h-4 bg-muted rounded w-1/2 mt-2"></div>
+                      </CardHeader>
+                  </Card>
+              ))
+            )}
+            {!isLoading && videoIdeas.length === 0 && (
+               <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+                  <CardHeader>
+                      <div className="mx-auto bg-secondary p-3 rounded-full">
+                          <Wand2 className="size-8 text-muted-foreground" />
+                      </div>
+                  </CardHeader>
+                  <CardContent>
+                      <h3 className="text-xl font-semibold mt-2">Suas ideias de vídeo aparecerão aqui</h3>
+                      <p className="text-muted-foreground mt-2">Preencha o formulário para ter um brainstorm com a IA!</p>
+                  </CardContent>
+               </Card>
+            )}
+            {videoIdeas.length > 0 && (
+              <Accordion type="single" collapsible className="w-full space-y-4">
+                {videoIdeas.map((idea, index) => (
+                  <AccordionItem key={index} value={`item-${index}`} className="border rounded-lg bg-card/80">
+                    <AccordionTrigger className="p-6 text-left hover:no-underline">
+                      <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-lg">{idea.title}</h3>
+                              <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
+                                  {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
+                              </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{idea.description}</p>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-6 pb-6">
+                      <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md">
+                          <h4 className="font-semibold">Esboço do Roteiro:</h4>
+                          <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
+                      </div>
+                      <div className="mt-4 text-right">
+                          <Button
+                              size="sm"
+                              onClick={() => handleSaveIdea(idea)}
+                              disabled={savingId === idea.title}
+                          >
+                              {savingId === idea.title ? (
+                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              ) : (
+                                  <Save className="mr-2 h-4 w-4" />
+                              )}
+                              Salvar Ideia
+                          </Button>
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            )}
+          </div>
+        </div>
+         {savedIdeas?.map(idea => (
+          <DialogContent key={idea.id}>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                 <Badge variant={idea.type === 'Trending' ? 'default' : 'secondary'} className="bg-primary/10 text-primary border-primary/20">
+                    {idea.type === 'Trending' ? 'Tendência' : 'Perene'}
+                </Badge>
+                {idea.title}
+              </DialogTitle>
+              <DialogDescription>{idea.description}</DialogDescription>
+            </DialogHeader>
+            <div className="prose prose-sm dark:prose-invert max-w-none text-foreground bg-muted/50 p-4 rounded-md mt-4">
+                <h4 className="font-semibold">Esboço do Roteiro:</h4>
+                <pre className="whitespace-pre-wrap font-sans text-sm">{idea.scriptOutline}</pre>
+            </div>
+          </DialogContent>
+        ))}
       </div>
-    </div>
+    </Dialog>
   );
 }
