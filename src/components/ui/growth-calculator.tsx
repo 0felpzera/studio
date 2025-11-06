@@ -246,7 +246,6 @@ export function GrowthCalculator() {
             <div className='max-w-4xl mx-auto'>
                 <div className='text-center mb-12'>
                     <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Calculadora de Crescimento</h2>
-                    <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Descubra seu potencial de crescimento e monetização com uma simulação baseada em IA.</p>
                 </div>
                 <Card className="grid md:grid-cols-12 bg-card/10 backdrop-blur-lg border border-white/10 shadow-lg">
                    <div className="md:col-span-4 p-6 bg-muted/50 rounded-l-xl border-r border-white/10">
@@ -401,5 +400,7 @@ export function GrowthCalculator() {
     </section>
   );
 }
+
+    
 
     
