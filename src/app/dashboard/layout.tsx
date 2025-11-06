@@ -72,7 +72,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
                 <div className='overflow-y-auto p-4 space-y-1'>
-                    <p className="px-4 py-2 text-xs font-semibold text-muted-foreground tracking-wider">Menu</p>
+                    <p className="px-4 py-2 text-xs font-semibold text-foreground tracking-wider">Menu</p>
                     {[...navItems].map(item => (
                         <Button
                             key={item.name}
@@ -86,7 +86,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
                             <span>{item.name}</span>
                         </Button>
                     ))}
-                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-muted-foreground tracking-wider">Ferramentas de IA</p>
+                    <p className="px-4 pt-4 pb-2 text-xs font-semibold text-foreground tracking-wider">Ferramentas de IA</p>
                      {resourcesItems.map(item => (
                         <Button
                             key={item.name}
