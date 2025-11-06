@@ -496,7 +496,7 @@ export default function DashboardPage() {
                                 </defs>
                                 <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                                 <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorLikes)" />
-                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ r: 4, strokeWidth: 2, fill: 'hsl(var(--background))' }} activeDot={{ r: 6 }}/>
+                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={false} activeDot={{ r: 6 }}/>
                             </ComposedChart>
                         </ResponsiveContainer>
                     </CardContent>
