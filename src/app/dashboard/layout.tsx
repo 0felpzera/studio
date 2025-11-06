@@ -20,6 +20,7 @@ import {
     X,
     FileText,
     Users,
+    TrendingUp,
 } from 'lucide-react';
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Plano de Conteúdo', href: '/dashboard/plan', icon: CalendarCheck },
+  { name: 'Plano de Crescimento', href: '/dashboard/growth-plan', icon: TrendingUp },
   { name: 'Conexões', href: '/dashboard/connections', icon: Share2 },
   { name: 'Perfil', href: '/dashboard/profile', icon: Users },
 ];

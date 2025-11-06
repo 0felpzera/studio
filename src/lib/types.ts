@@ -14,6 +14,11 @@ export type TiktokVideo = {
     create_time?: number;
 }
 
+export type FollowerHistory = {
+    date: string;
+    count: number;
+}
+
 export type TiktokAccount = {
     id: string;
     userId: string;
@@ -34,6 +39,7 @@ export type TiktokAccount = {
     lastSyncStatus: 'pending' | 'syncing' | 'success' | 'error';
     lastSyncTime?: string;
     lastSyncError?: string;
+    followerHistory?: FollowerHistory[];
 };
 
 export type SavedVideoIdea = {

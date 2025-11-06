@@ -125,6 +125,18 @@
         },
         "lastSyncError": {
             "type": "string"
+        },
+        "followerHistory": {
+          "type": "array",
+          "description": "A history of follower counts over time.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "date": { "type": "string", "format": "date-time" },
+              "count": { "type": "number" }
+            },
+            "required": ["date", "count"]
+          }
         }
       },
       "required": [
