@@ -66,7 +66,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
     return (
         <>
             <div className="h-20 flex items-center justify-center border-b">
-                <Link href="/dashboard" className="flex items-center gap-2" onClick={onLinkClick}>
+                <Link href="/" className="flex items-center gap-2" onClick={onLinkClick}>
                     <span className="text-xl font-bold text-foreground font-headline">Trendify</span>
                 </Link>
             </div>
@@ -137,7 +137,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 <div className="flex flex-1 flex-col">
                     {/* Mobile Header */}
                     <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
-                        <Link href="/dashboard" className="flex items-center gap-2">
+                        <Link href="/" className="flex items-center gap-2">
                             <span className="text-lg font-bold font-headline">Trendify</span>
                         </Link>
                         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
