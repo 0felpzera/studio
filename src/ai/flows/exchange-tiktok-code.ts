@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Exchanges a TikTok authorization code for an access token, fetches user info,
@@ -14,6 +15,7 @@ import { z } from 'zod';
 const ExchangeTikTokCodeInputSchema = z.object({
     code: z.string().describe('The authorization code returned from TikTok OAuth.'),
     redirect_uri: z.string().url().describe('The exact redirect URI used in the authorization request.'),
+    state: z.string().describe('The state parameter returned from TikTok OAuth for security validation.'),
 });
 
 export type ExchangeTikTokCodeInput = z.infer<typeof ExchangeTikTokCodeInputSchema>;
@@ -31,6 +33,7 @@ const TiktokVideoSchema = z.object({
 });
 
 const ExchangeTikTokCodeOutputSchema = z.object({
+    decodedStateUserId: z.string().describe("The user ID decoded from the state parameter."),
     open_id: z.string().describe("The user's unique identifier on TikTok."),
     union_id: z.string().describe("The user's unique identifier across TikTok platforms."),
     access_token: z.string().describe("The access token for subsequent API calls."),
@@ -67,7 +70,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         inputSchema: ExchangeTikTokCodeInputSchema,
         outputSchema: ExchangeTikTokCodeOutputSchema,
     },
-    async ({ code, redirect_uri }) => {
+    async ({ code, redirect_uri, state }) => {
         const clientKey = process.env.TIKTOK_CLIENT_KEY;
         const clientSecret = process.env.TIKTOK_CLIENT_SECRET;
 
@@ -75,8 +78,22 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             throw new Error('TikTok client key or secret is not configured in environment variables.');
         }
 
+        // Step 1: Decode and validate state
+        let decodedState;
         try {
-            // Step 1: Exchange authorization code for an access token
+            decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+            if (!decodedState || !decodedState.userId) {
+                throw new Error("Invalid state format.");
+            }
+        } catch (error) {
+            throw new Error("Failed to decode or parse state parameter for security validation.");
+        }
+        
+        const decodedUserId = decodedState.userId;
+
+
+        try {
+            // Step 2: Exchange authorization code for an access token
             const tokenParams = new URLSearchParams();
             tokenParams.append('client_key', clientKey);
             tokenParams.append('client_secret', clientSecret);
@@ -98,7 +115,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             if (!access_token) { throw new Error('Failed to retrieve access token from TikTok.'); }
             
-            // Step 2: Use the access token to fetch user information
+            // Step 3: Use the access token to fetch user information
             const userFields = [
                 'open_id','union_id','avatar_url','display_name','bio_description',
                 'profile_deep_link','is_verified','follower_count','following_count',
@@ -116,7 +133,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             const userInfo = userInfoData.data.user;
 
-            // Step 3: Fetch video list
+            // Step 4: Fetch video list
             const videoFields = [
               "id", "title", "cover_image_url", "share_url", "view_count",
               "like_count", "comment_count", "share_count", "create_time"
@@ -140,8 +157,9 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             
             const videos = videoListData.data.videos || [];
 
-            // Step 4: Assemble and return all data
+            // Step 5: Assemble and return all data
             return {
+                decodedStateUserId: decodedUserId,
                 open_id: userInfo.open_id,
                 union_id: userInfo.union_id,
                 access_token,
@@ -166,5 +184,3 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
         }
     }
 );
-
-    

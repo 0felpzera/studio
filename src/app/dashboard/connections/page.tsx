@@ -74,21 +74,17 @@ export default function ConnectionsPage() {
         }
         
         const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
-        const stateValue = crypto.randomUUID();
         
-        // Store state and user ID for verification in the callback
-        const state = {
-            value: stateValue,
-            userId: user.uid,
-        };
-        sessionStorage.setItem('tiktok_oauth_state', JSON.stringify(state));
-
+        // Encode user ID and a random value into the state parameter
+        const randomState = crypto.randomUUID();
+        const state = Buffer.from(JSON.stringify({ userId: user.uid, random: randomState })).toString('base64');
+        
         const tiktokAuthUrl = new URL('https://www.tiktok.com/v2/auth/authorize/');
         tiktokAuthUrl.searchParams.append('client_key', clientKey);
         tiktokAuthUrl.searchParams.append('scope', tiktokScope);
         tiktokAuthUrl.searchParams.append('response_type', 'code');
         tiktokAuthUrl.searchParams.append('redirect_uri', redirectUri);
-        tiktokAuthUrl.searchParams.append('state', stateValue);
+        tiktokAuthUrl.searchParams.append('state', state);
 
         window.location.href = tiktokAuthUrl.toString();
     };

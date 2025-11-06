@@ -25,7 +25,6 @@ function TikTokCallback() {
 
   useEffect(() => {
     // This effect should only run when the user's auth state is determined.
-    // If it's still loading, we wait.
     if (isUserLoading) {
       setStatus("Verificando sua sessão...");
       return;
@@ -51,26 +50,13 @@ function TikTokCallback() {
       return;
     }
 
-    // Security check: Validate state
-    const originalStateString = sessionStorage.getItem('tiktok_oauth_state');
-    sessionStorage.removeItem('tiktok_oauth_state'); // Clean up state
-    
-    if (!originalStateString) {
-        setError("O estado de validação da sessão expirou ou não foi encontrado. Por favor, tente novamente.");
+    if (!returnedState) {
+        setError("Nenhuma validação de segurança (state) retornada pelo TikTok.");
         setStatus("Falha na validação de segurança.");
         setIsProcessing(false);
         return;
     }
-
-    const originalState = JSON.parse(originalStateString);
-
-    if (originalState.value !== returnedState) {
-        setError("A validação de segurança falhou (state mismatch). Por favor, tente conectar novamente.");
-        setStatus("Erro de segurança.");
-        setIsProcessing(false);
-        return;
-    }
-
+    
     // Auth check: Ensure a Firebase user is logged in
     if (!user || !firestore) {
       setError("Você precisa estar logado para conectar uma conta.");
@@ -85,24 +71,23 @@ function TikTokCallback() {
       return;
     }
 
-    // Final security check: Ensure the user ID from state matches the logged-in user
-    if (originalState.userId !== user.uid) {
-        setError("A sessão do usuário mudou durante a autenticação. Por segurança, o processo foi cancelado. Por favor, tente novamente.");
-        setStatus("Conflito de sessão.");
-        setIsProcessing(false);
-        return;
-    }
-
     // All checks passed, proceed to exchange code
     const processCode = async () => {
       try {
         setStatus("Trocando código, buscando perfil e vídeos...");
         
-        // Pass the correct redirect URI to the backend flow
         const redirectUri = "https://9000-firebase-studio-1761913155594.cluster-gizzoza7hzhfyxzo5d76y3flkw.cloudworkstations.dev/auth/tiktok/callback";
         
-        const result = await exchangeTikTokCode({ code: authCode, redirect_uri: redirectUri });
+        const result = await exchangeTikTokCode({ code: authCode, redirect_uri: redirectUri, state: returnedState });
         
+        // Final security check: ensure the user ID from the decoded state matches the logged-in user
+        if (result.decodedStateUserId !== user.uid) {
+            setError("A sessão do usuário mudou durante a autenticação. Por segurança, o processo foi cancelado. Por favor, tente novamente.");
+            setStatus("Conflito de sessão.");
+            setIsProcessing(false);
+            return;
+        }
+
         setApiResponse(result);
         setStatus("Informações recebidas! Salvando tudo no banco de dados...");
 
