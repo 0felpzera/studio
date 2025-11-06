@@ -53,9 +53,12 @@ const formSchema = z.object({
 
 type VideoIdea = VideoIdeasOutput['videoIdeas'][0];
 
+const MAX_RECENT_IDEAS = 15;
+
 export default function VideoIdeasGenerator() {
   const [isLoading, setIsLoading] = useState(false);
   const [videoIdeas, setVideoIdeas] = useState<VideoIdea[]>([]);
+  const [recentIdeas, setRecentIdeas] = useState<string[]>([]);
   const { toast } = useToast();
   const { user } = useUser();
   const firestore = useFirestore();
@@ -81,9 +84,28 @@ export default function VideoIdeasGenerator() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
     setVideoIdeas([]);
+    
+    const excludedIdeas = [
+        ...recentIdeas,
+        ...(savedIdeas?.map(idea => idea.title) || [])
+    ];
+
     try {
-      const result: VideoIdeasOutput = await suggestRelevantVideoIdeas(values);
+      const result: VideoIdeasOutput = await suggestRelevantVideoIdeas({
+        ...values,
+        excludedIdeas,
+      });
+
       setVideoIdeas(result.videoIdeas);
+
+      // Update recent ideas memory
+      const newTitles = result.videoIdeas.map(idea => idea.title);
+      setRecentIdeas(prev => {
+        const updated = [...prev, ...newTitles];
+        // Keep only the last MAX_RECENT_IDEAS to prevent the list from growing indefinitely
+        return updated.slice(Math.max(updated.length - MAX_RECENT_IDEAS, 0));
+      });
+
       toast({
         title: "As ideias estão fluindo!",
         description: "Aqui estão alguns conceitos de vídeo fresquinhos para você.",
@@ -113,6 +135,13 @@ export default function VideoIdeasGenerator() {
             userId: user.uid,
             savedAt: serverTimestamp(),
         });
+
+        // Remove the saved idea from the current suggestions list and add its title to memory
+        setVideoIdeas(prev => prev.filter(i => i.title !== idea.title));
+        if (!recentIdeas.includes(idea.title)) {
+            setRecentIdeas(prev => [...prev, idea.title]);
+        }
+        
         toast({
             title: "Ideia Salva!",
             description: `"${idea.title}" foi adicionada ao seu banco de ideias.`,

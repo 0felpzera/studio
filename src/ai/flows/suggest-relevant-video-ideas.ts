@@ -13,8 +13,9 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const VideoIdeasInputSchema = z.object({
-  niche: z.string().describe('The content creator\'s primary niche (e.g., Fashion, Beauty, Gaming).'),
+  niche: z.string().describe("The content creator's primary niche (e.g., Fashion, Beauty, Gaming)."),
   currentTrends: z.string().describe('A list of current trends on social media platforms.'),
+  excludedIdeas: z.array(z.string()).optional().describe('A list of recent video titles to exclude to avoid repetition.'),
 });
 
 export type VideoIdeasInput = z.infer<typeof VideoIdeasInputSchema>;
@@ -40,13 +41,17 @@ const prompt = ai.definePrompt({
   name: 'suggestRelevantVideoIdeasPrompt',
   input: {schema: VideoIdeasInputSchema},
   output: {schema: VideoIdeasOutputSchema},
-  prompt: `You are an AI creative strategist, constantly learning from what's currently viral to generate fresh, actionable video ideas.
-
-Your goal is to provide a mix of timeless (Evergreen) content and ideas that tap into the current cultural moment (Trending).
+  prompt: `You are an AI creative strategist, constantly learning from what's currently viral to generate fresh, actionable video ideas. Your goal is to provide a mix of timeless (Evergreen) content and ideas that tap into the current cultural moment (Trending).
 
 Creator Info:
 - Niche: {{{niche}}}
 - Observed Trends: {{{currentTrends}}}
+{{#if excludedIdeas}}
+- Excluded Ideas: Do NOT suggest ideas similar to these recent titles:
+  {{#each excludedIdeas}}
+  - "{{{this}}}"
+  {{/each}}
+{{/if}}
 
 For each generated idea, provide:
 1.  **Title:** A catchy, modern title.
@@ -54,8 +59,7 @@ For each generated idea, provide:
 3.  **Script Outline:** A simple structure (Hook, Development, CTA) that is easy to follow.
 4.  **Type:** Classify as 'Evergreen' or 'Trending'.
 
-Format the output as a JSON array of video ideas, ensuring they are relevant and immediately usable.
-  `,
+Format the output as a JSON array of video ideas, ensuring they are relevant, new, and immediately usable.`,
 });
 
 const suggestRelevantVideoIdeasFlow = ai.defineFlow(

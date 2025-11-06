@@ -113,14 +113,18 @@ Return the calendar as a structured JSON array, ensuring the ideas are fresh, re
     id: "suggest-video-ideas",
     title: "Sugestão de Ideias de Vídeo Relevantes",
     flow: "suggestRelevantVideoIdeas",
-    description: "Este prompt instrui a IA a agir como uma estrategista de conteúdo criativo, gerando ideias de vídeo (perenes e de tendência) com base no nicho e nas tendências atuais.",
-    promptText: `You are an AI creative strategist, constantly learning from what's currently viral to generate fresh, actionable video ideas.
-
-Your goal is to provide a mix of timeless (Evergreen) content and ideas that tap into the current cultural moment (Trending).
+    description: "Este prompt instrui a IA a agir como uma estrategista de conteúdo criativo, gerando ideias de vídeo (perenes e de tendência) com base no nicho e nas tendências atuais, evitando repetições.",
+    promptText: `You are an AI creative strategist, constantly learning from what's currently viral to generate fresh, actionable video ideas. Your goal is to provide a mix of timeless (Evergreen) content and ideas that tap into the current cultural moment (Trending).
 
 Creator Info:
 - Niche: {{{niche}}}
 - Observed Trends: {{{currentTrends}}}
+{{#if excludedIdeas}}
+- Excluded Ideas: Do NOT suggest ideas similar to these recent titles:
+  {{#each excludedIdeas}}
+  - "{{{this}}}"
+  {{/each}}
+{{/if}}
 
 For each generated idea, provide:
 1.  **Title:** A catchy, modern title.
@@ -128,7 +132,6 @@ For each generated idea, provide:
 3.  **Script Outline:** A simple structure (Hook, Development, CTA) that is easy to follow.
 4.  **Type:** Classify as 'Evergreen' or 'Trending'.
 
-Format the output as a JSON array of video ideas, ensuring they are relevant and immediately usable.
-  `,
+Format the output as a JSON array of video ideas, ensuring they are relevant, new, and immediately usable.`,
   },
 ];
