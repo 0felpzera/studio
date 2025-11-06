@@ -7,7 +7,7 @@ import { Share2, Settings, Loader2, CheckCircle, XCircle, RefreshCw } from "luci
 import { useEffect, useMemo, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useUser, useFirestore, useCollection, useMemoFirebase } from "@/firebase";
-import { doc, setDoc, collection, deleteDoc, writeBatch } from "firebase/firestore";
+import { doc, setDoc, collection, deleteDoc, writeBatch, getDocs } from "firebase/firestore";
 import type { TiktokAccount, TiktokVideo } from "@/lib/types";
 import { refreshTiktokData } from "@/ai/flows/refresh-tiktok-data";
 import {
@@ -90,7 +90,7 @@ export default function ConnectionsPage() {
     };
 
     const handleDisconnectTikTok = async () => {
-        if (!user || !firestore || !tiktokAccounts || tiktokAccounts.length === 0) {
+        if (!user || !firestore || !tiktokAccount) {
             toast({
                 title: "Erro",
                 description: "Nenhuma conta do TikTok para desconectar.",
@@ -100,14 +100,27 @@ export default function ConnectionsPage() {
         }
 
         setIsDeleting(true);
-        const tiktokAccountId = tiktokAccounts[0].id; 
-        const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccountId);
+        const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', tiktokAccount.id);
+        const videosCollectionRef = collection(tiktokAccountRef, 'videos');
 
         try {
-            await deleteDoc(tiktokAccountRef);
+            const batch = writeBatch(firestore);
+
+            // 1. Get all videos and add their deletion to the batch
+            const videosSnapshot = await getDocs(videosCollectionRef);
+            videosSnapshot.forEach((videoDoc) => {
+                batch.delete(videoDoc.ref);
+            });
+
+            // 2. Add the main account document deletion to the batch
+            batch.delete(tiktokAccountRef);
+
+            // 3. Commit the batch
+            await batch.commit();
+
             toast({
                 title: "Conta Desconectada",
-                description: "Sua conta do TikTok foi desconectada com sucesso.",
+                description: `Sua conta do TikTok e ${videosSnapshot.size} vídeos foram removidos.`,
             });
         } catch (error) {
             console.error("Erro ao desconectar a conta do TikTok:", error);
@@ -203,7 +216,7 @@ export default function ConnectionsPage() {
                                         <AlertDialogHeader>
                                             <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                                             <AlertDialogDescription>
-                                                Esta ação irá desconectar sua conta do TikTok. Você precisará se conectar novamente para sincronizar seus dados.
+                                                Esta ação irá desconectar sua conta do TikTok e apagar todos os seus dados de vídeos sincronizados. Você precisará se conectar novamente para sincronizar seus dados.
                                             </AlertDialogDescription>
                                         </AlertDialogHeader>
                                         <AlertDialogFooter>
