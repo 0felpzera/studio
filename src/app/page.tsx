@@ -23,20 +23,38 @@ import {
   Calculator,
   MessageSquareQuote,
   LogIn,
+  CalendarDays,
 } from "lucide-react";
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
 import { GrowthCalculator } from "@/components/ui/growth-calculator";
 import { SocialProof } from "@/components/ui/social-proof";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Timeline } from "@/components/ui/timeline";
 import { Footer } from "@/components/ui/footer";
+import { CardStack } from "@/components/ui/card-stack";
+import React from "react";
 
 
 export default function LandingPage() {
   const router = useRouter();
+  const targetRef = React.useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+    offset: ["start end", "end end"],
+  });
+
+  const step = useTransform(scrollYProgress, (pos) => {
+    if (pos <= 0.2) return 0;
+    if (pos <= 0.4) return 1;
+    if (pos <= 0.6) return 2;
+    if (pos <= 0.8) return 3;
+    if (pos <= 1) return 4;
+    return 5;
+  });
+
 
   const demoIcons = [
     {
@@ -76,38 +94,79 @@ export default function LandingPage() {
       rotation: 8,
     },
   ];
+  
+    const featureCards = [
+    {
+      id: 0,
+      content: (
+        <div className="flex flex-col items-center text-center p-6">
+          <div className="mb-4"><Presentation className="w-8 h-8 text-primary" /></div>
+          <h3 className="text-xl font-bold mb-2">Diagnóstico de Vídeo</h3>
+          <p className="text-muted-foreground">Análise com IA para otimizar seu conteúdo antes de postar.</p>
+        </div>
+      ),
+    },
+    {
+      id: 1,
+      content: (
+        <div className="flex flex-col items-center text-center p-6">
+          <div className="mb-4"><Lightbulb className="w-8 h-8 text-primary" /></div>
+          <h3 className="text-xl font-bold mb-2">Gerador de Ideias</h3>
+          <p className="text-muted-foreground">Gere ideias perenes e de tendência para nunca ficar sem inspiração.</p>
+        </div>
+      ),
+    },
+    {
+      id: 2,
+      content: (
+        <div className="flex flex-col items-center text-center p-6">
+          <div className="mb-4"><Bot className="w-8 h-8 text-primary" /></div>
+          <h3 className="text-xl font-bold mb-2">IA Coach</h3>
+          <p className="text-muted-foreground">Seu treinador pessoal de IA para crescimento acelerado.</p>
+        </div>
+      ),
+    },
+    {
+      id: 3,
+      content: (
+        <div className="flex flex-col items-center text-center p-6">
+          <div className="mb-4"><DollarSign className="w-8 h-8 text-primary" /></div>
+          <h3 className="text-xl font-bold mb-2">Mídia Kit Pro</h3>
+          <p className="text-muted-foreground">Crie um mídia kit profissional com sugestões de preços.</p>
+        </div>
+      ),
+    },
+    {
+      id: 4,
+      content: (
+        <div className="flex flex-col items-center text-center p-6">
+          <div className="mb-4"><Star className="w-8 h-8 text-primary" /></div>
+          <h3 className="text-xl font-bold mb-2">Ideias para Publis</h3>
+          <p className="text-muted-foreground">Receba ideias criativas e autênticas para suas parcerias.</p>
+        </div>
+      ),
+    },
+    {
+        id: 5,
+        content: (
+            <div className="flex flex-col items-center text-center p-6">
+                <div className="mb-4"><CalendarDays className="w-8 h-8 text-primary" /></div>
+                <h3 className="text-xl font-bold mb-2">Calendário de Conteúdo</h3>
+                <p className="text-muted-foreground">Gere e gerencie um plano semanal de postagens com IA.</p>
+            </div>
+        )
+    }
+  ];
 
   const timelineData = [
     {
       title: "Recursos",
       description: "Ferramentas de IA para cada etapa do seu processo criativo.",
       content: (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
-                <div className="mb-4"><Presentation className="w-8 h-8 text-primary" /></div>
-                <h3 className="text-xl font-bold mb-2">Diagnóstico de Vídeo</h3>
-                <p className="text-muted-foreground">Análise com IA para otimizar seu conteúdo antes de postar.</p>
-            </Card>
-            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
-                <div className="mb-4"><Lightbulb className="w-8 h-8 text-primary" /></div>
-                <h3 className="text-xl font-bold mb-2">Gerador de Ideias</h3>
-                <p className="text-muted-foreground">Gere ideias perenes e de tendência para nunca ficar sem inspiração.</p>
-            </Card>
-            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
-                <div className="mb-4"><Bot className="w-8 h-8 text-primary" /></div>
-                <h3 className="text-xl font-bold mb-2">IA Coach</h3>
-                <p className="text-muted-foreground">Seu treinador pessoal de IA para crescimento acelerado.</p>
-            </Card>
-            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
-                <div className="mb-4"><DollarSign className="w-8 h-8 text-primary" /></div>
-                <h3 className="text-xl font-bold mb-2">Mídia Kit Pro</h3>
-                <p className="text-muted-foreground">Crie um mídia kit profissional com sugestões de preços.</p>
-            </Card>
-            <Card className="bg-card/10 text-card-foreground flex flex-col items-center text-center p-6 backdrop-blur-lg border border-white/10 shadow-lg">
-                <div className="mb-4"><Star className="w-8 h-8 text-primary" /></div>
-                <h3 className="text-xl font-bold mb-2">Ideias para Publis</h3>
-                <p className="text-muted-foreground">Receba ideias criativas e autênticas para suas parcerias.</p>
-            </Card>
+        <div ref={targetRef} className="h-[250vh]">
+          <div className="sticky top-1/4 h-[30rem]">
+            <CardStack items={featureCards} currentStep={step} />
+          </div>
         </div>
       )
     },
@@ -165,5 +224,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    
