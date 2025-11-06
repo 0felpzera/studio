@@ -37,7 +37,7 @@ export const Header = () => {
                                 href="/"
                                 aria-label="home"
                                 className="flex gap-2 items-center">
-                             <p className='font-bold text-xl tracking-tighter'>Trendify</p>
+                             <p className='font-bold text-xl tracking-tighter'>Trendify</p>  
                             </Link>
 
                             <button
@@ -55,7 +55,7 @@ export const Header = () => {
                                     <li key={index}>
                                         <Link
                                             href={item.url}
-                                            className="text-muted-foreground hover:text-accent-foreground block duration-150">
+                                            className="text-black hover:text-accent-foreground block duration-150">
                                             <span>{item.name}</span>
                                         </Link>
                                     </li>
@@ -70,7 +70,7 @@ export const Header = () => {
                                         <li key={index}>
                                             <Link
                                                 href={item.url}
-                                                className="text-muted-foreground hover:text-accent-foreground block duration-150">
+                                                className="text-black hover:text-accent-foreground block duration-150">
                                                 <span>{item.name}</span>
                                             </Link>
                                         </li>
