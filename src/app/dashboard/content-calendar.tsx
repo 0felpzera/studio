@@ -44,7 +44,6 @@ import {
   collection,
   doc,
   writeBatch,
-  serverTimestamp,
   Timestamp,
   query,
   updateDoc,
@@ -65,7 +64,7 @@ const formSchema = z.object({
   }),
 });
 
-type PendingTask = Omit<ContentTask, 'id' | 'date'>;
+type PendingTask = Omit<ContentTask, 'id' | 'date'> & { date?: Timestamp };
 
 const parseCalendarResponse = (
   response: GenerateWeeklyContentCalendarOutput,
@@ -112,7 +111,7 @@ export default function ContentCalendar() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    if (!user) {
+    if (!user || !firestore) {
       toast({ title: 'Erro', description: 'Você precisa estar logado.', variant: 'destructive' });
       return;
     }
@@ -121,6 +120,15 @@ export default function ContentCalendar() {
     setPendingPlan(null);
 
     try {
+      // Clear any previous pending tasks from DB before generating a new plan
+      const pendingQuery = query(collection(firestore, 'users', user.uid, 'contentTasks'), where('status', '==', 'pending'));
+      const pendingDocs = await getDocs(pendingQuery);
+      if (!pendingDocs.empty) {
+        const batch = writeBatch(firestore);
+        pendingDocs.forEach(doc => batch.delete(doc.ref));
+        await batch.commit();
+      }
+      
       const result: GenerateWeeklyContentCalendarOutput =
         await generateWeeklyContentCalendar(values);
       const newTasks = parseCalendarResponse(result, user.uid);
@@ -153,12 +161,10 @@ export default function ContentCalendar() {
     try {
         const batch = writeBatch(firestore);
         
-        // Clear any existing tasks
-        if (activeTasks.length > 0) {
-            const existingTasksQuery = query(collection(firestore, 'users', user.uid, 'contentTasks'));
-            const existingDocs = await getDocs(existingTasksQuery);
-            existingDocs.forEach(doc => batch.delete(doc.ref));
-        }
+        // Clear any existing active tasks
+        const existingTasksQuery = query(collection(firestore, 'users', user.uid, 'contentTasks'), where('status', '==', 'active'));
+        const existingDocs = await getDocs(existingTasksQuery);
+        existingDocs.forEach(doc => batch.delete(doc.ref));
 
         // Add new tasks
         planToSave.forEach((task, index) => {
@@ -180,16 +186,10 @@ export default function ContentCalendar() {
     }
   };
 
-  const dismissPlan = async () => {
+  const dismissPlan = () => {
       setPendingPlan(null);
-      if(pendingTasksFromDB.length > 0 && user && firestore) {
-           const batch = writeBatch(firestore);
-           pendingTasksFromDB.forEach(task => {
-               const docRef = doc(firestore, 'users', user.uid, 'contentTasks', task.id);
-               batch.delete(docRef);
-           });
-           await batch.commit();
-      }
+      // The pending tasks in the DB will be cleared the next time a new plan is generated.
+      // This provides a simpler UX.
       toast({ title: "Plano Dispensado", description: "A sugestão de plano foi removida." });
   }
 
@@ -223,13 +223,14 @@ export default function ContentCalendar() {
             <CardTitle className="font-bold">Defina Sua Estratégia</CardTitle>
             <CardDescription>Diga à IA o que você quer alcançar.</CardDescription>
           </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <FormField
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-6"
+            >
+            <CardContent>
+              <div className="space-y-6">
+                 <FormField
                   control={form.control}
                   name="niche"
                   render={({ field }) => (
@@ -295,6 +296,9 @@ export default function ContentCalendar() {
                     </FormItem>
                   )}
                 />
+              </div>
+            </CardContent>
+            <CardFooter>
                  <Button
                   type="submit"
                   disabled={isLoading || isUserLoading}
@@ -302,9 +306,9 @@ export default function ContentCalendar() {
                 >
                   {isLoading ? <Loader2 className="animate-spin" /> : <><Wand2 className='mr-2' /> Gerar Novo Plano</> }
                 </Button>
-              </form>
-            </Form>
-          </CardContent>
+            </CardFooter>
+            </form>
+          </Form>
         </Card>
       </div>
       <div className="md:col-span-2">
