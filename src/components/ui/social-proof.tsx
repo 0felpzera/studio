@@ -2,7 +2,10 @@
 'use client';
 
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { TestimonialCarousel, type Testimonial } from '@/components/ui/testimonial';
+import { motion } from 'framer-motion';
+import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Star } from 'lucide-react';
 
 const testimonialsData = [
   {
@@ -58,15 +61,27 @@ const testimonialsData = [
 
 export function SocialProof() {
 
-  const mappedTestimonials: Testimonial[] = testimonialsData.map(t => {
-    const avatar = PlaceHolderImages.find(img => img.id === t.avatarId);
-    return {
-      id: t.id,
-      name: t.name,
-      description: t.description,
-      avatar: avatar?.imageUrl || '',
-    };
-  });
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30, scale: 0.98 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        duration: 0.5,
+        ease: "easeOut",
+      },
+    },
+  };
 
   return (
     <section className="w-full py-20 lg:py-32">
@@ -76,10 +91,42 @@ export function SocialProof() {
                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Veja o que outros criadores estão dizendo sobre a Trendify.</p>
             </div>
           
-            <TestimonialCarousel 
-              testimonials={mappedTestimonials}
-              className="max-w-2xl mx-auto"
-            />
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.1 }}
+            >
+              {testimonialsData.map((testimonial) => {
+                 const avatar = PlaceHolderImages.find(img => img.id === testimonial.avatarId);
+                 return (
+                    <motion.div key={testimonial.id} variants={cardVariants}>
+                        <Card className="h-full flex flex-col bg-card/50 backdrop-blur-lg border border-border/20 shadow-lg">
+                            <CardContent className="p-6 flex flex-col flex-grow">
+                                <div className="flex items-center gap-4 mb-4">
+                                     <Avatar>
+                                        <AvatarImage src={avatar?.imageUrl} alt={testimonial.name} />
+                                        <AvatarFallback>{testimonial.name.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-semibold text-foreground">{testimonial.name}</p>
+                                        <p className="text-sm text-muted-foreground">{testimonial.handle}</p>
+                                    </div>
+                                </div>
+                                <h3 className="font-bold text-lg text-foreground mb-2">{testimonial.title}</h3>
+                                <blockquote className="text-muted-foreground flex-grow">
+                                    {testimonial.description}
+                                </blockquote>
+                                 <div className="flex items-center gap-1 mt-4 text-amber-400">
+                                    {[...Array(5)].map((_, i) => <Star key={i} className="size-4 fill-current" />)}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                 )
+              })}
+            </motion.div>
         </div>
     </section>
   );
