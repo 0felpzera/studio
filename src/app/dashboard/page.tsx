@@ -151,10 +151,10 @@ export default function DashboardPage() {
     
     const chartData = useMemo(() => {
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; count: number } } = {};
+        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; } } = {};
         
         months.forEach(m => {
-            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0, count: 0 };
+            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0 };
         });
 
         if (filteredVideos && filteredVideos.length > 0) {
@@ -167,7 +167,6 @@ export default function DashboardPage() {
                         dataByMonth[month].likes += video.like_count || 0;
                         dataByMonth[month].comments += video.comment_count || 0;
                         dataByMonth[month].shares += video.share_count || 0;
-                        dataByMonth[month].count += 1;
                     }
                 }
             });
@@ -180,7 +179,6 @@ export default function DashboardPage() {
             
             return {
                 month,
-                "Vídeos Postados": monthData.count,
                 Visualizações: monthData.views,
                 Curtidas: monthData.likes,
                 Engajamento: engagementRate,
@@ -509,10 +507,9 @@ export default function DashboardPage() {
                                             <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2}/>
                                         </linearGradient>
                                     </defs>
-                                    <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-                                    <Bar yAxisId="left" dataKey="Vídeos Postados" fill="hsl(var(--chart-3))" radius={[4, 4, 0, 0]} />
-                                    <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" strokeWidth={2} fillOpacity={0.4} fill="url(#colorLikes)" />
-                                    <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={3} dot={false} activeDot={{ r: 8 }}/>
+                                    <Bar yAxisId="left" dataKey="Visualizações" fill="url(#colorViews)" radius={[4, 4, 0, 0]} />
+                                    <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" strokeWidth={3} fillOpacity={1} fill="url(#colorLikes)" />
+                                    <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={3} dot={false} activeDot={{ r: 6 }}/>
                                 </ComposedChart>
                             </ResponsiveContainer>
                         </CardContent>
