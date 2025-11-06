@@ -155,21 +155,22 @@ export default function VideoIdeasGenerator() {
   return (
       <div className="grid gap-8 md:grid-cols-3">
         <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <div>
-                  <CardTitle className="font-bold">Inspire-se</CardTitle>
-                  <CardDescription>Diga à IA sobre o que você fala.</CardDescription>
-                </div>
-                <Sheet>
+          <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="text-lg font-semibold">Inspire-se</h3>
+                <p className="text-sm text-muted-foreground">Diga à IA sobre o que você fala.</p>
+              </div>
+               <Sheet>
                   <SheetTrigger asChild>
-                    <Button variant="secondary" size="sm">
-                      <Bookmark className="mr-2 h-4 w-4" />
-                      Salvos
+                    <Button variant="secondary" size="icon" className="relative">
+                      <Bookmark className="h-4 w-4" />
                       {savedIdeas && savedIdeas.length > 0 && (
-                          <Badge variant="primary" className="ml-2">{savedIdeas.length}</Badge>
+                          <span className="absolute top-1 right-1 flex h-2 w-2">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                          </span>
                       )}
+                       <span className="sr-only">Ver ideias salvas</span>
                     </Button>
                   </SheetTrigger>
                   <SheetContent className="w-[400px] sm:w-[540px] flex flex-col">
@@ -255,9 +256,9 @@ export default function VideoIdeasGenerator() {
                     </Dialog>
                   </SheetContent>
                 </Sheet>
-              </div>
-            </CardHeader>
-            <CardContent>
+            </div>
+          <Card>
+            <CardContent className="pt-6">
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                   <FormField
