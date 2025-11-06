@@ -30,7 +30,7 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts';
+import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid, ComposedChart, Line } from 'recharts';
 import { useUser, useFirestore, useCollection, useMemoFirebase } from '@/firebase';
 import { collection, query, where, limit, orderBy, Timestamp } from 'firebase/firestore';
 import type { ContentTask } from '@/app/dashboard/content-calendar';
@@ -48,6 +48,24 @@ function formatNumber(value: number | undefined | null): string {
     }
     return value.toString();
 }
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-3 text-sm">
+        <p className="label font-bold text-foreground">{`Mês: ${label}`}</p>
+        {payload.map((pld: any) => (
+          <p key={pld.dataKey} style={{ color: pld.color }}>
+            {`${pld.name}: ${formatNumber(pld.value)}`}
+          </p>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
+};
+
 
 export default function DashboardPage() {
     const { user, isUserLoading } = useUser();
@@ -80,6 +98,43 @@ export default function DashboardPage() {
         }
         return allVideos;
     }, [allVideos, timeRange]);
+    
+    const chartData = useMemo(() => {
+        if (!filteredVideos || filteredVideos.length === 0) return [];
+        
+        const sortedVideos = [...filteredVideos].sort((a, b) => (a.create_time || 0) - (b.create_time || 0));
+        
+        const dataByMonth: { [key: string]: { views: number; likes: number; count: number } } = {};
+
+        sortedVideos.forEach(video => {
+            const date = new Date((video.create_time || 0) * 1000);
+            const month = date.toLocaleString('pt-BR', { month: 'short' });
+            
+            if (!dataByMonth[month]) {
+                dataByMonth[month] = { views: 0, likes: 0, count: 0 };
+            }
+            dataByMonth[month].views += video.view_count || 0;
+            dataByMonth[month].likes += video.like_count || 0;
+            dataByMonth[month].count += 1;
+        });
+
+        // This is a mock trend for followers as we don't have historical follower data.
+        const followerCount = tiktokAccount?.followerCount || 0;
+        const followerGrowth = Object.keys(dataByMonth).map((month, index, arr) => ({
+             month,
+             Seguidores: Math.round(followerCount - (arr.length - 1 - index) * (followerCount * 0.05)), // Simulate 5% growth steps
+             Visualizações: dataByMonth[month].views,
+             Curtidas: dataByMonth[month].likes,
+        }));
+        
+        if (followerGrowth.length === 0) {
+            return [{month: 'Início', Seguidores: followerCount, Visualizações: 0, Curtidas: 0 }]
+        }
+
+        return followerGrowth;
+
+    }, [filteredVideos, tiktokAccount]);
+
 
     const upcomingTasksQuery = useMemoFirebase(() => {
         if (!user || !firestore) return null;
@@ -125,48 +180,16 @@ export default function DashboardPage() {
 
     // Follower count is a total, so it doesn't change with time range filter.
     const followerCount = tiktokAccount?.followerCount;
-
-    const followersData = useMemo(() => {
-        if (!tiktokAccount) return [{ value: 0 }];
-         if (!allVideos || allVideos.length < 2) {
-             return [{ value: Math.round((tiktokAccount.followerCount || 0) * 0.95) }, { value: tiktokAccount.followerCount || 0 }];
-        }
-        // This is a mock trend as we don't have historical follower data.
-        return allVideos.map((_, index) => ({
-            value: Math.round((tiktokAccount.followerCount || 0) - (allVideos.length - 1 - index) * ((tiktokAccount.followerCount || 0) * 0.01))
-        }));
-    }, [tiktokAccount, allVideos]);
-
-    const likesData = useMemo(() => {
-      if (filteredVideos.length < 2) return [{ value: 0 }, { value: totalLikes }];
-      return filteredVideos.map(v => ({ value: v.like_count || 0 })).reverse();
-    }, [filteredVideos, totalLikes]);
-
-    const viewsData = useMemo(() => {
-      if (filteredVideos.length < 2) return [{ value: 0 }, { value: totalViews }];
-      return filteredVideos.map(v => ({ value: v.view_count || 0 })).reverse();
-    }, [filteredVideos, totalViews]);
-
-
-    const getTrendColor = (data: { value: number }[]) => {
-      if (data.length < 2) return 'hsl(var(--chart-1))'; // Neutral blue color
-      const first = data[0]?.value ?? 0;
-      const last = data[data.length - 1]?.value ?? 0;
-      return last >= first ? 'hsl(var(--chart-2))' : 'hsl(var(--destructive))'; // Green for up, Red for down
-    }
-
+    
     const isLoading = isUserLoading || isLoadingTiktok;
 
     const businessCards = [
         {
             title: 'Seguidores',
             value: formatNumber(followerCount),
-            description: timeRange === '30d' ? 'Total de seguidores' : 'Número total de seguidores',
+            description: 'Número total de seguidores',
             isLoading: isLoadingTiktok,
             icon: UserPlus,
-            data: followersData.length > 0 ? followersData : [{value: 0}],
-            color: getTrendColor(followersData),
-            gradientId: 'followersGradient',
         },
         {
             title: 'Curtidas',
@@ -174,9 +197,6 @@ export default function DashboardPage() {
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de curtidas',
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Heart,
-            data: likesData.length > 0 ? likesData : [{value: 0}],
-            color: getTrendColor(likesData),
-            gradientId: 'likesGradient',
         },
         {
             title: 'Visualizações',
@@ -184,9 +204,6 @@ export default function DashboardPage() {
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Total de visualizações',
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Film,
-            data: viewsData.length > 0 ? viewsData : [{value: 0}],
-            color: getTrendColor(viewsData),
-            gradientId: 'viewsGradient',
         },
         {
             title: 'Taxa de Engajamento',
@@ -194,9 +211,6 @@ export default function DashboardPage() {
             description: timeRange === '30d' ? 'Nos últimos 30 dias' : 'Engajamento total',
             isLoading: isLoadingTiktok || isLoadingVideos,
             icon: Percent,
-            data: viewsData.length > 0 ? viewsData : [{value: 0}], // Mock data, can be improved
-            color: 'hsl(var(--chart-4))',
-            gradientId: 'engagementGradient',
         }
     ];
 
@@ -251,75 +265,76 @@ export default function DashboardPage() {
             </TabsList>
         </div>
         <TabsContent value="overview" className='mt-6 space-y-6'>
-            <div className="w-full">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {businessCards.map((card, i) => {
                     const Icon = card.icon;
                     return (
                     <Card key={i}>
-                        <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-sm font-semibold">{card.title}</CardTitle>
-                            <Icon className="size-5" style={{ color: card.color }} />
-                        </div>
+                        <CardHeader className="flex flex-row items-center justify-between pb-2">
+                           <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
+                           <Icon className="size-4 text-muted-foreground" />
                         </CardHeader>
                         <CardContent>
-                        <div className="flex items-end gap-2.5 justify-between">
-                            <div className="flex flex-col gap-1">
-                            {card.isLoading ? (
-                                    <div className="h-9 w-24 bg-muted animate-pulse rounded-md" />
+                             {card.isLoading ? (
+                                    <div className="h-8 w-2/3 bg-muted animate-pulse rounded-md" />
                                 ) : (
-                                    <div className="text-3xl font-bold text-foreground tracking-tight">{card.value}</div>
+                                    <div className="text-2xl font-bold text-foreground">{card.value}</div>
                                 )}
-                            <div className="text-xs text-muted-foreground whitespace-nowrap">{card.description}</div>
-                            </div>
-
-                            <div className="max-w-40 h-16 w-full relative">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart
-                                data={card.data}
-                                margin={{ top: 5, right: 5, left: 5, bottom: 5 }}
-                                >
-                                <defs>
-                                    <linearGradient id={card.gradientId} x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="0%" stopColor={card.color} stopOpacity={0.3} />
-                                    <stop offset="100%" stopColor={card.color} stopOpacity={0.05} />
-                                    </linearGradient>
-                                </defs>
-
-                                <Tooltip
-                                    cursor={{ stroke: card.color, strokeWidth: 1, strokeDasharray: '2 2' }}
-                                    content={({ active, payload }) => {
-                                    if (active && payload && payload.length) {
-                                        const value = payload[0].value as number;
-                                        return (
-                                        <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-2 pointer-events-none">
-                                            <p className="text-sm font-semibold text-foreground">{card.title === 'Taxa de Engajamento' ? `${value.toFixed(2)}%` : formatNumber(value)}</p>
-                                        </div>
-                                        );
-                                    }
-                                    return null;
-                                    }}
-                                />
-                                <Area
-                                    type="monotone"
-                                    dataKey="value"
-                                    stroke={card.color}
-                                    fill={`url(#${card.gradientId})`}
-                                    strokeWidth={2}
-                                    dot={false}
-                                    activeDot={{ r: 4, fill: card.color, stroke: 'var(--background)', strokeWidth: 1 }}
-                                />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                            </div>
-                        </div>
+                            <p className="text-xs text-muted-foreground">{card.description}</p>
                         </CardContent>
                     </Card>
                     );
                 })}
-                </div>
             </div>
+            
+            <Card>
+                <CardHeader>
+                    <CardTitle className='font-bold'>Visão Geral da Performance</CardTitle>
+                    <CardDescription>Tendências de seguidores, visualizações e curtidas ao longo do tempo.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[350px] pl-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                         <ComposedChart data={chartData}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                            <XAxis 
+                                dataKey="month" 
+                                stroke="hsl(var(--muted-foreground))"
+                                fontSize={12}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <YAxis 
+                                yAxisId="left" 
+                                orientation="left" 
+                                stroke="hsl(var(--muted-foreground))"
+                                fontSize={12}
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(value) => formatNumber(value)}
+                            />
+                             <YAxis 
+                                yAxisId="right" 
+                                orientation="right" 
+                                stroke="hsl(var(--muted-foreground))"
+                                fontSize={12}
+                                tickLine={false}
+                                axisLine={false}
+                                tickFormatter={(value) => formatNumber(value)}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <defs>
+                                <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
+                                    <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
+                                </linearGradient>
+                            </defs>
+                            <Area yAxisId="right" type="monotone" dataKey="Visualizações" fill="url(#colorViews)" stroke="hsl(var(--chart-2))" strokeWidth={2} />
+                            <Line yAxisId="left" type="monotone" dataKey="Seguidores" stroke="hsl(var(--chart-1))" strokeWidth={3} dot={false} />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                 <Card>
                 <CardHeader>
