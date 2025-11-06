@@ -61,10 +61,10 @@ function formatNumber(value: number | undefined | null): string {
     if (value >= 1000000) {
         return (value / 1000000).toFixed(1).replace('.', ',') + 'M';
     }
-    if (value >= 1000) {
+    if (value >= 10000) {
         return (value / 1000).toFixed(1).replace('.', ',') + 'k';
     }
-    return value.toString();
+    return value.toLocaleString('pt-BR');
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
