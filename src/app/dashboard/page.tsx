@@ -482,14 +482,14 @@ export default function DashboardPage() {
                                 />
                                 <Tooltip content={<CustomTooltip />} />
                                 <defs>
-                                    <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
+                                    <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
                                         <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1) / 0.5)" radius={[4, 4, 0, 0]} />
-                                <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorViews)" />
-                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-4))" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }}/>
+                                <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                                <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" fill="url(#colorLikes)" />
+                                <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }}/>
                             </ComposedChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -694,5 +694,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     
