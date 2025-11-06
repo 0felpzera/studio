@@ -7,4 +7,3 @@ import '@/ai/flows/generate-monetization-assistant.ts';
 import '@/ai/flows/analyze-video-for-improvement.ts';
 import '@/ai/flows/generate-sponsored-content-ideas.ts';
 import '@/ai/flows/exchange-tiktok-code.ts';
-import '@/ai/flows/fetch-tiktok-history.ts';

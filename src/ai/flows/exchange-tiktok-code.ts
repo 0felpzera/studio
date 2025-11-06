@@ -1,9 +1,8 @@
 'use server';
 /**
- * @fileOverview Exchanges a TikTok authorization code for an access token and fetches user info.
- * This flow is designed to be fast and only handles the initial connection. Video fetching is
- * handled by the `fetchTikTokHistory` flow.
- * 
+ * @fileOverview Exchanges a TikTok authorization code for an access token, fetches user info,
+ * and retrieves the user's video list in a single, consolidated flow.
+ *
  * - exchangeTikTokCode - The main flow function.
  * - ExchangeTikTokCodeInput - Input schema for the flow.
  * - ExchangeTikTokCodeOutput - Output schema for the flow.
@@ -18,7 +17,18 @@ const ExchangeTikTokCodeInputSchema = z.object({
 
 export type ExchangeTikTokCodeInput = z.infer<typeof ExchangeTikTokCodeInputSchema>;
 
-// Output now excludes the video list, which is handled by a separate flow.
+const TiktokVideoSchema = z.object({
+    id: z.string(),
+    title: z.string().optional(),
+    cover_image_url: z.string().url().optional(),
+    share_url: z.string().url(),
+    view_count: z.number().optional(),
+    like_count: z.number().optional(),
+    comment_count: z.number().optional(),
+    share_count: z.number().optional(),
+    create_time: z.number().optional(),
+});
+
 const ExchangeTikTokCodeOutputSchema = z.object({
     open_id: z.string().describe("The user's unique identifier on TikTok."),
     union_id: z.string().describe("The user's unique identifier across TikTok platforms."),
@@ -36,12 +46,15 @@ const ExchangeTikTokCodeOutputSchema = z.object({
     following_count: z.number().describe("The number of users the user is following."),
     likes_count: z.number().describe("The number of likes the user has received."),
     video_count: z.number().describe("The total number of videos the user has uploaded."),
+    videos: z.array(TiktokVideoSchema).describe("A list of the user's recent TikTok videos."),
 });
 
 export type ExchangeTikTokCodeOutput = z.infer<typeof ExchangeTikTokCodeOutputSchema>;
 
 const TIKTOK_TOKEN_URL = 'https://open.tiktokapis.com/v2/oauth/token/';
 const TIKTOK_USERINFO_URL = 'https://open.tiktokapis.com/v2/user/info/';
+const TIKTOK_VIDEOLIST_URL = 'https://open.tiktokapis.com/v2/video/list/';
+
 
 export async function exchangeTikTokCode(input: ExchangeTikTokCodeInput): Promise<ExchangeTikTokCodeOutput> {
     return exchangeTikTokCodeFlow(input);
@@ -102,8 +115,36 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
             }
             const userInfo = userInfoData.data.user;
 
-            // Step 3 (Video fetching) is now removed from this flow.
+            // Step 3: Fetch video list
+            const videoFields = [
+              "id", "title", "cover_image_url", "share_url", "view_count",
+              "like_count", "comment_count", "share_count", "create_time"
+            ].join(',');
             
+            const videoListBody = {
+              fields: videoFields,
+              max_count: 20, // Fetch up to 20 recent videos
+            };
+
+            const videoListResponse = await fetch(TIKTOK_VIDEOLIST_URL, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${access_token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(videoListBody),
+            });
+            
+            const videoListData = await videoListResponse.json();
+            
+            if (videoListData.error.code !== 'ok') {
+              // Non-fatal error, we can still proceed without videos
+              console.warn(`Could not fetch video list: ${videoListData.error.message}`);
+            }
+            
+            const videos = videoListData.data?.videos || [];
+
+            // Step 4: Assemble and return all data
             return {
                 open_id: userInfo.open_id,
                 union_id: userInfo.union_id,
@@ -121,6 +162,7 @@ const exchangeTikTokCodeFlow = ai.defineFlow(
                 following_count: userInfo.following_count,
                 likes_count: userInfo.likes_count,
                 video_count: userInfo.video_count,
+                videos: videos,
             };
         } catch (err: any) {
             console.error("Full error in exchangeTikTokCodeFlow:", err);

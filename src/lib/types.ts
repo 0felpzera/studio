@@ -43,3 +43,12 @@ export type SavedVideoIdea = {
     type: 'Evergreen' | 'Trending';
     savedAt: Timestamp; 
 };
+
+export interface ContentTask {
+  id: string;
+  userId: string;
+  date: Timestamp;
+  platform: string;
+  description: string;
+  isCompleted: boolean;
+}

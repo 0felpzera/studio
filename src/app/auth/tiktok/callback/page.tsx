@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useUser, useFirestore } from '@/firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, writeBatch } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { exchangeTikTokCode, ExchangeTikTokCodeOutput } from '@/ai/flows/exchange-tiktok-code';
-import { fetchTikTokHistory } from '@/ai/flows/fetch-tiktok-history';
+import { collection } from 'firebase/firestore';
 
 function TikTokCallback() {
   const searchParams = useSearchParams();
@@ -61,14 +61,16 @@ function TikTokCallback() {
 
     const processCode = async () => {
       try {
-        setStatus("Trocando código por token de acesso...");
+        setStatus("Trocando código, buscando perfil e vídeos...");
         const result = await exchangeTikTokCode({ code: authCode });
         
         setApiResponse(result);
-        setStatus("Informações da conta recebidas! Salvando dados...");
+        setStatus("Informações recebidas! Salvando tudo no banco de dados...");
 
+        const batch = writeBatch(firestore);
+
+        // 1. Set the main TikTok account document
         const tiktokAccountRef = doc(firestore, 'users', user.uid, 'tiktokAccounts', result.open_id);
-        
         const accountData = {
             id: result.open_id,
             userId: user.uid,
@@ -86,21 +88,26 @@ function TikTokCallback() {
             refreshToken: result.refresh_token,
             tokenExpiresAt: Date.now() + result.expires_in * 1000,
             refreshTokenExpiresAt: Date.now() + result.refresh_expires_in * 1000,
-            lastSyncStatus: 'pending', // Set initial sync status
+            lastSyncStatus: 'success', // Sync is done in one go
+            lastSyncTime: new Date().toISOString(),
         };
+        batch.set(tiktokAccountRef, accountData, { merge: true });
 
-        await setDoc(tiktokAccountRef, accountData, { merge: true });
+        // 2. Set the video documents in the subcollection
+        if (result.videos && result.videos.length > 0) {
+            const videosCollectionRef = collection(tiktokAccountRef, 'videos');
+            result.videos.forEach(video => {
+                const videoDocRef = doc(videosCollectionRef, video.id);
+                batch.set(videoDocRef, video);
+            });
+        }
+        
+        // 3. Commit the batch
+        await batch.commit();
 
         toast({
             title: "Conta TikTok Conectada!",
-            description: `Bem-vindo, ${result.display_name}! Iniciando a sincronização dos seus vídeos em segundo plano.`,
-        });
-
-        // Trigger background fetch. Do not await this, let it run in the background.
-        fetchTikTokHistory({ 
-            userId: user.uid, 
-            tiktokAccountId: result.open_id, 
-            accessToken: result.access_token 
+            description: `Bem-vindo, ${result.display_name}! Sincronizamos ${result.videos.length} vídeos.`,
         });
 
         setStatus("Conexão bem-sucedida! Redirecionando...");
@@ -111,8 +118,8 @@ function TikTokCallback() {
         }, 3000);
 
       } catch (e: any) {
-        console.error("Erro ao trocar o código do TikTok:", e);
-        setError(e.message || "Falha ao obter o token de acesso do TikTok.");
+        console.error("Erro ao processar o código do TikTok:", e);
+        setError(e.message || "Falha ao obter dados do TikTok.");
         setStatus("Erro ao processar a autenticação.");
         setIsProcessing(false);
       }
@@ -160,7 +167,7 @@ function TikTokCallback() {
                     <Card>
                         <CardHeader>
                             <CardTitle className='text-lg'>Resposta da API do TikTok</CardTitle>
-                            {!error && <CardDescription>Sincronização iniciada. Redirecionando para o dashboard em 3 segundos...</CardDescription>}
+                            {!error && <CardDescription>Sincronização concluída. Redirecionando para o dashboard em 3 segundos...</CardDescription>}
                         </CardHeader>
                         <CardContent>
                            <pre className="mt-2 w-full overflow-auto text-sm bg-muted p-4 rounded-lg">
