@@ -33,19 +33,6 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${inter.variable} ${poppins.variable} scroll-mt-24 scroll-smooth`}>
       <head>
-        <script
-          id="metamask-error-suppression"
-          dangerouslySetInnerHTML={{
-            __html: `
-            window.addEventListener('error', (event) => {
-              if (event.message.includes('MetaMask') || (event.error && event.error.message && event.error.message.includes('MetaMask'))) {
-                event.preventDefault();
-                console.warn('MetaMask injection error suppressed.');
-              }
-            });
-          `,
-          }}
-        />
       </head>
       <body className="font-body antialiased bg-background text-foreground">
         <FirebaseClientProvider>
