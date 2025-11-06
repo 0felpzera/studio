@@ -67,10 +67,10 @@ function formatNumber(value: number | undefined | null): string {
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
-    const iconMap: { [key: string]: React.ReactNode } = {
-        'Visualizações': <Film className="size-4" />,
-        'Curtidas': <Heart className="size-4" />,
-        'Engajamento': <Percent className="size-4" />,
+    const iconMap: { [key: string]: React.ElementType } = {
+        'Visualizações': Film,
+        'Curtidas': Heart,
+        'Engajamento': Percent,
     };
 
     return (
@@ -80,9 +80,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             const value = pld.dataKey === 'Engajamento' 
                 ? `${pld.value.toFixed(2).replace('.', ',')}%`
                 : formatNumber(pld.value);
+            const Icon = iconMap[pld.name];
+            const color = pld.fill || pld.stroke;
+
             return (
-              <div key={pld.dataKey} className="flex items-center gap-2" style={{ color: pld.fill || pld.stroke }}>
-                {iconMap[pld.name] || <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pld.fill || pld.stroke }}></span>}
+              <div key={pld.dataKey} className="flex items-center gap-2">
+                {Icon ? <Icon className="size-4" style={{ color }} /> : <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }}></span>}
                 <span className="text-muted-foreground">{`${pld.name}:`}</span>
                 <span className="font-bold text-foreground">{value}</span>
               </div>
@@ -513,7 +516,7 @@ export default function DashboardPage() {
                                             <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2}/>
                                         </linearGradient>
                                     </defs>
-                                    <Bar yAxisId="left" dataKey="Visualizações" fill="url(#colorViews)" radius={[4, 4, 0, 0]} />
+                                    <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
                                     <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" strokeWidth={3} fillOpacity={1} fill="url(#colorLikes)" />
                                     <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={3} dot={false} activeDot={{ r: 6 }}/>
                                 </ComposedChart>
@@ -768,5 +771,6 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
