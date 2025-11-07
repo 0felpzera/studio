@@ -39,6 +39,7 @@ export default function LoginPage() {
     const [isPageLoading, setIsPageLoading] = useState(true);
 
     const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
+    const logo = PlaceHolderImages.find(img => img.id === 'logo');
 
     useEffect(() => {
         if (!auth || !firestore || isUserLoading) {
@@ -136,7 +137,16 @@ export default function LoginPage() {
                 <div className="mx-auto grid w-[350px] gap-6">
                     <div className="grid gap-2 text-center">
                         <Link href="/" className="inline-flex justify-center items-center gap-3 mb-4">
-                            <h1 className="text-3xl font-headline font-bold text-foreground">Trendify</h1>
+                             {logo && (
+                              <Image
+                                src={logo.imageUrl}
+                                alt={logo.description}
+                                data-ai-hint={logo.imageHint}
+                                width={150}
+                                height={40}
+                                className="object-contain"
+                              />
+                            )}
                         </Link>
                         <h1 className="text-3xl font-bold">Boas-vindas de volta!</h1>
                         <p className="text-balance text-muted-foreground">

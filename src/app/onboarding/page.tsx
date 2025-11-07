@@ -13,6 +13,8 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 function OnboardingComponent() {
   const firestore = useFirestore();
@@ -26,6 +28,8 @@ function OnboardingComponent() {
   const [followerGoal, setFollowerGoal] = useState('');
   const [postingFrequency, setPostingFrequency] = useState('');
   const [isAuthReady, setIsAuthReady] = useState(false);
+  
+  const logo = PlaceHolderImages.find(img => img.id === 'logo');
 
   // Get sign-up data from URL, ensuring it's decoded.
   const signupName = useMemo(() => searchParams.get('name') ? decodeURIComponent(searchParams.get('name')!) : '', [searchParams]);
@@ -134,7 +138,16 @@ function OnboardingComponent() {
       <Card className="w-full max-w-lg shadow-2xl">
         <CardHeader className="text-center">
             <div className="mx-auto mb-4">
-                <span className="text-2xl font-bold text-foreground font-headline">Trendify</span>
+                {logo && (
+                  <Image
+                    src={logo.imageUrl}
+                    alt={logo.description}
+                    data-ai-hint={logo.imageHint}
+                    width={150}
+                    height={40}
+                    className="object-contain"
+                  />
+                )}
             </div>
           <CardTitle className="text-2xl font-bold">Quase lá, {signupName || 'Criador'}!</CardTitle>
           <CardDescription>Só mais alguns detalhes para personalizar sua experiência.</CardDescription>

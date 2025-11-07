@@ -24,6 +24,8 @@ import {
 import { signOut } from 'firebase/auth';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import Image from 'next/image';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const navItems = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -45,6 +47,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
     const { user } = useUser();
     const auth = useAuth();
     const router = useRouter();
+    const logo = PlaceHolderImages.find((img) => img.id === 'logo');
 
     const handleSignOut = async () => {
         try {
@@ -69,7 +72,16 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
         <>
             <div className="h-20 flex items-center justify-center border-b">
                 <Link href="/" className="flex items-center gap-2" onClick={onLinkClick}>
-                    <span className="text-xl font-bold text-foreground font-headline">Trendify</span>
+                    {logo && (
+                      <Image
+                        src={logo.imageUrl}
+                        alt={logo.description}
+                        data-ai-hint={logo.imageHint}
+                        width={120}
+                        height={30}
+                        className="object-contain"
+                      />
+                    )}
                 </Link>
             </div>
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -126,6 +138,7 @@ const SidebarContent = ({ onLinkClick }: { onLinkClick?: () => void }) => {
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const logo = PlaceHolderImages.find((img) => img.id === 'logo');
     return (
         <div className="relative min-h-screen w-full bg-background text-foreground overflow-hidden">
             <div className="shape-1"></div>
@@ -140,7 +153,16 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     {/* Mobile Header */}
                     <header className="md:hidden sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/80 px-4 backdrop-blur-md">
                         <Link href="/" className="flex items-center gap-2">
-                            <span className="text-lg font-bold font-headline">Trendify</span>
+                             {logo && (
+                              <Image
+                                src={logo.imageUrl}
+                                alt={logo.description}
+                                data-ai-hint={logo.imageHint}
+                                width={100}
+                                height={25}
+                                className="object-contain"
+                              />
+                            )}
                         </Link>
                         <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                             <SheetTrigger asChild>
@@ -158,7 +180,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         </Sheet>
                     </header>
 
-                    <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
+                    <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8 flex flex-col items-center">
                         {children}
                     </main>
                 </div>

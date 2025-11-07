@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/liquid-glass-button'
 import React from 'react'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { PlaceHolderImages } from '@/lib/placeholder-images'
 
 const menuItems = [
     { name: "Início", url: "#", icon: Home },
@@ -17,6 +19,7 @@ export const Header = () => {
     const [menuState, setMenuState] = React.useState(false)
     const [isScrolled, setIsScrolled] = React.useState(false)
     const router = useRouter();
+    const logo = PlaceHolderImages.find(img => img.id === 'logo');
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -37,7 +40,16 @@ export const Header = () => {
                                 href="/"
                                 aria-label="home"
                                 className="flex gap-2 items-center">
-                             <p className='font-bold text-xl tracking-tighter'>Trendify</p>  
+                              {logo && (
+                                <Image
+                                  src={logo.imageUrl}
+                                  alt={logo.description}
+                                  data-ai-hint={logo.imageHint}
+                                  width={120}
+                                  height={30}
+                                  className="object-contain"
+                                />
+                              )}
                             </Link>
 
                             <button
