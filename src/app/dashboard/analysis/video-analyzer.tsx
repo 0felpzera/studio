@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
+const MAX_DURATION_SECONDS = 60;
+
 export default function VideoAnalyzer() {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalyzeVideoOutput | null>(null);
@@ -20,21 +22,44 @@ export default function VideoAnalyzer() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) { // Limite de 10MB
-        toast({
-          title: "Arquivo muito grande",
-          description: "Por favor, envie um vídeo menor que 10MB para análise.",
-          variant: "destructive",
-        });
-        return;
-      }
-      setSelectedFile(file);
-      setAnalysisResult(null);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setVideoPreview(reader.result as string);
+      const videoElement = document.createElement('video');
+      videoElement.preload = 'metadata';
+
+      videoElement.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(videoElement.src);
+        if (videoElement.duration > MAX_DURATION_SECONDS) {
+          toast({
+            title: "Vídeo muito longo",
+            description: `Por favor, envie um vídeo com no máximo ${MAX_DURATION_SECONDS} segundos.`,
+            variant: "destructive",
+          });
+          // Reset file input
+          if(fileInputRef.current) {
+            fileInputRef.current.value = "";
+          }
+          setSelectedFile(null);
+          setVideoPreview(null);
+        } else {
+          // Duration is acceptable, proceed
+          setSelectedFile(file);
+          setAnalysisResult(null);
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setVideoPreview(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        }
       };
-      reader.readAsDataURL(file);
+
+      videoElement.onerror = () => {
+        toast({
+            title: "Erro no arquivo",
+            description: "Não foi possível ler os metadados do vídeo. O arquivo pode estar corrompido.",
+            variant: "destructive",
+        });
+      };
+      
+      videoElement.src = URL.createObjectURL(file);
     }
   };
 
@@ -90,7 +115,7 @@ export default function VideoAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Passo 1: Envie seu vídeo</CardTitle>
-            <CardDescription>Selecione um arquivo de vídeo (até 10MB) do seu dispositivo para a IA analisar.</CardDescription>
+            <CardDescription>Selecione um arquivo de vídeo (até {MAX_DURATION_SECONDS} segundos) do seu dispositivo para a IA analisar.</CardDescription>
           </CardHeader>
           <CardContent>
             <div 
@@ -105,7 +130,7 @@ export default function VideoAnalyzer() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     <span className="font-semibold">Clique para enviar</span> ou arraste e solte
                   </p>
-                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx 10MB)</p>
+                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx {MAX_DURATION_SECONDS}s)</p>
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
