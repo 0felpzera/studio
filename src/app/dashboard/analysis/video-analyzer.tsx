@@ -2,12 +2,13 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Loader2, Upload, Sparkles, Video, CheckCircle, BrainCircuit } from "lucide-react";
+import { Loader2, Upload, Sparkles, Video, CheckCircle, BrainCircuit, Mic, Frame, Film, Captions, Hash } from "lucide-react";
 import { analyzeVideoForImprovement, AnalyzeVideoOutput } from "@/ai/flows/analyze-video-for-improvement";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const MAX_DURATION_SECONDS = 60;
 
@@ -33,14 +34,12 @@ export default function VideoAnalyzer() {
             description: `Por favor, envie um vídeo com no máximo ${MAX_DURATION_SECONDS} segundos.`,
             variant: "destructive",
           });
-          // Reset file input
           if(fileInputRef.current) {
             fileInputRef.current.value = "";
           }
           setSelectedFile(null);
           setVideoPreview(null);
         } else {
-          // Duration is acceptable, proceed
           setSelectedFile(file);
           setAnalysisResult(null);
           const reader = new FileReader();
@@ -110,8 +109,8 @@ export default function VideoAnalyzer() {
   };
   
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
-      <div className="space-y-6">
+    <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+      <div className="space-y-6 sticky top-8">
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Passo 1: Envie seu vídeo</CardTitle>
@@ -157,15 +156,15 @@ export default function VideoAnalyzer() {
                     <div className="h-6 w-3/4 bg-muted rounded"></div>
                     <div className="h-4 w-1/2 bg-muted rounded mt-2"></div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 pt-6">
                     <div className="h-10 w-full bg-muted rounded"></div>
-                    <div className="h-10 w-full bg-muted rounded"></div>
-                    <div className="h-10 w-full bg-muted rounded"></div>
+                    <div className="h-24 w-full bg-muted rounded"></div>
+                    <div className="h-24 w-full bg-muted rounded"></div>
                 </CardContent>
             </Card>
         )}
         {!isLoading && !analysisResult && (
-             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px]">
+             <Card className="flex flex-col items-center justify-center h-full text-center min-h-[400px] sticky top-8">
                 <CardHeader>
                     <div className="mx-auto bg-secondary p-3 rounded-full">
                         <BrainCircuit className="size-8 text-muted-foreground" />
@@ -178,80 +177,72 @@ export default function VideoAnalyzer() {
              </Card>
         )}
         {analysisResult && (
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-bold">Resultado da Análise</CardTitle>
-                <CardDescription>Aqui estão as sugestões da IA para melhorar seu vídeo.</CardDescription>
-              </CardHeader>
-            </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-bold">Resultado da Análise</CardTitle>
+              <CardDescription>Aqui estão as sugestões da IA para melhorar seu vídeo.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="hook" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="hook"><Sparkles className="w-4 h-4 mr-2" />Gancho</TabsTrigger>
+                  <TabsTrigger value="quality"><Frame className="w-4 h-4 mr-2" />Qualidade</TabsTrigger>
+                  <TabsTrigger value="pacing"><Film className="w-4 h-4 mr-2" />Ritmo</TabsTrigger>
+                  <TabsTrigger value="caption"><Captions className="w-4 h-4 mr-2" />Legenda</TabsTrigger>
+                </TabsList>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-bold">Análise do Gancho (Primeiros 3s)</CardTitle>
-                <CardDescription>{analysisResult.hookAnalysis.effectiveness}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <h4 className="font-semibold text-sm">Sugestões de Ganchos Alternativos:</h4>
-                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  {analysisResult.hookAnalysis.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
+                <TabsContent value="hook" className="pt-6">
+                  <h3 className="font-bold text-lg mb-2">Análise do Gancho (Primeiros 3s)</h3>
+                  <p className="text-muted-foreground mb-4">{analysisResult.hookAnalysis.effectiveness}</p>
+                  <h4 className="font-semibold text-sm">Sugestões de Ganchos Alternativos:</h4>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
+                    {analysisResult.hookAnalysis.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                  </ul>
+                </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-bold">Qualidade Técnica</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold">Iluminação: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.lighting}</span></h4>
-                  <h4 className="font-semibold">Áudio: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.audio}</span></h4>
-                  <h4 className="font-semibold">Enquadramento: <span className="font-normal text-muted-foreground">{analysisResult.technicalQuality.framing}</span></h4>
-                </div>
-                 <h4 className="font-semibold text-sm">Sugestões de Melhoria:</h4>
-                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  {analysisResult.technicalQuality.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
+                <TabsContent value="quality" className="pt-6">
+                   <h3 className="font-bold text-lg mb-4">Qualidade Técnica</h3>
+                    <div className="space-y-3 mb-4">
+                        <p><span className="font-semibold">Iluminação:</span> <span className="text-muted-foreground">{analysisResult.technicalQuality.lighting}</span></p>
+                        <p><span className="font-semibold">Áudio:</span> <span className="text-muted-foreground">{analysisResult.technicalQuality.audio}</span></p>
+                        <p><span className="font-semibold">Enquadramento:</span> <span className="text-muted-foreground">{analysisResult.technicalQuality.framing}</span></p>
+                    </div>
+                   <h4 className="font-semibold text-sm">Sugestões de Melhoria:</h4>
+                   <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
+                    {analysisResult.technicalQuality.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                  </ul>
+                </TabsContent>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-bold">Ritmo & Fluxo do Vídeo</CardTitle>
-                <CardDescription>{analysisResult.pacing.assessment}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <h4 className="font-semibold text-sm">Sugestões para Melhorar o Ritmo:</h4>
-                <ul className="list-disc list-inside text-sm text-muted-foreground">
-                  {analysisResult.pacing.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader>
-                <CardTitle className="font-bold">Legenda & Hashtags</CardTitle>
-                <CardDescription>Use esta combinação otimizada para aumentar o alcance e o engajamento.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Sugestão de Legenda:</h4>
-                  <p className="text-sm p-3 bg-muted rounded-md">{analysisResult.captionSuggestions}</p>
-                </div>
-                <div>
-                  <h4 className="font-semibold text-sm mb-2">Sugestão de Hashtags:</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
+                <TabsContent value="pacing" className="pt-6">
+                  <h3 className="font-bold text-lg mb-2">Ritmo & Fluxo do Vídeo</h3>
+                  <p className="text-muted-foreground mb-4">{analysisResult.pacing.assessment}</p>
+                  <h4 className="font-semibold text-sm">Sugestões para Melhorar o Ritmo:</h4>
+                  <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
+                    {analysisResult.pacing.suggestions.map((s, i) => <li key={i}>{s}</li>)}
+                  </ul>
+                </TabsContent>
+
+                <TabsContent value="caption" className="pt-6">
+                  <h3 className="font-bold text-lg mb-4">Legenda & Hashtags</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">Sugestão de Legenda:</h4>
+                      <p className="text-sm p-3 bg-muted rounded-md">{analysisResult.captionSuggestions}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm mb-2">Sugestão de Hashtags:</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </TabsContent>
+
+              </Tabs>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>
   );
 }
-
-    
