@@ -191,7 +191,7 @@ export default function LoginPage() {
                             alt={heroImage.description}
                             data-ai-hint={heroImage.imageHint}
                             fill
-                            style={{ objectFit: 'cover' }}
+                            style={{ objectFit: 'cover', objectPosition: '70% 50%' }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-10 left-10 text-white max-w-md">
