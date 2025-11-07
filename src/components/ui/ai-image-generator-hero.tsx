@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import type React from "react"
@@ -138,7 +137,7 @@ export function ImageCarouselHero({
                   </div>
                 </div>
                 {heroImage && (
-                  <div className="[mask-image:linear-gradient(to_bottom,black,black_90%,transparent)]">
+                  <div>
                     <Image
                         src={heroImage.imageUrl}
                         alt={heroImage.description}
