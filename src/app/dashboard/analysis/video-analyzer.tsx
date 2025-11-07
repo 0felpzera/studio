@@ -176,7 +176,7 @@ export default function VideoAnalyzer() {
             <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                     <CardTitle className="font-bold">Passo 1: Envie seu vídeo</CardTitle>
-                    <CardDescription>Selecione um vídeo (até {MAX_DURATION_SECONDS}s) para a IA analisar.</CardDescription>
+                    <CardDescription>Selecione um vídeo (até ${MAX_DURATION_SECONDS}s) para a IA analisar.</CardDescription>
                 </div>
                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
@@ -204,7 +204,7 @@ export default function VideoAnalyzer() {
                                                     <div className="cursor-pointer">
                                                         <h4 className="font-semibold text-foreground truncate pr-8">{analysis.videoName}</h4>
                                                         <p className="text-sm text-muted-foreground">
-                                                            Salvo em: {new Date(analysis.savedAt.toDate()).toLocaleDateString('pt-BR')}
+                                                            Salvo em: {analysis.savedAt ? new Date(analysis.savedAt.toDate()).toLocaleDateString('pt-BR') : 'Salvando...'}
                                                         </p>
                                                     </div>
                                                 </DialogTrigger>
@@ -301,7 +301,7 @@ export default function VideoAnalyzer() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     <span className="font-semibold">Clique para enviar</span> ou arraste e solte
                   </p>
-                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx {MAX_DURATION_SECONDS}s)</p>
+                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx ${MAX_DURATION_SECONDS}s)</p>
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
