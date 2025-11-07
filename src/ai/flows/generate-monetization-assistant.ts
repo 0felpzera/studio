@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview This file defines a Genkit flow for generating a professional media kit with suggested pricing for advertising opportunities.
@@ -11,18 +12,18 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateMediaKitInputSchema = z.object({
-  followerCount: z.number().describe('The number of followers the user has.'),
-  engagementRate: z.number().describe('The engagement rate of the user (e.g., 0.05 for 5%).'),
-  niche: z.string().describe('The niche of the user (e.g., "fashion", "beauty").'),
-  averageViews: z.number().describe('The average views per post.'),
-  topPosts: z.array(z.string()).describe('URLs of the user\'s top performing posts.'),
-  demographics: z.string().describe('A description of the user\'s audience demographics.'),
+  followerCount: z.number().describe('O número de seguidores que o usuário possui.'),
+  engagementRate: z.number().describe('A taxa de engajamento do usuário (por exemplo, 0.05 para 5%).'),
+  niche: z.string().describe('O nicho do usuário (por exemplo, "moda", "beleza").'),
+  averageViews: z.number().describe('A média de visualizações por postagem.'),
+  topPosts: z.array(z.string()).describe('URLs das postagens de melhor desempenho do usuário.'),
+  demographics: z.string().describe('Uma descrição da demografia do público do usuário.'),
 });
 export type GenerateMediaKitInput = z.infer<typeof GenerateMediaKitInputSchema>;
 
 const GenerateMediaKitOutputSchema = z.object({
-  mediaKitContent: z.string().describe('The generated media kit content in a readable format, using Markdown for structure (headings, lists, etc.).'),
-  suggestedPricing: z.string().describe('Suggested pricing for different advertising opportunities, formatted as a readable string.'),
+  mediaKitContent: z.string().describe('O conteúdo do media kit gerado em um formato legível, usando Markdown para estrutura (cabeçalhos, listas, etc.).'),
+  suggestedPricing: z.string().describe('Preços sugeridos para diferentes oportunidades de publicidade, formatados como uma string legível.'),
 });
 export type GenerateMediaKitOutput = z.infer<typeof GenerateMediaKitOutputSchema>;
 
@@ -34,33 +35,33 @@ const generateMediaKitPrompt = ai.definePrompt({
   name: 'generateMediaKitPrompt',
   input: {schema: GenerateMediaKitInputSchema},
   output: {schema: GenerateMediaKitOutputSchema},
-  prompt: `You are an AI expert in influencer marketing, always up-to-date with current market rates and what brands are looking for *now*.
+  prompt: `Você é um especialista em IA em marketing de influenciadores, sempre atualizado com as taxas de mercado atuais e o que as marcas procuram *agora*. Sua resposta deve ser em português do Brasil.
 
-Based on the provided data, generate a professional, compelling media kit and suggest pricing that reflects current market value.
+Com base nos dados fornecidos, gere um media kit profissional e atraente e sugira preços que reflitam o valor de mercado atual.
 
-Influencer Data:
-- Follower Count: {{{followerCount}}}
-- Engagement Rate: {{{engagementRate}}}
-- Niche: {{{niche}}}
-- Average Views: {{{averageViews}}}
-- Top Posts (as social proof): {{{topPosts}}}
-- Demographics: {{{demographics}}}
+Dados do Influenciador:
+- Contagem de Seguidores: {{{followerCount}}}
+- Taxa de Engajamento: {{{engagementRate}}}
+- Nicho: {{{niche}}}
+- Média de Visualizações: {{{averageViews}}}
+- Posts Principais (como prova social): {{{topPosts}}}
+- Demografia: {{{demographics}}}
 
-Your Tasks:
-1.  **Generate Media Kit Content:** Write a concise and powerful text for a media kit. Use Markdown for clear formatting. Include sections for:
-    - A powerful bio/introduction.
-    - Key statistics (followers, engagement, views).
-    - Audience demographics.
-    - A clear call to action for collaboration.
-    Ensure there are clear spacings between sections.
+Suas Tarefas:
+1.  **Gerar Conteúdo do Media Kit:** Escreva um texto conciso e poderoso para um media kit. Use Markdown para uma formatação clara. Inclua seções para:
+    - Uma biografia/introdução poderosa.
+    - Estatísticas chave (seguidores, engajamento, visualizações).
+    - Demografia do público.
+    - Uma chamada para ação clara para colaboração.
+    Garanta que haja espaçamentos claros entre as seções.
 
-2.  **Suggest Pricing:** Provide a realistic pricing table for the following packages, based on *current* industry standards for this creator's metrics and niche:
-    - One Reel
-    - Three Stories
-    - One TikTok Video
-    - Integrated Campaign (1 Reel + 3 Stories)
+2.  **Sugerir Preços:** Forneça uma tabela de preços realista para os seguintes pacotes, com base nos padrões *atuais* da indústria para as métricas e nicho deste criador:
+    - Um Reel
+    - Três Stories
+    - Um Vídeo no TikTok
+    - Campanha Integrada (1 Reel + 3 Stories)
 
-The entire response must conform to the output schema.
+A resposta inteira deve estar em conformidade com o esquema de saída.
   `,
 });
 
@@ -75,3 +76,5 @@ const generateMediaKitFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

@@ -20,10 +20,10 @@ export default function VideoAnalyzer() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) { // Limite de 4MB
+      if (file.size > 10 * 1024 * 1024) { // Limite de 10MB
         toast({
           title: "Arquivo muito grande",
-          description: "Por favor, envie um vídeo menor que 4MB para análise.",
+          description: "Por favor, envie um vídeo menor que 10MB para análise.",
           variant: "destructive",
         });
         return;
@@ -90,7 +90,7 @@ export default function VideoAnalyzer() {
         <Card>
           <CardHeader>
             <CardTitle className="font-bold">Passo 1: Envie seu vídeo</CardTitle>
-            <CardDescription>Selecione um arquivo de vídeo (até 4MB) do seu dispositivo para a IA analisar.</CardDescription>
+            <CardDescription>Selecione um arquivo de vídeo (até 10MB) do seu dispositivo para a IA analisar.</CardDescription>
           </CardHeader>
           <CardContent>
             <div 
@@ -105,7 +105,7 @@ export default function VideoAnalyzer() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     <span className="font-semibold">Clique para enviar</span> ou arraste e solte
                   </p>
-                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx 4MB)</p>
+                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx 10MB)</p>
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
@@ -228,3 +228,5 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
+
+    

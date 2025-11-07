@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,25 +13,25 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const GenerateWeeklyContentCalendarInputSchema = z.object({
-  niche: z.string().describe('The content creator\'s niche (e.g., fashion, beauty, gaming).'),
-  goals: z.string().describe('The content creator\'s goals (e.g., increase followers, engagement).'),
+  niche: z.string().describe('O nicho do criador de conteúdo (por exemplo, moda, beleza, jogos).'),
+  goals: z.string().describe('Os objetivos do criador de conteúdo (por exemplo, aumentar seguidores, engajamento).'),
   postingFrequency: z
     .string()
-    .describe('The desired posting frequency (e.g., 3-5 times per week).'),
+    .describe('A frequência de postagem desejada (por exemplo, 3-5 vezes por semana).'),
 });
 export type GenerateWeeklyContentCalendarInput = z.infer<
   typeof GenerateWeeklyContentCalendarInputSchema
 >;
 
 const ContentIdeaSchema = z.object({
-    day: z.string().describe('The day of the week for the content idea (e.g., "Segunda-feira").'),
-    title: z.string().describe('A catchy title for the content idea.'),
-    description: z.string().describe('A brief description of the video or post.'),
-    platform: z.string().describe('The suggested platform(s) for this content (e.g., "TikTok, Reels").')
+    day: z.string().describe('O dia da semana para a ideia de conteúdo (por exemplo, "Segunda-feira").'),
+    title: z.string().describe('Um título cativante para a ideia de conteúdo.'),
+    description: z.string().describe('Uma breve descrição do vídeo ou postagem.'),
+    platform: z.string().describe('A(s) plataforma(s) sugerida(s) para este conteúdo (por exemplo, "TikTok, Reels").')
 });
 
 const GenerateWeeklyContentCalendarOutputSchema = z.object({
-  calendar: z.array(ContentIdeaSchema).describe('A list of structured content ideas for the week.'),
+  calendar: z.array(ContentIdeaSchema).describe('Uma lista de ideias de conteúdo estruturadas para a semana.'),
 });
 export type GenerateWeeklyContentCalendarOutput = z.infer<
   typeof GenerateWeeklyContentCalendarOutputSchema
@@ -46,22 +47,22 @@ const prompt = ai.definePrompt({
   name: 'generateWeeklyContentCalendarPrompt',
   input: {schema: GenerateWeeklyContentCalendarInputSchema},
   output: {schema: GenerateWeeklyContentCalendarOutputSchema},
-  prompt: `You are an AI social media strategist, continuously analyzing what's trending to create relevant and effective content plans.
+  prompt: `Você é um estrategista de mídia social de IA, analisando continuamente o que está em alta para criar planos de conteúdo relevantes e eficazes. Sua resposta deve ser em português do Brasil.
 
-Your task is to generate a weekly content calendar for a creator, optimized for their goals and today's audience behavior.
+Sua tarefa é gerar um calendário de conteúdo semanal para um criador, otimizado para seus objetivos e para o comportamento do público de hoje.
 
-Creator Info:
-- Niche: {{{niche}}}
-- Goals: {{{goals}}}
-- Posting Frequency: {{{postingFrequency}}}
+Informações do Criador:
+- Nicho: {{{niche}}}
+- Objetivos: {{{goals}}}
+- Frequência de Postagem: {{{postingFrequency}}}
 
-For each suggestion, provide:
-- A day of the week.
-- A catchy, modern title for the idea.
-- A brief, engaging description of the content.
-- The optimal platform (e.g., TikTok, Reels) for that day, considering current algorithm preferences and user activity.
+Para cada sugestão, forneça:
+- Um dia da semana.
+- Um título moderno e cativante para a ideia.
+- Uma breve e envolvente descrição do conteúdo.
+- A plataforma ideal (por exemplo, TikTok, Reels) para aquele dia, considerando as preferências atuais do algoritmo e a atividade do usuário.
 
-Return the calendar as a structured JSON array, ensuring the ideas are fresh, relevant, and actionable for *right now*.`,
+Retorne o calendário como um array JSON estruturado, garantindo que as ideias sejam novas, relevantes e acionáveis para *agora*.`,
 });
 
 const generateWeeklyContentCalendarFlow = ai.defineFlow(
@@ -75,3 +76,5 @@ const generateWeeklyContentCalendarFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    

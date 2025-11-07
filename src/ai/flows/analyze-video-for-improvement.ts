@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -24,23 +25,23 @@ const AnalyzeVideoOutputSchema = z.object({
   hookAnalysis: z.object({
     effectiveness: z
       .string()
-      .describe('An analysis of the effectiveness of the video hook.'),
-    suggestions: z.array(z.string()).describe('Suggestions for alternative hooks.'),
+      .describe('Uma análise da eficácia do gancho de vídeo.'),
+    suggestions: z.array(z.string()).describe('Sugestões para ganchos alternativos.'),
   }),
   technicalQuality: z.object({
-    lighting: z.string().describe('Assessment of the video lighting.'),
-    audio: z.string().describe('Assessment of the video audio quality.'),
-    framing: z.string().describe('Assessment of the video framing.'),
-    suggestions: z.array(z.string()).describe('Suggestions for improving technical quality.'),
+    lighting: z.string().describe('Avaliação da iluminação do vídeo.'),
+    audio: z.string().describe('Avaliação da qualidade de áudio do vídeo.'),
+    framing: z.string().describe('Avaliação do enquadramento do vídeo.'),
+    suggestions: z.array(z.string()).describe('Sugestões para melhorar a qualidade técnica.'),
   }),
   pacing: z.object({
-    assessment: z.string().describe('Overall assessment of the video pacing.'),
+    assessment: z.string().describe('Avaliação geral do ritmo do vídeo.'),
     suggestions: z
       .array(z.string())
-      .describe('Suggestions for improving the video pacing, like faster cuts or dynamic captions.'),
+      .describe('Sugestões para melhorar o ritmo do vídeo, como cortes mais rápidos ou legendas dinâmicas.'),
   }),
-  captionSuggestions: z.string().describe('A suggested caption for the video.'),
-  hashtagSuggestions: z.array(z.string()).describe('A list of suggested hashtags for the video.'),
+  captionSuggestions: z.string().describe('Uma legenda sugerida para o vídeo.'),
+  hashtagSuggestions: z.array(z.string()).describe('Uma lista de hashtags sugeridas para o vídeo.'),
 });
 export type AnalyzeVideoOutput = z.infer<typeof AnalyzeVideoOutputSchema>;
 
@@ -54,16 +55,16 @@ const analyzeVideoPrompt = ai.definePrompt({
   name: 'analyzeVideoPrompt',
   input: {schema: AnalyzeVideoInputSchema},
   output: {schema: AnalyzeVideoOutputSchema},
-  prompt: `You are an AI video analyst, constantly learning from current viral trends to provide the most up-to-date and impactful feedback. Your goal is to make this video perform better *now*.
+  prompt: `Você é um analista de vídeo de IA, aprendendo constantemente com as tendências virais atuais para fornecer o feedback mais atualizado e impactante. Seu objetivo é fazer com que este vídeo tenha um desempenho melhor *agora*. Sua resposta deve ser em português do Brasil.
 
-Analyze the provided video, focusing on elements that drive retention and engagement in today's social media landscape.
+Analise o vídeo fornecido, focando em elementos que impulsionam a retenção e o engajamento no cenário atual das redes sociais.
 
-1.  **Hook Analysis (First 3 Seconds):** Is the hook immediately captivating? Does it align with current attention spans and trending formats? If not, provide three specific, punchier alternatives that are trending right now.
-2.  **Technical Quality:** Assess lighting, audio, and framing. Are they clean and clear, meeting current viewer expectations? Provide actionable improvement tips.
-3.  **Pacing & Rhythm:** Does the video's pace match current trends (e.g., fast cuts, dynamic captions, engaging B-roll)? Is it too slow or too fast? Suggest specific edits to improve flow and hold attention.
-4.  **Caption & Hashtags:** Generate a compelling, algorithm-friendly caption that encourages interaction. Suggest a mix of relevant, high-traffic, and niche hashtags that are currently performing well.
+1.  **Análise do Gancho (Primeiros 3 Segundos):** O gancho é imediatamente cativante? Ele se alinha com a capacidade de atenção atual e os formatos de tendência? Se não, forneça três alternativas específicas e mais incisivas que estão em alta no momento.
+2.  **Qualidade Técnica:** Avalie a iluminação, o áudio e o enquadramento. Eles estão limpos e claros, atendendo às expectativas atuais do espectador? Forneça dicas de melhoria práticas.
+3.  **Ritmo e Cadência:** O ritmo do vídeo corresponde às tendências atuais (por exemplo, cortes rápidos, legendas dinâmicas, B-roll envolvente)? É muito lento ou muito rápido? Sugira edições específicas para melhorar o fluxo e manter a atenção.
+4.  **Legenda e Hashtags:** Gere uma legenda atraente e amigável ao algoritmo que incentive a interação. Sugira uma mistura de hashtags relevantes, de alto tráfego e de nicho que estejam atualmente com bom desempenho.
 
-Video: {{media url=videoDataUri}}
+Vídeo: {{media url=videoDataUri}}
 `,
 });
 
@@ -78,3 +79,5 @@ const analyzeVideoFlow = ai.defineFlow(
     return output!;
   }
 );
+
+    
