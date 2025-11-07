@@ -74,7 +74,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     };
 
     return (
-      <div className="glass-effect rounded-lg p-3 text-sm border border-border/20 shadow-lg">
+      <div className="bg-background/80 backdrop-blur-sm rounded-lg p-3 text-sm border border-border/20 shadow-lg">
         <p className="label font-bold text-foreground mb-2">{`Mês: ${label}`}</p>
         {payload.map((pld: any) => {
             const value = pld.dataKey === 'Engajamento' 
@@ -770,6 +770,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
 
