@@ -125,19 +125,37 @@ export function ImageCarouselHero({
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true, amount: 0.3 }}
-            className="bg-background/20 p-2 sm:p-4 rounded-2xl shadow-2xl border border-border/20 backdrop-blur-sm"
+            className="relative"
         >
-            {heroImage && (
-                <Image
-                    src={heroImage.imageUrl}
-                    alt={heroImage.description}
-                    data-ai-hint={heroImage.imageHint}
-                    width={1200}
-                    height={800}
-                    className="rounded-lg w-full"
-                    priority
-                />
-            )}
+            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto">
+              {/* Device Frame */}
+              <div className="absolute inset-0 bg-neutral-900 border-4 border-neutral-800 rounded-[2rem] shadow-2xl p-4">
+                  <div className="relative w-full h-full bg-neutral-950 rounded-2xl overflow-hidden">
+                      {/* Notch */}
+                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-900 rounded-b-xl flex justify-center items-center">
+                          <div className="w-2 h-2 bg-neutral-700 rounded-full" />
+                      </div>
+                      
+                      {/* Image */}
+                      {heroImage && (
+                          <Image
+                              src={heroImage.imageUrl}
+                              alt={heroImage.description}
+                              data-ai-hint={heroImage.imageHint}
+                              width={1200}
+                              height={800}
+                              className="w-full h-full object-cover object-top"
+                              priority
+                          />
+                      )}
+                  </div>
+              </div>
+              
+              {/* Laptop Base */}
+              <div className="absolute bottom-[-1px] left-[5%] w-[90%] h-4 bg-neutral-800 rounded-b-xl perspective-1000">
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 to-neutral-700 rounded-b-xl transform-gpu" style={{ transform: 'rotateX(-20deg) scaleY(1.5)', transformOrigin: 'top' }} />
+              </div>
+            </div>
         </motion.div>
       </div>
     </div>
