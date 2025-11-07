@@ -119,7 +119,7 @@ export function SocialProof({ isMobile }: SocialProofProps) {
 
   return (
     <section className="w-full py-20 lg:py-32">
-        <div className="container mx-auto px-4 overflow-hidden">
+        <div className="container mx-auto px-4 overflow-hidden pb-20 lg:pb-32">
              <div className="text-center mb-12 sm:mb-16">
                 <h2 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-balance">Amado por Criadores, Aprovado pelo Algoritmo</h2>
                 <p className="mt-4 text-lg text-muted-foreground max-w-2xl mx-auto">Veja o que outros criadores estão dizendo sobre a Trendify.</p>
