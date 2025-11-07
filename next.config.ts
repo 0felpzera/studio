@@ -61,6 +61,12 @@ const nextConfig: NextConfig = {
         hostname: 'p16-sign-va.tiktokcdn.com',
         port: '',
         pathname: '/tos-maliva-avt-0068/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.dropbox.com',
+        port: '',
+        pathname: '/**',
       }
     ],
   },
