@@ -1,3 +1,4 @@
+
 'use client'
 import Link from 'next/link'
 import { Equal, X, Home, Star, Calculator, MessageSquareQuote } from 'lucide-react'
@@ -7,6 +8,7 @@ import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { PlaceHolderImages } from '@/lib/placeholder-images'
+import { useUser } from '@/firebase'
 
 const menuItems = [
     { name: "Início", url: "#", icon: Home },
@@ -20,6 +22,7 @@ export const Header = () => {
     const [isScrolled, setIsScrolled] = React.useState(false)
     const router = useRouter();
     const logo = PlaceHolderImages.find(img => img.id === 'logo');
+    const { user, isUserLoading } = useUser();
 
     React.useEffect(() => {
         const handleScroll = () => {
@@ -90,32 +93,43 @@ export const Header = () => {
                                 </ul>
                             </div>
                             <div className="flex w-full flex-col space-y-3 sm:flex-row sm:gap-2 sm:space-y-0 md:w-fit">
-
-                                <Button
-                                    asChild
-                                    variant="outline"
-                                    size="sm"
-                                    className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/login">
-                                        <span>Entrar</span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    size="sm"
-                                    className={cn(isScrolled && 'lg:hidden')}>
-                                    <Link href="/signup">
-                                        <span>Cadastre-se</span>
-                                    </Link>
-                                </Button>
-                                <Button
-                                    asChild
-                                    size="sm"
-                                    className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}>
-                                    <Link href="/signup">
-                                        <span>Comece Agora</span>
-                                    </Link>
-                                </Button>
+                                {isUserLoading ? (
+                                    <div className="h-9 w-24 bg-muted rounded-md animate-pulse"></div>
+                                ) : user ? (
+                                     <Button asChild size="sm">
+                                        <Link href="/dashboard">
+                                            <span>Voltar ao App</span>
+                                        </Link>
+                                    </Button>
+                                ) : (
+                                    <>
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            size="sm"
+                                            className={cn(isScrolled && 'lg:hidden')}>
+                                            <Link href="/login">
+                                                <span>Entrar</span>
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            asChild
+                                            size="sm"
+                                            className={cn(isScrolled && 'lg:hidden')}>
+                                            <Link href="/signup">
+                                                <span>Cadastre-se</span>
+                                            </Link>
+                                        </Button>
+                                        <Button
+                                            asChild
+                                            size="sm"
+                                            className={cn(isScrolled ? 'lg:inline-flex' : 'hidden')}>
+                                            <Link href="/signup">
+                                                <span>Comece Agora</span>
+                                            </Link>
+                                        </Button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>
