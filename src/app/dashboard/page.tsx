@@ -560,44 +560,6 @@ export default function DashboardPage() {
                 </Card>
                 ) : (
                 <Accordion type="single" collapsible className="w-full space-y-6" defaultValue='item-1'>
-                     <AccordionItem value="item-0" className="border rounded-lg bg-card overflow-hidden">
-                        <AccordionTrigger className="p-6 text-left hover:no-underline data-[state=open]:border-b">
-                            <div className="flex-1 space-y-1.5">
-                                <CardTitle className="font-bold">Suas Metas Atuais</CardTitle>
-                                <CardDescription>Seus objetivos principais definidos no onboarding.</CardDescription>
-                            </div>
-                        </AccordionTrigger>
-                        <AccordionContent className="px-6 pb-6">
-                           {isLoadingGoals ? (
-                               <div className='pt-4'><Loader2 className="animate-spin text-muted-foreground"/></div>
-                           ) : goal ? (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4">
-                                <div className="p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><Goal className="size-4"/>Nicho</div>
-                                    <p className="font-bold text-lg">{goal.niche}</p>
-                                </div>
-                                <div className="p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><Users className="size-4"/>Meta de Seguidores</div>
-                                    <p className="font-bold text-lg">{goal.followerGoal.toLocaleString('pt-BR')}</p>
-                                </div>
-                                <div className="p-4 bg-muted/50 rounded-lg">
-                                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-semibold mb-1"><Repeat className="size-4"/>Frequência</div>
-                                    <p className="font-bold text-lg">{goal.postingFrequency}</p>
-                                </div>
-                            </div>
-                           ) : (
-                            <div className="text-center text-muted-foreground p-6 border-2 border-dashed rounded-lg">
-                                <Goal className="mx-auto h-8 w-8" />
-                                <h3 className="mt-2 font-semibold">Nenhuma meta definida</h3>
-                                <p className="text-sm">Vá para o onboarding para definir suas metas.</p>
-                                <Button asChild variant="link">
-                                    <Link href="/onboarding">Definir Metas</Link>
-                                </Button>
-                            </div>
-                           )}
-                        </AccordionContent>
-                    </AccordionItem>
-
                     <AccordionItem value="item-1" className="border rounded-lg bg-card overflow-hidden">
                         <AccordionTrigger className="p-6 text-left hover:no-underline data-[state=open]:border-b">
                             <div className="flex-1 space-y-1.5">
@@ -770,6 +732,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
 
