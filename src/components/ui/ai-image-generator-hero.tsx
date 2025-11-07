@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import type React from "react"
@@ -49,7 +50,7 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh] px-4 sm:px-6 lg:px-8 pt-40">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[60vh] sm:min-h-[70vh] px-4 sm:px-6 lg:px-8 pt-28 sm:pt-40">
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
               className="mb-8 w-full"
@@ -119,7 +120,7 @@ export function ImageCarouselHero({
         </div>
       </div>
       
-       <div className="relative z-10 container mx-auto px-4 mt-16 sm:mt-20 mb-20 sm:mb-32">
+       <div className="relative z-10 hidden sm:block container mx-auto px-4 mt-16 sm:mt-20 mb-20 sm:mb-32">
         <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -128,7 +129,7 @@ export function ImageCarouselHero({
             className="relative max-w-5xl mx-auto"
         >
             <div 
-              className="relative rounded-xl bg-muted/30 border border-border/20 shadow-2xl p-2"
+              className="relative p-2"
             >
                 {heroImage && (
                     <Image
@@ -137,7 +138,7 @@ export function ImageCarouselHero({
                         data-ai-hint={heroImage.imageHint}
                         width={1200}
                         height={800}
-                        className="w-full h-auto object-contain rounded-lg"
+                        className="w-full h-auto object-contain rounded-lg shadow-2xl"
                         priority
                     />
                 )}

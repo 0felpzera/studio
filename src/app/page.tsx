@@ -1,88 +1,39 @@
 
+
 "use client";
 
 import { ImageCarouselHero } from "@/components/ui/ai-image-generator-hero";
 import { Header } from "@/components/ui/navbar";
 import { useRouter } from "next/navigation";
 import {
-  SiFacebook,
-  SiYoutube,
-  SiTiktok,
-  SiInstagram,
-  SiThreads,
-  SiX,
-} from "react-icons/si";
-import {
-  Home,
-  Star,
-  AppWindow,
   Presentation,
   Lightbulb,
-  Bot,
+  BrainCircuit,
   DollarSign,
-  Calculator,
-  MessageSquareQuote,
-  LogIn,
+  Star,
   CalendarDays,
   CheckCircle2,
-  TrendingUp,
-  BrainCircuit,
-  PanelTop,
 } from "lucide-react";
-import Image from "next/image";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Button } from "@/components/ui/button";
 import { GrowthCalculator } from "@/components/ui/growth-calculator";
 import { SocialProof } from "@/components/ui/social-proof";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import { Timeline } from "@/components/ui/timeline";
 import { Footer } from "@/components/ui/footer";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-
+import { useIsMobile } from "@/hooks/use-mobile";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 export default function LandingPage() {
   const router = useRouter();
-
-  const demoIcons = [
-    {
-      id: "1",
-      Icon: SiYoutube,
-      color: "#FF0000",
-      rotation: -15,
-    },
-    {
-      id: "2",
-      Icon: SiTiktok,
-      color: "#000000",
-      rotation: -8,
-    },
-    {
-      id: "3",
-      Icon: SiInstagram,
-      color: "url(#instagram-gradient)",
-      rotation: 5,
-    },
-    {
-      id: "4",
-      Icon: SiX,
-      color: "#000000",
-      rotation: 12,
-    },
-    {
-      id: "5",
-      Icon: SiFacebook,
-      color: "#1877F2",
-      rotation: -12,
-    },
-    {
-      id: "6",
-      Icon: SiFacebook,
-      color: "#1877F2",
-      rotation: 8,
-    },
-  ];
+  const isMobile = useIsMobile();
   
     const featureCards = [
     {
@@ -213,70 +164,75 @@ export default function LandingPage() {
     },
   };
 
+const renderFeatureCards = () => {
+    const cardContent = featureCards.map((card) => {
+        const Icon = card.icon;
+        return (
+            <motion.div key={card.id} variants={cardVariants} className="h-full">
+            <div className="flex flex-col text-left h-full bg-card/60 rounded-2xl border border-border/20 shadow-lg backdrop-blur-md overflow-hidden">
+                {/* Header */}
+                <div className="p-6 border-b border-border/20">
+                    <div className="flex items-center gap-4">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <Icon className="w-6 h-6 text-primary" />
+                        </div>
+                        <h3 className="text-xl font-bold text-foreground">{card.title}</h3>
+                    </div>
+                    <p className="text-muted-foreground text-sm mt-2">{card.description}</p>
+                </div>
+
+                {/* Benefits */}
+                <div className="p-6 flex-grow">
+                  <ul className="space-y-3 text-sm">
+                    {card.benefits.map((benefit, i) => (
+                      <li key={i} className="flex items-start gap-3">
+                          <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
+                          <span className="text-muted-foreground">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+            </div>
+            </motion.div>
+        );
+    });
+
+    if (isMobile) {
+        return (
+            <Carousel opts={{ loop: true, align: "start" }} className="w-full">
+                <CarouselContent className="-ml-4">
+                    {cardContent.map((card, index) => (
+                        <CarouselItem key={index} className="pl-4 basis-4/5 md:basis-1/2">
+                            {card}
+                        </CarouselItem>
+                    ))}
+                </CarouselContent>
+                <div className="mt-6 flex justify-center">
+                    <CarouselPrevious className="static translate-x-0 translate-y-0" />
+                    <CarouselNext className="static translate-x-0 translate-y-0" />
+                </div>
+            </Carousel>
+        );
+    }
+    
+    return (
+        <motion.div 
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1 }}
+        >
+            {cardContent}
+        </motion.div>
+    );
+};
 
   const timelineData = [
     {
       title: "Recursos",
       description: "Ferramentas de IA para cada etapa do seu processo criativo.",
-      content: (
-        <motion.div 
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {featureCards.map((card) => {
-            const Icon = card.icon;
-            return (
-              <motion.div key={card.id} variants={cardVariants}>
-                <div className="flex flex-col text-left h-full bg-card/60 rounded-2xl border border-border/20 shadow-lg backdrop-blur-md overflow-hidden">
-                    {/* Header */}
-                    <div className="p-6 border-b border-border/20">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                                <Icon className="w-6 h-6 text-primary" />
-                            </div>
-                            <h3 className="text-xl font-bold text-foreground">{card.title}</h3>
-                        </div>
-                        <p className="text-muted-foreground text-sm mt-2">{card.description}</p>
-                    </div>
-
-                    {/* Benefits */}
-                    <div className="p-6 flex-grow">
-                      <ul className="space-y-3 text-sm">
-                        {card.benefits.map((benefit, i) => (
-                          <li key={i} className="flex items-start gap-3">
-                              <CheckCircle2 className="size-4 text-green-500 mt-0.5 shrink-0" />
-                              <span className="text-muted-foreground">{benefit}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-
-                    {/* Mockup */}
-                    {card.mockup && (
-                        <div className="mt-auto p-4 bg-muted/30 border-t border-border/20">
-                            <div className="p-4 rounded-lg bg-background/50 border border-border/20 text-xs space-y-2">
-                                <p className="font-semibold text-foreground/80 flex items-center gap-2"><PanelTop className="size-3"/>{card.mockup.title}</p>
-                                <div className={card.mockup.isBadge ? 'flex flex-wrap gap-2 pt-1' : card.mockup.isList ? 'space-y-1' : 'space-y-1'}>
-                                {card.mockup.items.map((item, i) => (
-                                    <div key={i} className={card.mockup.isKeyValue ? 'flex justify-between items-center text-muted-foreground' : card.mockup.isList ? 'p-2 bg-muted/50 rounded text-muted-foreground' : 'text-muted-foreground'}>
-                                        {item.icon && <div className="flex items-center gap-1">{item.icon} {item.text}</div>}
-                                        {!item.icon && item.text && <span>{item.text}</span>}
-                                        <span className={item.icon ? 'font-medium text-foreground/90' : ''}>{item.value}</span>
-                                    </div>
-                                ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-      )
+      content: renderFeatureCards()
     },
     {
         title: "Calculadora",
@@ -298,7 +254,7 @@ export default function LandingPage() {
         title: "Depoimentos",
         description: "Veja o que outros criadores estão dizendo sobre a Trendify.",
         content: (
-            <SocialProof />
+            <SocialProof isMobile={isMobile}/>
         )
     }
   ]
@@ -313,7 +269,7 @@ export default function LandingPage() {
         onCtaClick={() => router.push("/signup")}
       />
       
-      <div className="bg-background rounded-t-[50px]">
+      <div className="bg-background rounded-t-[50px] mt-[-40px] relative z-10 pt-10">
         <Timeline data={timelineData} />
 
          <motion.section 
@@ -333,5 +289,3 @@ export default function LandingPage() {
     </div>
   );
 }
-
-    

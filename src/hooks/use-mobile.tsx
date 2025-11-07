@@ -1,19 +1,29 @@
-import * as React from "react"
 
-const MOBILE_BREAKPOINT = 768
+"use client";
+
+import { useState, useEffect } from "react";
+
+const MOBILE_BREAKPOINT = 768; // Standard tablet portrait width
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+  useEffect(() => {
+    const checkDevice = () => {
+      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    };
 
-  return !!isMobile
+    // Check on initial mount
+    checkDevice();
+
+    // Add resize listener
+    window.addEventListener("resize", checkDevice);
+
+    // Cleanup listener
+    return () => {
+      window.removeEventListener("resize", checkDevice);
+    };
+  }, []);
+
+  return isMobile;
 }

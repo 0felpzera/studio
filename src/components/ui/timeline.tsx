@@ -1,4 +1,5 @@
 
+
 "use client";
 import {
   useMotionValueEvent,
@@ -35,7 +36,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
 
   return (
     <div className="w-full font-sans">
-      <div ref={ref} className="relative max-w-7xl mx-auto py-20">
+      <div ref={ref} className="relative max-w-7xl mx-auto py-10 md:py-20">
         {data.map((item, index) => (
           <div
             key={index}
@@ -53,7 +54,7 @@ export const Timeline = ({ data }: { data: TimelineEntry[] }) => {
               </div>
             </div>
 
-            <div className="relative pl-20 pr-4 md:pl-4 w-full">
+            <div className="relative pl-14 pr-4 md:pl-4 w-full">
                <div className="md:hidden mb-8">
                   <h3 className="text-2xl mb-2 text-left font-bold text-primary">
                     {item.title}
