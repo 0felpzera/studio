@@ -446,34 +446,6 @@ export function GrowthCalculator() {
                 </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-bold"><Lightbulb className="h-5 w-5 text-amber-400"/> 3 Ganchos para seu Nicho ({formData.niche})</CardTitle>
-                        <CardDescription>Ideias de inícios de vídeo para capturar a atenção imediatamente.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {plan.hookIdeas.map((idea, index) => (
-                        <p key={index}>{index + 1}. "{idea}"</p>
-                      ))}
-                    </CardContent>
-                </Card>
-                 <Card className="bg-card/60 backdrop-blur-lg border border-border/20 shadow-lg">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2 font-bold"><Sparkles className="h-5 w-5 text-emerald-400"/> 3 Trends em Alta para {formData.niche}</CardTitle>
-                         <CardDescription>Formatos e áudios que estão viralizando agora.</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {plan.trendIdeas.map((trend, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <Badge variant="secondary">{trend.type}</Badge> 
-                          <span>{trend.description}</span>
-                        </div>
-                      ))}
-                    </CardContent>
-                </Card>
-            </div>
-
             <div className="text-center space-y-4 pt-8">
                  <Button size="lg" className="font-bold text-lg px-8 py-6" onClick={() => (window.location.href = '/signup')}>
                     <Users className="mr-3"/> Criar conta e seguir o plano
