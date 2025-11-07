@@ -79,6 +79,24 @@
       "imageHint": "smiling woman"
     },
     {
+      "id": "testimonial-4",
+      "description": "Another happy male content creator",
+      "imageUrl": "https://images.pexels.com/photos/846741/pexels-photo-846741.jpeg?auto=compress&cs=tinysrgb&w=300",
+      "imageHint": "smiling man"
+    },
+    {
+      "id": "testimonial-5",
+      "description": "Third happy female content creator",
+      "imageUrl": "https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=300",
+      "imageHint": "laughing woman"
+    },
+    {
+      "id": "testimonial-6",
+      "description": "Third happy male content creator",
+      "imageUrl": "https://images.pexels.com/photos/837358/pexels-photo-837358.jpeg?auto=compress&cs=tinysrgb&w=300",
+      "imageHint": "laughing man"
+    },
+    {
       "id": "timeline-1",
       "description": "Startup template image",
       "imageUrl": "https://assets.aceternity.com/templates/startup-1.webp",

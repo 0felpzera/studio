@@ -38,7 +38,7 @@ const testimonialsData = [
     id: 4,
     name: 'Lucas G.',
     handle: '@lucasgamer',
-    avatarId: 'testimonial-2',
+    avatarId: 'testimonial-4',
     description: '“O assistente de monetização me deu a confiança pra cobrar o que meu trabalho vale. O mídia kit ficou super profissional.”',
     title: 'Profissionalizou meu perfil',
   },
@@ -46,7 +46,7 @@ const testimonialsData = [
     id: 5,
     name: 'Mariana P.',
     handle: '@maritravels',
-    avatarId: 'testimonial-1',
+    avatarId: 'testimonial-5',
     description: '“Nunca foi tão fácil planejar meu conteúdo. O calendário semanal da IA é genial e economiza muito meu tempo.”',
     title: 'Economia de Tempo',
   },
@@ -54,7 +54,7 @@ const testimonialsData = [
     id: 6,
     name: 'Carlos E.',
     handle: '@carloscomedy',
-    avatarId: 'testimonial-3',
+    avatarId: 'testimonial-6',
     description: '“As sugestões de roteiro são um ótimo ponto de partida. Me ajudou a superar o bloqueio criativo e a postar com mais consistência.”',
     title: 'Adeus Bloqueio Criativo',
   },
@@ -110,7 +110,7 @@ export function SocialProof({ isMobile }: SocialProofProps) {
                       </blockquote>
                        <div className="flex items-center gap-1 mt-4 text-amber-400">
                           {[...Array(5)].map((_, i) => <Star key={i} className="size-4 fill-current" />)}
-                      </div>
+                       </div>
                   </div>
               </div>
           </motion.div>
