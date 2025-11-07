@@ -127,30 +127,18 @@ export function ImageCarouselHero({
             viewport={{ once: true, amount: 0.3 }}
             className="relative"
         >
-            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto">
-              {/* Device Frame */}
-              <div className="absolute inset-0 bg-neutral-900 border-2 border-neutral-800 rounded-[2rem] shadow-2xl p-2">
-                  <div className="relative w-full h-full bg-neutral-950 rounded-[1.5rem] overflow-hidden">
-                      
-                      {/* Image */}
-                      {heroImage && (
-                          <Image
-                              src={heroImage.imageUrl}
-                              alt={heroImage.description}
-                              data-ai-hint={heroImage.imageHint}
-                              width={1200}
-                              height={800}
-                              className="w-full h-full object-cover object-top"
-                              priority
-                          />
-                      )}
-                  </div>
-              </div>
-              
-              {/* Laptop Base */}
-              <div className="absolute bottom-[-1px] left-[5%] w-[90%] h-4 bg-neutral-800 rounded-b-xl perspective-1000">
-                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-900 to-neutral-700 rounded-b-xl transform-gpu" style={{ transform: 'rotateX(-20deg) scaleY(1.5)', transformOrigin: 'top' }} />
-              </div>
+            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border border-border/10 shadow-2xl">
+              {heroImage && (
+                  <Image
+                      src={heroImage.imageUrl}
+                      alt={heroImage.description}
+                      data-ai-hint={heroImage.imageHint}
+                      width={1200}
+                      height={800}
+                      className="w-full h-full object-cover object-top"
+                      priority
+                  />
+              )}
             </div>
         </motion.div>
       </div>
