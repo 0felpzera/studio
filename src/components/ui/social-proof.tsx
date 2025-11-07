@@ -130,7 +130,7 @@ export function SocialProof({ isMobile }: SocialProofProps) {
                     <CarouselContent className="-ml-4">
                         {testimonialCards.map((card, index) => (
                             <CarouselItem key={index} className="pl-4 basis-4/5 md:basis-1/2">
-                                {card}
+                                <div className="mx-auto max-w-xs mb-4">{card}</div>
                             </CarouselItem>
                         ))}
                     </CarouselContent>
