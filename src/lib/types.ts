@@ -9,7 +9,6 @@ export type TiktokVideo = {
     share_url: string;
     view_count?: number;
     like_count?: number;
-    comment_count?: number;
     share_count?: number;
     create_time?: number;
 }
@@ -91,3 +90,26 @@ export const GenerateGrowthPlanOutputSchema = z.object({
   weeklyPlan: z.string().describe("A recommended weekly posting plan, like '2 Reels, 3 Stories'."),
 });
 export type GenerateGrowthPlanOutput = z.infer<typeof GenerateGrowthPlanOutputSchema>;
+
+export type VideoAnalysis = {
+    id: string;
+    userId: string;
+    videoName: string;
+    savedAt: Timestamp;
+    hookAnalysis: {
+        effectiveness: string;
+        suggestions: string[];
+    };
+    technicalQuality: {
+        lighting: string;
+        audio: string;
+        framing: string;
+        suggestions: string[];
+    };
+    pacing: {
+        assessment: string;
+        suggestions: string[];
+    };
+    captionSuggestions: string;
+    hashtagSuggestions: string[];
+};

@@ -241,6 +241,44 @@
         }
       },
       "required": ["id", "userId", "title"]
+    },
+    "VideoAnalysis": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "VideoAnalysis",
+      "type": "object",
+      "description": "Represents a saved AI analysis of a user's video.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "videoName": { "type": "string" },
+        "savedAt": { "type": "string", "format": "date-time" },
+        "hookAnalysis": {
+          "type": "object",
+          "properties": {
+            "effectiveness": { "type": "string" },
+            "suggestions": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "technicalQuality": {
+          "type": "object",
+          "properties": {
+            "lighting": { "type": "string" },
+            "audio": { "type": "string" },
+            "framing": { "type": "string" },
+            "suggestions": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "pacing": {
+          "type": "object",
+          "properties": {
+            "assessment": { "type": "string" },
+            "suggestions": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "captionSuggestions": { "type": "string" },
+        "hashtagSuggestions": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["id", "userId", "videoName", "savedAt"]
     }
   },
   "auth": {
@@ -390,8 +428,28 @@
             }
           ]
         }
+      },
+       {
+        "path": "/users/{userId}/videoAnalyses/{analysisId}",
+        "definition": {
+          "entityName": "VideoAnalysis",
+          "schema": {
+            "$ref": "#/entities/VideoAnalysis"
+          },
+          "description": "Stores AI-generated video analyses saved by the user.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            },
+            {
+              "name": "analysisId",
+              "description": "The unique identifier of the saved analysis."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\\n\\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount, SavedVideoIdeas) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\\n*   The `goals`, `contentTasks`, and `savedVideoIdeas` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\\n*   The `videos` subcollection under `tiktokAccounts` allows for scalable storage of a user's video history.\\n\\nThis structure supports the required QAPs by:\\n\\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks or goals is restricted to the authenticated user associated with the `/users/{userId}` path.\\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
+    "reasoning": "The Firestore structure is designed to securely manage user data, content tasks, goals, and linked social media accounts. It prioritizes authorization independence through path-based ownership for user-specific data and eliminates the need for `get()` calls in security rules. The design leverages structural segregation to ensure all documents within a collection share the same security requirements, simplifying security rule management.\\n\\n*   User data and associated entities (Goals, ContentTasks, InstagramAccount, TiktokAccount, SavedVideoIdeas, VideoAnalyses) are organized under the `/users/{userId}` path to establish clear ownership and simplify authorization rules. This structure enforces that only the authenticated user (`request.auth.uid`) can access their data.\\n*   The `goals`, `contentTasks`, `savedVideoIdeas`, and `videoAnalyses` collections are designed as subcollections of `/users/{userId}` to ensure that they are only accessible by the respective user.\\n*   The `videos` subcollection under `tiktokAccounts` allows for scalable storage of a user's video history.\\n\\nThis structure supports the required QAPs by:\\n\\n*   Enabling secure `list` operations through path-based ownership. Listing content tasks or goals is restricted to the authenticated user associated with the `/users/{userId}` path.\\n*   Providing clear authorization scope for each collection, ensuring that rules are not used as filters."
   }
 }

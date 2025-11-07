@@ -96,6 +96,13 @@ service cloud.firestore {
        match /savedVideoIdeas/{ideaId} {
         allow read, list, write: if isSignedIn() && isOwner(userId);
       }
+      
+      /**
+       * @description Enforces access control for saved video analyses.
+       */
+       match /videoAnalyses/{analysisId} {
+         allow read, list, write: if isSignedIn() && isOwner(userId);
+       }
     }
 
     function isSignedIn() {
