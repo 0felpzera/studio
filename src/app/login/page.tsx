@@ -38,7 +38,7 @@ export default function LoginPage() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isPageLoading, setIsPageLoading] = useState(true);
 
-    const heroImage = PlaceHolderImages.find(img => img.id === 'demo-1');
+    const heroImage = PlaceHolderImages.find(img => img.id === 'login-hero');
     const logo = PlaceHolderImages.find(img => img.id === 'logo');
 
     useEffect(() => {
