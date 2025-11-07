@@ -84,7 +84,7 @@ export function ImageCarouselHero({
             </motion.div>
 
             <motion.h1 
-                className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight"
+                className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-foreground mb-4 sm:mb-6 text-balance leading-tight"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.6 }}
@@ -93,7 +93,7 @@ export function ImageCarouselHero({
             </motion.h1>
 
             <motion.p 
-                className="text-lg sm:text-xl text-muted-foreground mb-8 text-balance"
+                className="text-base sm:text-xl text-muted-foreground mb-8 text-balance"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.8 }}
@@ -129,8 +129,15 @@ export function ImageCarouselHero({
             className="relative max-w-5xl mx-auto"
         >
             <div 
-              className="relative p-2 bg-card/60 rounded-2xl border border-border/20 shadow-2xl"
+              className="relative p-2 bg-card/60 rounded-2xl border border-border/20 shadow-2xl overflow-hidden"
             >
+               <div className="flex items-center h-8 px-4 bg-muted/50 border-b border-border/50">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  </div>
+                </div>
                 {heroImage && (
                     <Image
                         src={heroImage.imageUrl}
@@ -138,7 +145,7 @@ export function ImageCarouselHero({
                         data-ai-hint={heroImage.imageHint}
                         width={1200}
                         height={800}
-                        className="w-full h-auto object-contain rounded-lg"
+                        className="w-full h-auto object-contain rounded-b-lg"
                         priority
                     />
                 )}
