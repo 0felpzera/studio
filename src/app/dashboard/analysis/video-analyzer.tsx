@@ -41,6 +41,20 @@ export default function VideoAnalyzer() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        toast({
+          title: "Arquivo muito grande",
+          description: "Por favor, envie um vídeo com no máximo 10MB.",
+          variant: "destructive",
+        });
+        if(fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+        setSelectedFile(null);
+        setVideoPreview(null);
+        return;
+      }
+      
       const videoElement = document.createElement('video');
       videoElement.preload = 'metadata';
 
@@ -176,7 +190,7 @@ export default function VideoAnalyzer() {
             <CardHeader className="flex flex-row items-start justify-between">
                 <div>
                     <CardTitle className="font-bold">Passo 1: Envie seu vídeo</CardTitle>
-                    <CardDescription>Selecione um vídeo (até ${MAX_DURATION_SECONDS}s) para a IA analisar.</CardDescription>
+                    <CardDescription>Selecione um vídeo (até ${MAX_DURATION_SECONDS}s e 10MB) para a IA analisar.</CardDescription>
                 </div>
                  <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                     <SheetTrigger asChild>
@@ -301,7 +315,7 @@ export default function VideoAnalyzer() {
                   <p className="mt-2 text-sm text-muted-foreground">
                     <span className="font-semibold">Clique para enviar</span> ou arraste e solte
                   </p>
-                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx ${MAX_DURATION_SECONDS}s)</p>
+                  <p className="text-xs text-muted-foreground">MP4, MOV, etc. (Máx ${MAX_DURATION_SECONDS}s, 10MB)</p>
                 </div>
               )}
               <input ref={fileInputRef} type="file" accept="video/*" className="hidden" onChange={handleFileChange} />
@@ -420,3 +434,5 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
+
+    
