@@ -19,44 +19,43 @@ import type { VideoAnalysis } from "@/lib/types";
 const MAX_DURATION_SECONDS = 60;
 
 function MarkdownRenderer({ content }: { content: string }) {
-    const lines = content.split('\n');
-    const elements = [];
-    let inList = false;
+  const lines = content.split('\n');
+  const elements = [];
+  let currentListItems = [];
 
-    for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
 
-        if (line.startsWith('### ')) {
-            if (inList) {
-                elements.push(</ul>);
-                inList = false;
-            }
-            elements.push(<h3 key={i} className="font-bold text-lg mt-4 mb-2">{line.substring(4)}</h3>);
-        } else if (line.startsWith('* ')) {
-            if (!inList) {
-                elements.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-1">);
-                inList = true;
-            }
-            elements.push(<li key={i}>{line.substring(2)}</li>);
-        } else if (line.trim() === '') {
-             if (inList) {
-                elements.push(</ul>);
-                inList = false;
-            }
-            elements.push(<br key={`br-${i}`} />);
-        } else {
-            if (inList) {
-                elements.push(</ul>);
-                inList = false;
-            }
-            elements.push(<p key={i}>{line}</p>);
+    if (line.startsWith('### ')) {
+      if (currentListItems.length > 0) {
+        elements.push(<ul key={`ul-${i-1}`} className="list-disc list-inside space-y-1 my-2">{currentListItems}</ul>);
+        currentListItems = [];
+      }
+      elements.push(<h3 key={i} className="font-bold text-lg mt-4 mb-2">{line.substring(4)}</h3>);
+    } else if (line.startsWith('* ')) {
+      currentListItems.push(<li key={i}>{line.substring(2)}</li>);
+    } else if (line.trim() !== '') {
+      if (currentListItems.length > 0) {
+        elements.push(<ul key={`ul-${i-1}`} className="list-disc list-inside space-y-1 my-2">{currentListItems}</ul>);
+        currentListItems = [];
+      }
+      elements.push(<p key={i}>{line}</p>);
+    } else {
+        if (currentListItems.length > 0) {
+            elements.push(<ul key={`ul-${i-1}`} className="list-disc list-inside space-y-1 my-2">{currentListItems}</ul>);
+            currentListItems = [];
+        }
+        if (elements.length > 0 && lines[i-1]?.trim() !== '') {
+             elements.push(<br key={`br-${i}`} />);
         }
     }
-     if (inList) {
-        elements.push(</ul>);
-    }
+  }
 
-    return <div>{elements}</div>;
+  if (currentListItems.length > 0) {
+    elements.push(<ul key={`ul-${lines.length}`} className="list-disc list-inside space-y-1 my-2">{currentListItems}</ul>);
+  }
+
+  return <>{elements}</>;
 }
 
 
@@ -454,3 +453,5 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
+
+    
