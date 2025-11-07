@@ -158,10 +158,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                         </Sheet>
                     </header>
 
-                    <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8 flex flex-col items-center">
-                        <div className="w-full max-w-7xl">
-                            {children}
-                        </div>
+                    <main className="flex-1 overflow-auto p-4 sm:p-6 md:p-8">
+                        {children}
                     </main>
                 </div>
             </div>
