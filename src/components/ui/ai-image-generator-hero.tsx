@@ -119,7 +119,7 @@ export function ImageCarouselHero({
         </div>
       </div>
       
-       <div className="relative z-10 container mx-auto px-4 mt-16 sm:mt-20">
+       <div className="relative z-10 container mx-auto px-4 mt-16 sm:mt-20 mb-20 sm:mb-32">
         <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
