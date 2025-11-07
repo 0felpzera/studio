@@ -678,7 +678,7 @@ export default function DashboardPage() {
                                             src={video.cover_image_url || '/placeholder.png'} 
                                             alt={video.title || 'TikTok video cover'} 
                                             fill
-                                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                            className="object-cover transition-transform duration-300"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent transition-colors group-hover:from-black/80" />
                                         
@@ -732,6 +732,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
 
