@@ -125,29 +125,35 @@ export function ImageCarouselHero({
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true, amount: 0.3 }}
-            className="relative max-w-5xl mx-auto rounded-xl bg-muted/30 border border-border/20 shadow-2xl shadow-primary/10"
+            style={{ perspective: '800px' }}
+            className="relative max-w-5xl mx-auto"
         >
-             {/* Browser Title Bar */}
-            <div className="flex items-center h-9 px-3 border-b border-border/20">
-                <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+            <motion.div 
+              className="relative rounded-xl bg-muted/30 border border-border/20 shadow-2xl shadow-primary/20"
+              style={{ transform: 'rotateY(10deg) rotateX(5deg)' }}
+            >
+                {/* Browser Title Bar */}
+                <div className="flex items-center h-9 px-3 border-b border-border/20">
+                    <div className="flex items-center gap-1.5">
+                        <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
+                        <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
+                        <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
+                    </div>
                 </div>
-            </div>
 
-            {/* Browser Content */}
-            {heroImage && (
-                <Image
-                    src={heroImage.imageUrl}
-                    alt={heroImage.description}
-                    data-ai-hint={heroImage.imageHint}
-                    width={1200}
-                    height={800}
-                    className="w-full h-auto object-contain rounded-b-xl"
-                    priority
-                />
-            )}
+                {/* Browser Content */}
+                {heroImage && (
+                    <Image
+                        src={heroImage.imageUrl}
+                        alt={heroImage.description}
+                        data-ai-hint={heroImage.imageHint}
+                        width={1200}
+                        height={800}
+                        className="w-full h-auto object-contain rounded-b-xl"
+                        priority
+                    />
+                )}
+            </motion.div>
         </motion.div>
       </div>
     </div>
