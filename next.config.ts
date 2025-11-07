@@ -58,6 +58,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
+        hostname: 'p77-sign-va.tiktokcdn.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'p16-sign-va.tiktokcdn.com',
         port: '',
         pathname: '/tos-maliva-avt-0068/**',
