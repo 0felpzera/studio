@@ -123,12 +123,11 @@ export function ImageCarouselHero({
        <div className="relative z-10 hidden sm:block container mx-auto px-4 mt-16 sm:mt-20 mb-20 sm:mb-32">
         <motion.div
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-            viewport={{ once: true, amount: 0.3 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
             className="relative max-w-5xl mx-auto"
         >
-            <div 
+             <div 
               className="relative p-2 bg-card/60 rounded-2xl border border-border/20 shadow-2xl overflow-hidden"
             >
                <div className="flex items-center h-8 px-4 bg-muted/50 border-b border-border/50">
