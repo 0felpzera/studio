@@ -127,7 +127,7 @@ export function ImageCarouselHero({
             viewport={{ once: true, amount: 0.3 }}
             className="relative"
         >
-            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border border-border/10 shadow-2xl bg-black">
+            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border border-border/10 shadow-2xl">
               {heroImage && (
                   <Image
                       src={heroImage.imageUrl}
