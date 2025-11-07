@@ -129,12 +129,8 @@ export function ImageCarouselHero({
         >
             <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto">
               {/* Device Frame */}
-              <div className="absolute inset-0 bg-neutral-900 border-4 border-neutral-800 rounded-[2rem] shadow-2xl p-4">
-                  <div className="relative w-full h-full bg-neutral-950 rounded-2xl overflow-hidden">
-                      {/* Notch */}
-                      <div className="absolute top-2 left-1/2 -translate-x-1/2 w-32 h-6 bg-neutral-900 rounded-b-xl flex justify-center items-center">
-                          <div className="w-2 h-2 bg-neutral-700 rounded-full" />
-                      </div>
+              <div className="absolute inset-0 bg-neutral-900 border-2 border-neutral-800 rounded-[2rem] shadow-2xl p-2">
+                  <div className="relative w-full h-full bg-neutral-950 rounded-[1.5rem] overflow-hidden">
                       
                       {/* Image */}
                       {heroImage && (
