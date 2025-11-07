@@ -125,7 +125,7 @@ export function ImageCarouselHero({
             initial={{ opacity: 0, y: 50, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut", delay: 1.2 }}
-            className="relative max-w-5xl mx-auto"
+            className="relative max-w-6xl mx-auto"
         >
              <div 
               className="relative p-2 bg-card/60 rounded-2xl border border-border/20 shadow-2xl overflow-hidden"
@@ -138,6 +138,7 @@ export function ImageCarouselHero({
                   </div>
                 </div>
                 {heroImage && (
+                  <div className="[mask-image:linear-gradient(to_bottom,black,black_90%,transparent)]">
                     <Image
                         src={heroImage.imageUrl}
                         alt={heroImage.description}
@@ -147,6 +148,7 @@ export function ImageCarouselHero({
                         className="w-full h-auto object-contain rounded-b-lg"
                         priority
                     />
+                   </div>
                 )}
             </div>
         </motion.div>
