@@ -448,7 +448,7 @@ export function GrowthCalculator() {
 
             <div className="text-center space-y-4 pt-8">
                  <Button size="lg" className="font-bold text-lg px-8 py-6" onClick={() => (window.location.href = '/signup')}>
-                    <Users className="mr-3"/> Criar conta e seguir o plano
+                    <Users className="mr-3"/> crie sua conta e faça seu plano
                 </Button>
                 <div className='flex items-center justify-center gap-4'>
                     <Button variant="outline" onClick={() => { setIsCalculated(false); setPlan(null); }}>Refazer cálculo</Button>
