@@ -131,6 +131,11 @@ export function ImageCarouselHero({
             <div className="relative max-w-5xl mx-auto">
               {/* Screen */}
               <div className="relative aspect-[16/10] w-full rounded-xl bg-muted/20 border-2 border-border/10 p-2 sm:p-3 shadow-2xl shadow-primary/20">
+                 <div className="absolute top-4 left-4 flex gap-1.5 z-10">
+                    <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                </div>
                 {heroImage && (
                     <Image
                         src={heroImage.imageUrl}
