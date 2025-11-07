@@ -127,7 +127,7 @@ export function ImageCarouselHero({
             viewport={{ once: true, amount: 0.3 }}
             className="relative"
         >
-            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto rounded-2xl overflow-hidden border border-border/10 shadow-2xl">
+            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto rounded-2xl border border-border/10 shadow-2xl shadow-primary/20">
               {heroImage && (
                   <Image
                       src={heroImage.imageUrl}
@@ -135,7 +135,7 @@ export function ImageCarouselHero({
                       data-ai-hint={heroImage.imageHint}
                       width={1200}
                       height={800}
-                      className="w-full h-full object-contain object-top"
+                      className="w-full h-full object-contain object-top rounded-xl"
                       priority
                   />
               )}
