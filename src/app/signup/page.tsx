@@ -148,7 +148,7 @@ export default function SignUpPage() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
                         <div className="absolute bottom-10 left-10 text-white max-w-md">
                             <h2 className="text-3xl font-serif font-bold">"A criatividade é a inteligência se divertindo."</h2>
-                            <p className="mt-2 text-lg font-light">- Albert Einstein (atribuído)</p>
+                            <p className="mt-2 text-lg font-light">- Albert Einstein</p>
                         </div>
                     </div>
                 )}
