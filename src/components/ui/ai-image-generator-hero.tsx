@@ -125,12 +125,10 @@ export function ImageCarouselHero({
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
             viewport={{ once: true, amount: 0.3 }}
-            style={{ perspective: '800px' }}
             className="relative max-w-5xl mx-auto"
         >
-            <motion.div 
+            <div 
               className="relative rounded-xl bg-muted/30 border border-border/20 shadow-2xl shadow-primary/20"
-              style={{ transform: 'rotateY(10deg) rotateX(5deg)' }}
             >
                 {/* Browser Title Bar */}
                 <div className="flex items-center h-9 px-3 border-b border-border/20">
@@ -153,7 +151,7 @@ export function ImageCarouselHero({
                         priority
                     />
                 )}
-            </motion.div>
+            </div>
         </motion.div>
       </div>
     </div>
