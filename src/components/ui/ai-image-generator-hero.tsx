@@ -50,7 +50,7 @@ export function ImageCarouselHero({
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-primary/5 to-transparent rounded-full blur-3xl animate-pulse" />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center min-h-[80vh] sm:min-h-[70vh] px-4 sm:px-6 lg:px-8 pt-24 sm:pt-32 lg:pt-40">
+      <div className="relative z-10 flex flex-col items-center justify-center min-h-[85vh] sm:min-h-[70vh] px-4 sm:px-6 lg:px-8 pt-28 sm:pt-32 lg:pt-40">
         <div className="relative z-20 text-center max-w-4xl">
             <motion.div
               className="mb-8 w-full"
