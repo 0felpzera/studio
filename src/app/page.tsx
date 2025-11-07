@@ -270,7 +270,22 @@ const renderFeatureCards = () => {
       />
       
       <div className="bg-background rounded-t-[50px] mt-[-40px] relative z-10 pt-10">
-        <Timeline data={timelineData} />
+        {isMobile === false && <Timeline data={timelineData} />}
+        {isMobile === true && (
+          <div className="py-10 md:py-20 space-y-20">
+            {timelineData.map((item, index) => (
+              <div key={index} className="container mx-auto px-4">
+                <div className="text-center mb-12">
+                  <h3 className="text-3xl sm:text-4xl mb-2 font-bold text-primary">
+                    {item.title}
+                  </h3>
+                  <p className="text-foreground font-bold max-w-2xl mx-auto">{item.description}</p>
+                </div>
+                {item.content}
+              </div>
+            ))}
+          </div>
+        )}
 
          <motion.section 
            className="py-20 sm:py-32 text-accent-foreground"
