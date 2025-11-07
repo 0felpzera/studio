@@ -287,17 +287,11 @@ export default function VideoAnalyzer() {
                                                             </TabsContent>
                                                             <TabsContent value="quality" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
                                                                 <h3>Qualidade Técnica</h3>
-                                                                <p><strong>Iluminação:</strong> {analysis.technicalQuality.lighting}</p>
-                                                                <p><strong>Áudio:</strong> {analysis.technicalQuality.audio}</p>
-                                                                <p><strong>Enquadramento:</strong> {analysis.technicalQuality.framing}</p>
-                                                                <h4>Sugestões:</h4>
-                                                                <ul>{analysis.technicalQuality.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                                                                <MarkdownRenderer content={`**Iluminação:** ${analysis.technicalQuality.lighting}\n\n**Áudio:** ${analysis.technicalQuality.audio}\n\n**Enquadramento:** ${analysis.technicalQuality.framing}\n\n### Sugestões:\n${analysis.technicalQuality.suggestions.map(s => `* ${s}`).join('\n')}`} />
                                                             </TabsContent>
                                                             <TabsContent value="pacing" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
                                                                 <h3>Ritmo e Fluxo</h3>
-                                                                <p>{analysis.pacing.assessment}</p>
-                                                                <h4>Sugestões:</h4>
-                                                                <ul>{analysis.pacing.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                                                                <MarkdownRenderer content={`${analysis.pacing.assessment}\n\n### Sugestões:\n${analysis.pacing.suggestions.map(s => `* ${s}`).join('\n')}`} />
                                                             </TabsContent>
                                                             <TabsContent value="caption" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
                                                                 <h3>Legenda e Hashtags</h3>
@@ -412,37 +406,25 @@ export default function VideoAnalyzer() {
                 </TabsContent>
 
                 <TabsContent value="quality" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                   <h3>Qualidade Técnica</h3>
-                    <p><strong>Iluminação:</strong> {analysisResult.technicalQuality.lighting}</p>
-                    <p><strong>Áudio:</strong> {analysisResult.technicalQuality.audio}</p>
-                    <p><strong>Enquadramento:</strong> {analysisResult.technicalQuality.framing}</p>
-                   <h4>Sugestões de Melhoria:</h4>
-                   <ul>
-                    {analysisResult.technicalQuality.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                  </ul>
+                   <MarkdownRenderer content={`### Qualidade Técnica\n\n**Iluminação:** ${analysisResult.technicalQuality.lighting}\n\n**Áudio:** ${analysisResult.technicalQuality.audio}\n\n**Enquadramento:** ${analysisResult.technicalQuality.framing}\n\n### Sugestões de Melhoria:\n${analysisResult.technicalQuality.suggestions.map(s => `* ${s}`).join('\n')}`} />
                 </TabsContent>
 
                 <TabsContent value="pacing" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                  <h3>Ritmo & Fluxo do Vídeo</h3>
-                  <p>{analysisResult.pacing.assessment}</p>
-                  <h4>Sugestões para Melhorar o Ritmo:</h4>
-                  <ul>
-                    {analysisResult.pacing.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                  </ul>
+                  <MarkdownRenderer content={`### Ritmo & Fluxo do Vídeo\n\n${analysisResult.pacing.assessment}\n\n### Sugestões para Melhorar o Ritmo:\n${analysisResult.pacing.suggestions.map(s => `* ${s}`).join('\n')}`} />
                 </TabsContent>
 
                 <TabsContent value="caption" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
                   <h3>Legenda & Hashtags</h3>
-                    <div>
-                      <h4>Sugestão de Legenda:</h4>
-                      <p><em>{analysisResult.captionSuggestions}</em></p>
+                  <div>
+                    <h4>Sugestão de Legenda:</h4>
+                    <p><em>{analysisResult.captionSuggestions}</em></p>
+                  </div>
+                  <div className="mt-4">
+                    <h4>Sugestão de Hashtags:</h4>
+                    <div className="flex flex-wrap gap-2 not-prose">
+                      {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
                     </div>
-                    <div>
-                      <h4>Sugestão de Hashtags:</h4>
-                      <div className="flex flex-wrap gap-2 not-prose">
-                        {analysisResult.hashtagSuggestions.map((tag, i) => <Badge key={i} variant="secondary">{tag}</Badge>)}
-                      </div>
-                    </div>
+                  </div>
                 </TabsContent>
 
               </Tabs>
@@ -453,5 +435,6 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
+
 
     
