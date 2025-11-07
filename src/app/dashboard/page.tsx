@@ -368,7 +368,7 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full space-y-6">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <header className="flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
         <div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             Olá, {user ? user.displayName?.split(' ')[0] : 'Criador'}! 👋
@@ -378,7 +378,7 @@ export default function DashboardPage() {
           </p>
         </div>
         {tiktokAccount && (
-            <Button onClick={handleSyncTikTok} disabled={isSyncing}>
+            <Button onClick={handleSyncTikTok} disabled={isSyncing} className='mx-auto sm:mx-0'>
                 {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                 {isSyncing ? 'Sincronizando...' : 'Sincronizar Agora'}
             </Button>
@@ -393,9 +393,9 @@ export default function DashboardPage() {
        )}
 
       <div>
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <Tabs value={activeContentTab} onValueChange={setActiveContentTab} className='w-full sm:w-auto'>
-                <TabsList>
+                <TabsList className='grid w-full grid-cols-2'>
                     <TabsTrigger value="overview"><LineChart className='w-4 h-4 mr-2'/>Visão Geral</TabsTrigger>
                     <TabsTrigger value="videos"><LayoutGrid className='w-4 h-4 mr-2'/>Vídeos Recentes</TabsTrigger>
                 </TabsList>
@@ -732,12 +732,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
