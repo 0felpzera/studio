@@ -74,7 +74,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
     };
 
     return (
-      <div className="bg-card/80 backdrop-blur-sm border border-border shadow-lg rounded-lg p-3 text-sm">
+      <div className="glass-effect rounded-lg p-3 text-sm border border-border/20 shadow-lg">
         <p className="label font-bold text-foreground mb-2">{`Mês: ${label}`}</p>
         {payload.map((pld: any) => {
             const value = pld.dataKey === 'Engajamento' 
@@ -159,10 +159,10 @@ export default function DashboardPage() {
     
     const chartData = useMemo(() => {
         const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; videoCount: number; } } = {};
+        const dataByMonth: { [key: string]: { views: number; likes: number; comments: number; shares: number; } } = {};
         
         months.forEach(m => {
-            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0, videoCount: 0 };
+            dataByMonth[m] = { views: 0, likes: 0, comments: 0, shares: 0 };
         });
 
         if (filteredVideos && filteredVideos.length > 0) {
@@ -175,7 +175,6 @@ export default function DashboardPage() {
                         dataByMonth[month].likes += video.like_count || 0;
                         dataByMonth[month].comments += video.comment_count || 0;
                         dataByMonth[month].shares += video.share_count || 0;
-                        dataByMonth[month].videoCount += 1;
                     }
                 }
             });
@@ -426,7 +425,7 @@ export default function DashboardPage() {
         {activeContentTab === 'overview' && (
             <div className='mt-6 space-y-6'>
                 {goal && tiktokAccount && (
-                    <Card>
+                    <Card className="glass-effect">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 font-bold"><Goal className="size-5 text-primary"/> Sua Meta de Seguidores</CardTitle>
                             <CardDescription>Acompanhe seu progresso para alcançar o objetivo definido.</CardDescription>
@@ -453,7 +452,7 @@ export default function DashboardPage() {
                         {businessCards.map((card, i) => {
                             const Icon = card.icon;
                             return (
-                            <Card key={i}>
+                            <Card key={i} className="glass-effect">
                                 <CardContent className="p-4 flex items-center gap-4">
                                     <div className='flex-1 space-y-1'>
                                         <p className="text-sm font-medium text-muted-foreground">{card.title}</p>
@@ -471,7 +470,7 @@ export default function DashboardPage() {
                             );
                         })}
                     </div>
-                    <Card>
+                    <Card className="glass-effect">
                         <CardHeader>
                             <CardTitle className='font-bold flex items-center gap-2'><BarChart className="size-5 text-primary" />Visão Geral da Performance</CardTitle>
                             <CardDescription>Visualizações, curtidas e engajamento dos seus vídeos ao longo do tempo.</CardDescription>
@@ -479,7 +478,7 @@ export default function DashboardPage() {
                         <CardContent className="h-[400px] pl-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <ComposedChart data={chartData}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.5)" />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border) / 0.1)" />
                                     <XAxis 
                                         dataKey="month" 
                                         stroke="hsl(var(--muted-foreground))"
@@ -509,14 +508,14 @@ export default function DashboardPage() {
                                     <defs>
                                         <linearGradient id="colorLikes" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="hsl(var(--chart-2))" stopOpacity={0.4}/>
-                                            <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0.1}/>
+                                            <stop offset="95%" stopColor="hsl(var(--chart-2))" stopOpacity={0}/>
                                         </linearGradient>
                                         <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
                                             <stop offset="5%" stopColor="hsl(var(--chart-1))" stopOpacity={0.8}/>
-                                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2}/>
+                                            <stop offset="95%" stopColor="hsl(var(--chart-1))" stopOpacity={0}/>
                                         </linearGradient>
                                     </defs>
-                                    <Bar yAxisId="left" dataKey="Visualizações" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                                    <Area yAxisId="left" type="monotone" dataKey="Visualizações" stroke="hsl(var(--chart-1))" strokeWidth={3} fillOpacity={1} fill="url(#colorViews)" />
                                     <Area yAxisId="left" type="monotone" dataKey="Curtidas" stroke="hsl(var(--chart-2))" strokeWidth={3} fillOpacity={1} fill="url(#colorLikes)" />
                                     <Line yAxisId="right" type="monotone" dataKey="Engajamento" stroke="hsl(var(--chart-5))" strokeWidth={3} dot={false} activeDot={{ r: 6 }}/>
                                 </ComposedChart>
@@ -771,6 +770,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
 
 
 

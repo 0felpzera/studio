@@ -55,11 +55,11 @@ body {
     --border: 224 71% 15%; /* Dark Gray */
     --input: 224 71% 15%;
     --ring: 247 60% 60%;
-    --chart-1: 247 60% 60%; /* Violet-Blue */
-    --chart-2: 326 90% 55%; /* Magenta Pink */
-    --chart-3: 260 80% 75%; /* Soft Lilac */
-    --chart-4: 247 70% 70%;
-    --chart-5: 142 76% 42%; /* Emerald Green */
+    --chart-1: 248 83% 62%;  /* Luminous Blue */
+    --chart-2: 326 100% 62%; /* Luminous Pink */
+    --chart-3: 53 100% 50%;  /* Luminous Yellow */
+    --chart-4: 200 100% 50%; /* Luminous Cyan */
+    --chart-5: 142 90% 55%;  /* Luminous Green */
   }
 }
 
@@ -83,14 +83,17 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.dark .glass-effect {
+    background: hsla(224, 71%, 8%, 0.6); /* Use HSL for consistency */
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(224 71% 15% / 0.8);
+}
+
+
 .nav-link.active {
     background-color: hsl(var(--primary) / 0.15);
     color: hsl(var(--primary));
     font-weight: 600;
-}
-
-.content-card {
-    @apply glass-effect p-6 rounded-2xl;
 }
 
 /* Decorative Shapes */
