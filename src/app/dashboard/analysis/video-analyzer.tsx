@@ -18,6 +18,48 @@ import type { VideoAnalysis } from "@/lib/types";
 
 const MAX_DURATION_SECONDS = 60;
 
+function MarkdownRenderer({ content }: { content: string }) {
+    const lines = content.split('\n');
+    const elements = [];
+    let inList = false;
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+
+        if (line.startsWith('### ')) {
+            if (inList) {
+                elements.push(</ul>);
+                inList = false;
+            }
+            elements.push(<h3 key={i} className="font-bold text-lg mt-4 mb-2">{line.substring(4)}</h3>);
+        } else if (line.startsWith('* ')) {
+            if (!inList) {
+                elements.push(<ul key={`ul-${i}`} className="list-disc list-inside space-y-1">);
+                inList = true;
+            }
+            elements.push(<li key={i}>{line.substring(2)}</li>);
+        } else if (line.trim() === '') {
+             if (inList) {
+                elements.push(</ul>);
+                inList = false;
+            }
+            elements.push(<br key={`br-${i}`} />);
+        } else {
+            if (inList) {
+                elements.push(</ul>);
+                inList = false;
+            }
+            elements.push(<p key={i}>{line}</p>);
+        }
+    }
+     if (inList) {
+        elements.push(</ul>);
+    }
+
+    return <div>{elements}</div>;
+}
+
+
 export default function VideoAnalyzer() {
   const [isLoading, setIsLoading] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalyzeVideoOutput | null>(null);
@@ -241,11 +283,8 @@ export default function VideoAnalyzer() {
                                                               <TabsTrigger value="pacing">Ritmo</TabsTrigger>
                                                               <TabsTrigger value="caption">Legenda</TabsTrigger>
                                                             </TabsList>
-                                                            <TabsContent value="hook" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                                                              <h3>Análise do Gancho</h3>
-                                                              <p>{analysis.hookAnalysis.effectiveness}</p>
-                                                              <h4>Sugestões:</h4>
-                                                              <ul>{analysis.hookAnalysis.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+                                                             <TabsContent value="hook" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
+                                                                <MarkdownRenderer content={analysis.hookAnalysis.effectiveness} />
                                                             </TabsContent>
                                                             <TabsContent value="quality" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
                                                                 <h3>Qualidade Técnica</h3>
@@ -370,12 +409,7 @@ export default function VideoAnalyzer() {
                 </TabsList>
 
                 <TabsContent value="hook" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
-                   <h3>Análise do Gancho (Primeiros 3s)</h3>
-                   <p>{analysisResult.hookAnalysis.effectiveness}</p>
-                   <h4>Sugestões de Ganchos Alternativos:</h4>
-                   <ul>
-                    {analysisResult.hookAnalysis.suggestions.map((s, i) => <li key={i}>{s}</li>)}
-                  </ul>
+                   <MarkdownRenderer content={analysisResult.hookAnalysis.effectiveness} />
                 </TabsContent>
 
                 <TabsContent value="quality" className="pt-6 prose prose-sm dark:prose-invert max-w-none">
@@ -420,5 +454,3 @@ export default function VideoAnalyzer() {
     </div>
   );
 }
-
-    
