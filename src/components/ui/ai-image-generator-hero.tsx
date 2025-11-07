@@ -127,18 +127,25 @@ export function ImageCarouselHero({
             viewport={{ once: true, amount: 0.3 }}
             className="relative"
         >
-            <div className="relative aspect-[16/10] w-full max-w-5xl mx-auto rounded-2xl border border-border/10 shadow-2xl shadow-primary/20">
-              {heroImage && (
-                  <Image
-                      src={heroImage.imageUrl}
-                      alt={heroImage.description}
-                      data-ai-hint={heroImage.imageHint}
-                      width={1200}
-                      height={800}
-                      className="w-full h-full object-contain object-top rounded-xl"
-                      priority
-                  />
-              )}
+            {/* Mac-style mockup */}
+            <div className="relative max-w-5xl mx-auto">
+              {/* Screen */}
+              <div className="relative aspect-[16/10] w-full rounded-xl bg-muted/20 border-2 border-border/10 p-2 sm:p-3 shadow-2xl shadow-primary/20">
+                {heroImage && (
+                    <Image
+                        src={heroImage.imageUrl}
+                        alt={heroImage.description}
+                        data-ai-hint={heroImage.imageHint}
+                        width={1200}
+                        height={800}
+                        className="w-full h-full object-contain object-top rounded-md"
+                        priority
+                    />
+                )}
+              </div>
+              {/* Base */}
+              <div className="relative h-4 w-4/5 -mt-px mx-auto bg-muted/30 border-x-2 border-border/10 rounded-b-md" />
+              <div className="relative h-8 w-1/3 mx-auto bg-muted/20 border-2 border-t-0 border-border/10 rounded-b-lg" />
             </div>
         </motion.div>
       </div>
