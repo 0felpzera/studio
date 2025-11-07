@@ -161,7 +161,7 @@ export default function ConnectionsPage() {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 w-full">
             <header className="space-y-1.5">
                 <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Conexões de API</h1>
                 <p className="text-muted-foreground max-w-3xl">
